@@ -1,26 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Search, FileText, Filter } from 'lucide-react';
-
-const API = import.meta.env.VITE_API_URL || '';
+import { api } from '../lib/api';
+import { Plus, Search, FileText } from 'lucide-react';
 
 export default function InvoicesPage() {
   const { t } = useTranslation();
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
+    setLoading(true);
     const params = new URLSearchParams();
     if (statusFilter) params.set('status', statusFilter);
-    fetch(`${API}/api/invoices?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
+    api.get(`/api/invoices?${params}`)
       .then(d => setInvoices(d.invoices || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -86,7 +84,7 @@ export default function InvoicesPage() {
               </thead>
               <tbody className="divide-y">
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = `/invoices/${inv.id}/edit`}>
+                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/invoices/${inv.id}/edit`)}>
                     <td className="px-4 py-3 font-medium">{inv.invoiceNumber}</td>
                     <td className="px-4 py-3 text-gray-600">{inv.customerName || inv.customer?.name || '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>

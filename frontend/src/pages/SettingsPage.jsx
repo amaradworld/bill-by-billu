@@ -1,20 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import toast from 'react-hot-toast';
 
-const API = import.meta.env.VITE_API_URL || '';
-
 export default function SettingsPage() {
-  const { t, i18n } = useTranslation();
-  const { user, token } = useAuth();
+  const { t } = useTranslation();
+  const { user, token, updateProfile } = useAuth();
   const [form, setForm] = useState({
-    name: user?.name || '', businessName: user?.businessName || '', email: user?.email || '',
-    phone: user?.phone || '', gstNumber: user?.gstNumber || '', panNumber: user?.panNumber || '',
-    address: user?.address || '', city: user?.city || '', state: user?.state || '', pincode: user?.pincode || '',
+    name: '', businessName: '', phone: '', gstNumber: '', panNumber: '',
+    address: '', city: '', state: '', pincode: '',
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || '', businessName: user.businessName || '', phone: user.phone || '',
+        gstNumber: user.gstNumber || '', panNumber: user.panNumber || '',
+        address: user.address || '', city: user.city || '', state: user.state || '', pincode: user.pincode || '',
+      });
+    }
+  }, [user]);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
@@ -22,11 +29,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/auth/profile`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      await updateProfile(form);
       toast.success(t('common.success'));
     } catch (err) { toast.error(err.message); }
     finally { setLoading(false); }
@@ -48,7 +51,7 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div><label className="block text-xs text-gray-500 mb-1">{t('auth.name')}</label><input className={input} value={form.name} onChange={set('name')} /></div>
           <div><label className="block text-xs text-gray-500 mb-1">{t('auth.businessName')}</label><input className={input} value={form.businessName} onChange={set('businessName')} /></div>
-          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.email')}</label><input type="email" className={input} value={form.email} disabled /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.email')}</label><input type="email" className={input} value={user?.email || ''} disabled /></div>
           <div><label className="block text-xs text-gray-500 mb-1">{t('auth.phone')}</label><input className={input} value={form.phone} onChange={set('phone')} /></div>
           <div><label className="block text-xs text-gray-500 mb-1">{t('auth.gstNumber')}</label><input className={input} value={form.gstNumber} onChange={set('gstNumber')} placeholder="22AAAAA0000A1Z5" /></div>
           <div><label className="block text-xs text-gray-500 mb-1">{t('auth.panNumber')}</label><input className={input} value={form.panNumber} onChange={set('panNumber')} placeholder="ABCDE1234F" /></div>

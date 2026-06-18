@@ -139,11 +139,9 @@ router.post('/', async (req, res) => {
   try {
     const data = invoiceSchema.parse(req.body);
 
-    // Get user's business info
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // Check invoice limit for FREE plan
     if (user.plan === 'FREE') {
       const thisMonthCount = await prisma.invoice.count({
         where: { userId: req.userId, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
@@ -153,7 +151,6 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Generate invoice number
     const lastInvoice = await prisma.invoice.findFirst({
       where: { userId: req.userId },
       orderBy: { createdAt: 'desc' },
@@ -168,7 +165,6 @@ router.post('/', async (req, res) => {
       invoiceNumber = 'INV-0001';
     }
 
-    // Resolve customer
     let customer = null;
     if (data.customerId) {
       customer = await prisma.customer.findUnique({ where: { id: data.customerId } });
@@ -179,7 +175,6 @@ router.post('/', async (req, res) => {
     const customerState = data.customerState || customer?.state || null;
     const customerAddress = data.customerAddress || customer?.address || null;
 
-    // Calculate GST
     const totals = calculateInvoiceTotals({
       items: data.items,
       supplierState: user.state,
@@ -188,7 +183,6 @@ router.post('/', async (req, res) => {
       reverseCharge: data.reverseCharge,
     });
 
-    // Create invoice
     const invoice = await prisma.invoice.create({
       data: {
         userId: req.userId,
@@ -260,6 +254,95 @@ router.get('/:id', async (req, res) => {
     res.json(invoice);
   } catch (err) {
     console.error('Get invoice error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/invoices/:id — Full invoice update
+router.put('/:id', async (req, res) => {
+  try {
+    const data = invoiceSchema.parse(req.body);
+
+    const existing = await prisma.invoice.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Invoice not found' });
+    if (existing.status === 'PAID') {
+      return res.status(400).json({ error: 'Cannot edit a paid invoice' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+
+    let customer = null;
+    if (data.customerId) {
+      customer = await prisma.customer.findUnique({ where: { id: data.customerId } });
+    }
+
+    const customerName = data.customerName || customer?.name || 'Walk-in Customer';
+    const customerGst = data.customerGst || customer?.gstNumber || null;
+    const customerState = data.customerState || customer?.state || null;
+    const customerAddress = data.customerAddress || customer?.address || null;
+
+    const totals = calculateInvoiceTotals({
+      items: data.items,
+      supplierState: user.state,
+      customerState,
+      discount: data.discount,
+      reverseCharge: data.reverseCharge,
+    });
+
+    // Delete old items, create new ones
+    await prisma.invoiceItem.deleteMany({ where: { invoiceId: existing.id } });
+
+    const invoice = await prisma.invoice.update({
+      where: { id: existing.id },
+      data: {
+        customerId: data.customerId || null,
+        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : existing.invoiceDate,
+        dueDate: data.dueDate ? new Date(data.dueDate) : existing.dueDate,
+        customerName,
+        customerGst,
+        customerAddress,
+        customerState,
+        subtotal: totals.subtotal,
+        discountAmount: totals.discountAmount,
+        cgst: totals.cgst,
+        sgst: totals.sgst,
+        igst: totals.igst,
+        totalTax: totals.totalTax,
+        totalAmount: totals.totalAmount,
+        notes: data.notes || existing.notes,
+        terms: data.terms || existing.terms,
+        placeOfSupply: data.placeOfSupply || customerState,
+        reverseCharge: data.reverseCharge,
+        isDraft: existing.status === 'DRAFT',
+        items: {
+          create: data.items.map((item, idx) => ({
+            productId: item.productId || null,
+            name: item.name,
+            description: item.description || null,
+            hsnCode: item.hsnCode || null,
+            unit: item.unit,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            discount: item.discount,
+            gstRate: item.gstRate,
+            cgst: totals.items[idx]?.cgst || 0,
+            sgst: totals.items[idx]?.sgst || 0,
+            igst: totals.items[idx]?.igst || 0,
+            totalAmount: totals.items[idx]?.totalAmount || 0,
+          })),
+        },
+      },
+      include: { items: true, customer: true },
+    });
+
+    res.json(invoice);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Validation failed', details: err.errors });
+    }
+    console.error('Update invoice error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

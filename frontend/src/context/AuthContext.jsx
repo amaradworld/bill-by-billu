@@ -1,8 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 const AuthContext = createContext(null);
-
-const API = import.meta.env.VITE_API_URL || '';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -11,10 +10,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
-      fetch(`${API}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(r => r.ok ? r.json() : Promise.reject())
+      api.get('/api/auth/me')
         .then(setUser)
         .catch(() => { localStorage.removeItem('bbToken'); setToken(null); })
         .finally(() => setLoading(false));
@@ -24,13 +20,7 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await fetch(`${API}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    const data = await api.post('/api/auth/login', { email, password });
     localStorage.setItem('bbToken', data.token);
     setToken(data.token);
     setUser(data.user);
@@ -38,17 +28,17 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (formData) => {
-    const res = await fetch(`${API}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    const data = await api.post('/api/auth/register', formData);
     localStorage.setItem('bbToken', data.token);
     setToken(data.token);
     setUser(data.user);
     return data.user;
+  };
+
+  const updateProfile = async (formData) => {
+    const updated = await api.put('/api/auth/profile', formData);
+    setUser(prev => ({ ...prev, ...updated }));
+    return updated;
   };
 
   const logout = () => {
@@ -58,7 +48,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, updateProfile, logout }}>
       {children}
     </AuthContext.Provider>
   );

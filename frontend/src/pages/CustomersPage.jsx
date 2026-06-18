@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Search, Users, Trash2, X } from 'lucide-react';
+import { api } from '../lib/api';
+import { Plus, Search, Users, Trash2, X, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API = import.meta.env.VITE_API_URL || '';
 const INDIAN_STATES = [
   'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
   'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
@@ -20,11 +20,12 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', gstNumber: '', address: '', city: '', state: '', pincode: '', type: 'B2C' });
 
   const fetchCustomers = () => {
-    fetch(`${API}/api/customers`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    setLoading(true);
+    api.get('/api/customers')
       .then(d => setCustomers(d.customers || []))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -34,17 +35,28 @@ export default function CustomersPage() {
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
-  const handleCreate = async (e) => {
+  const openCreate = () => {
+    setEditId(null);
+    setForm({ name: '', email: '', phone: '', gstNumber: '', address: '', city: '', state: '', pincode: '', type: 'B2C' });
+    setShowForm(true);
+  };
+
+  const openEdit = (c) => {
+    setEditId(c.id);
+    setForm({ name: c.name, email: c.email || '', phone: c.phone || '', gstNumber: c.gstNumber || '', address: c.address || '', city: c.city || '', state: c.state || '', pincode: c.pincode || '', type: c.type });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API}/api/customers`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      if (editId) {
+        await api.put(`/api/customers/${editId}`, form);
+      } else {
+        await api.post('/api/customers', form);
+      }
       toast.success(t('common.success'));
       setShowForm(false);
-      setForm({ name: '', email: '', phone: '', gstNumber: '', address: '', city: '', state: '', pincode: '', type: 'B2C' });
       fetchCustomers();
     } catch (err) { toast.error(err.message); }
   };
@@ -52,7 +64,7 @@ export default function CustomersPage() {
   const handleDelete = async (id) => {
     if (!confirm(t('common.confirm'))) return;
     try {
-      await fetch(`${API}/api/customers/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await api.delete(`/api/customers/${id}`);
       fetchCustomers();
     } catch (err) { toast.error(err.message); }
   };
@@ -68,7 +80,7 @@ export default function CustomersPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('customer.title')}</h1>
-        <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
           <Plus size={16} /> {t('customer.addCustomer')}
         </button>
       </div>
@@ -77,10 +89,10 @@ export default function CustomersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="font-semibold">{t('customer.addCustomer')}</h2>
+              <h2 className="font-semibold">{editId ? t('common.edit') : t('customer.addCustomer')}</h2>
               <button onClick={() => setShowForm(false)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2"><label className="block text-xs text-gray-500 mb-1">{t('customer.name')} *</label><input className={input} required value={form.name} onChange={set('name')} /></div>
                 <div><label className="block text-xs text-gray-500 mb-1">{t('customer.email')}</label><input type="email" className={input} value={form.email} onChange={set('email')} /></div>
@@ -125,7 +137,10 @@ export default function CustomersPage() {
                   {c.gstNumber && <p className="text-xs text-gray-400 mt-1">GSTIN: {c.gstNumber}</p>}
                   {c.state && <p className="text-xs text-gray-400">{c.state}</p>}
                 </div>
-                <button onClick={() => handleDelete(c.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                <div className="flex gap-1">
+                  <button onClick={() => openEdit(c)} className="p-1 text-gray-400 hover:text-brand-500"><Edit2 size={14} /></button>
+                  <button onClick={() => handleDelete(c.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+                </div>
               </div>
               <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
                 <span className={`px-2 py-0.5 rounded-full ${c.type === 'B2B' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'}`}>{c.type}</span>

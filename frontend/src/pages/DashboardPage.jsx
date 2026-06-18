@@ -2,29 +2,34 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../lib/api';
 import { TrendingUp, TrendingDown, FileText, Clock, AlertCircle, Plus } from 'lucide-react';
-
-const API = import.meta.env.VITE_API_URL || '';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { token } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/api/invoices/stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
+    api.get('/api/invoices/stats')
       .then(setStats)
-      .catch(() => {})
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [token]);
 
   const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full" /></div>;
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center h-64 text-center">
+      <AlertCircle size={40} className="text-red-400 mb-3" />
+      <p className="text-gray-600 mb-2">{t('common.error')}</p>
+      <p className="text-sm text-gray-400">{error}</p>
+    </div>
+  );
 
   const cards = [
     { label: t('dashboard.totalRevenue'), value: fmt(stats?.thisMonth?.revenue || 0), sub: t('dashboard.thisMonth'), icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },

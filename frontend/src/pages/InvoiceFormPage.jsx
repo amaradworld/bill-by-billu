@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Trash2, ArrowLeft, Save } from 'lucide-react';
+import { api } from '../lib/api';
+import { Plus, Trash2, ArrowLeft, Save, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API = import.meta.env.VITE_API_URL || '';
 const GST_RATES = [0, 5, 12, 18, 28];
 const UNITS = ['NOS', 'KG', 'MTR', 'LTR', 'BOX', 'PCS', 'SET', 'HRS', 'DAY', 'MON'];
 
-const emptyItem = { name: '', description: '', hsnCode: '', unit: 'NOS', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18 };
+const emptyItem = { productId: '', name: '', description: '', hsnCode: '', unit: 'NOS', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18 };
 
 export default function InvoiceFormPage() {
   const { t } = useTranslation();
@@ -19,6 +19,7 @@ export default function InvoiceFormPage() {
   const isEdit = Boolean(id);
 
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [form, setForm] = useState({
     customerId: '', customerName: '', customerGst: '', customerAddress: '', customerState: '',
     invoiceDate: new Date().toISOString().split('T')[0], dueDate: '',
@@ -28,13 +29,16 @@ export default function InvoiceFormPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/api/customers`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => setCustomers(d.customers || []))
-      .catch(() => {});
+    Promise.all([
+      api.get('/api/customers').catch(() => ({ customers: [] })),
+      api.get('/api/products').catch(() => ({ products: [] })),
+    ]).then(([custData, prodData]) => {
+      setCustomers(custData.customers || []);
+      setProducts(prodData.products || []);
+    });
+
     if (isEdit) {
-      fetch(`${API}/api/invoices/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.json())
+      api.get(`/api/invoices/${id}`)
         .then(inv => {
           setForm({
             customerId: inv.customerId || '', customerName: inv.customerName || '',
@@ -43,8 +47,9 @@ export default function InvoiceFormPage() {
             invoiceDate: inv.invoiceDate?.split('T')[0] || '',
             dueDate: inv.dueDate?.split('T')[0] || '',
             items: inv.items?.length ? inv.items.map(i => ({
-              name: i.name, description: i.description || '', hsnCode: i.hsnCode || '',
-              unit: i.unit, quantity: Number(i.quantity), unitPrice: Number(i.unitPrice),
+              productId: i.productId || '', name: i.name, description: i.description || '',
+              hsnCode: i.hsnCode || '', unit: i.unit,
+              quantity: Number(i.quantity), unitPrice: Number(i.unitPrice),
               discount: Number(i.discount), gstRate: Number(i.gstRate),
             })) : [{ ...emptyItem }],
             discount: Number(inv.discountAmount) || 0,
@@ -78,14 +83,31 @@ export default function InvoiceFormPage() {
     }));
   };
 
+  const onProductSelect = (idx, e) => {
+    const p = products.find(p => p.id === e.target.value);
+    if (!p) return;
+    setForm(f => {
+      const items = [...f.items];
+      items[idx] = {
+        ...items[idx],
+        productId: p.id, name: p.name, description: p.description || '',
+        hsnCode: p.hsnCode || '', unit: p.unit, unitPrice: Number(p.unitPrice), gstRate: Number(p.gstRate),
+      };
+      return { ...f, items };
+    });
+  };
+
+  // GST calculation — matches backend exactly: discount is per-item percentage
   const calcTotals = () => {
     let subtotal = 0, totalTax = 0;
     form.items.forEach(item => {
-      const line = item.quantity * item.unitPrice - item.discount;
-      subtotal += line;
-      totalTax += line * item.gstRate / 100;
+      const lineAmount = item.quantity * item.unitPrice;
+      const lineDiscount = lineAmount * (item.discount || 0) / 100;
+      const taxableAmount = lineAmount - lineDiscount;
+      subtotal += taxableAmount;
+      totalTax += taxableAmount * item.gstRate / 100;
     });
-    const grandTotal = subtotal + totalTax - Number(form.discount);
+    const grandTotal = subtotal - Number(form.discount) + totalTax;
     return { subtotal, totalTax, grandTotal };
   };
 
@@ -97,24 +119,25 @@ export default function InvoiceFormPage() {
     if (form.items.length === 0 || !form.items[0].name) return toast.error('Add at least one item');
     setLoading(true);
     try {
-      const url = isEdit ? `${API}/api/invoices/${id}` : `${API}/api/invoices`;
-      const method = isEdit ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          customerId: form.customerId || undefined,
-          customerName: form.customerName || undefined,
-          customerGst: form.customerGst || undefined,
-          customerAddress: form.customerAddress || undefined,
-          customerState: form.customerState || undefined,
-          invoiceDate: form.invoiceDate, dueDate: form.dueDate || undefined,
-          items: form.items.map(i => ({ ...i, quantity: Number(i.quantity), unitPrice: Number(i.unitPrice), discount: Number(i.discount), gstRate: Number(i.gstRate) })),
-          discount: Number(form.discount), notes: form.notes, terms: form.terms,
-          placeOfSupply: form.placeOfSupply, reverseCharge: form.reverseCharge,
-          paymentMethod: form.paymentMethod,
-        }),
+      const url = isEdit ? `/api/invoices/${id}` : '/api/invoices';
+      const method = isEdit ? api.put : api.post;
+      await method(url, {
+        customerId: form.customerId || undefined,
+        customerName: form.customerName || undefined,
+        customerGst: form.customerGst || undefined,
+        customerAddress: form.customerAddress || undefined,
+        customerState: form.customerState || undefined,
+        invoiceDate: form.invoiceDate, dueDate: form.dueDate || undefined,
+        items: form.items.map(i => ({
+          productId: i.productId || undefined, name: i.name, description: i.description || undefined,
+          hsnCode: i.hsnCode || undefined, unit: i.unit,
+          quantity: Number(i.quantity), unitPrice: Number(i.unitPrice),
+          discount: Number(i.discount), gstRate: Number(i.gstRate),
+        })),
+        discount: Number(form.discount), notes: form.notes, terms: form.terms,
+        placeOfSupply: form.placeOfSupply, reverseCharge: form.reverseCharge,
+        paymentMethod: form.paymentMethod,
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
       toast.success(isEdit ? 'Invoice updated' : 'Invoice created');
       navigate('/invoices');
     } catch (err) {
@@ -173,6 +196,15 @@ export default function InvoiceFormPage() {
                   <button type="button" onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
                 )}
               </div>
+              {products.length > 0 && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1"><Package size={12} /> Quick select product</label>
+                  <select className={select} value={item.productId || ''} onChange={(e) => onProductSelect(idx, e)}>
+                    <option value="">Custom item</option>
+                    {products.map(p => <option key={p.id} value={p.id}>{p.name} — ₹{Number(p.unitPrice).toLocaleString('en-IN')}</option>)}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="col-span-2 sm:col-span-2">
                   <label className="block text-xs text-gray-500 mb-1">{t('invoice.itemName')} *</label>
@@ -197,8 +229,8 @@ export default function InvoiceFormPage() {
                   <input type="number" min="0.01" step="0.01" className={input} required value={item.unitPrice} onChange={setItem(idx, 'unitPrice')} />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.discount')}</label>
-                  <input type="number" min="0" step="0.01" className={input} value={item.discount} onChange={setItem(idx, 'discount')} />
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.discount')} (%)</label>
+                  <input type="number" min="0" max="100" step="0.01" className={input} value={item.discount} onChange={setItem(idx, 'discount')} />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">{t('invoice.gstRate')} (%)</label>
@@ -208,7 +240,7 @@ export default function InvoiceFormPage() {
                 </div>
               </div>
               <div className="text-right text-sm text-gray-500">
-                {t('invoice.lineTotal')}: <span className="font-semibold text-gray-900">{fmt(item.quantity * item.unitPrice - item.discount)}</span>
+                {t('invoice.lineTotal')}: <span className="font-semibold text-gray-900">{fmt(item.quantity * item.unitPrice * (1 - (item.discount || 0) / 100))}</span>
               </div>
             </div>
           ))}
@@ -216,7 +248,7 @@ export default function InvoiceFormPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl border p-4 md:p-6 space-y-3">
-            <h2 className="font-semibold text-gray-700">{t('common.save')}</h2>
+            <h2 className="font-semibold text-gray-700">{t('invoice.notes')}</h2>
             <div>
               <label className="block text-xs text-gray-500 mb-1">{t('invoice.notes')}</label>
               <textarea className={input} rows={2} value={form.notes} onChange={set('notes')} />
