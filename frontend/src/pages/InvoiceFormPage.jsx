@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -25,6 +25,8 @@ export default function InvoiceFormPage() {
     invoiceDate: new Date().toISOString().split('T')[0], dueDate: '',
     items: [{ ...emptyItem }], discount: 0, notes: 'Thank you for your business!',
     terms: 'Payment due within 30 days', placeOfSupply: '', reverseCharge: false, paymentMethod: '',
+    currency: 'INR', exchangeRate: 1, isRecurring: false, recurringInterval: '',
+    noteType: '', originalInvoiceId: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -132,6 +134,17 @@ export default function InvoiceFormPage() {
     } catch (err) {
       toast.error(err.message);
     }
+  };
+
+  const handleShareWhatsApp = () => {
+    const msg = encodeURIComponent(
+      `Invoice ${form.customerName || 'Customer'}\n` +
+      `Amount: ₹${grandTotal.toFixed(2)}\n` +
+      `Date: ${form.invoiceDate}\n` +
+      `Due: ${form.dueDate || 'N/A'}\n\n` +
+      `Thank you for your business!`
+    );
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 
   const handleSubmit = async (e) => {
@@ -277,6 +290,42 @@ export default function InvoiceFormPage() {
               <label className="block text-xs text-gray-500 mb-1">{t('invoice.terms')}</label>
               <textarea className={input} rows={2} value={form.terms} onChange={set('terms')} />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t('invoice.currency')}</label>
+                <select className={select} value={form.currency} onChange={set('currency')}>
+                  <option value="INR">₹ INR</option>
+                  <option value="USD">$ USD</option>
+                  <option value="EUR">€ EUR</option>
+                  <option value="GBP">£ GBP</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t('invoice.recurringInterval')}</label>
+                <select className={select} value={form.recurringInterval} onChange={set('recurringInterval')}>
+                  <option value="">{t('invoice.recurringNone')}</option>
+                  <option value="MONTHLY">{t('invoice.recurringMonthly')}</option>
+                  <option value="QUARTERLY">{t('invoice.recurringQuarterly')}</option>
+                  <option value="YEARLY">{t('invoice.recurringYearly')}</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">{t('invoice.noteType')}</label>
+                <select className={select} value={form.noteType} onChange={set('noteType')}>
+                  <option value="">None</option>
+                  <option value="CREDIT_NOTE">{t('invoice.creditNote')}</option>
+                  <option value="DEBIT_NOTE">{t('invoice.debitNote')}</option>
+                </select>
+              </div>
+              {form.currency !== 'INR' && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.exchangeRate')}</label>
+                  <input type="number" step="0.0001" className={input} value={form.exchangeRate} onChange={set('exchangeRate')} />
+                </div>
+              )}
+            </div>
           </div>
           <div className="bg-white rounded-xl border p-4 md:p-6 space-y-3">
             <h2 className="font-semibold text-gray-700">{t('invoice.total')}</h2>
@@ -292,9 +341,14 @@ export default function InvoiceFormPage() {
         <div className="flex justify-end gap-3">
           <button type="button" onClick={() => navigate('/invoices')} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">{t('common.cancel')}</button>
           {isEdit && (
-            <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
-              <Download size={16} /> PDF
-            </button>
+            <>
+              <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+                <Download size={16} /> PDF
+              </button>
+              <button type="button" onClick={handleShareWhatsApp} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
+                <MessageCircle size={16} /> WhatsApp
+              </button>
+            </>
           )}
           <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
             <Save size={16} /> {loading ? t('common.loading') : t('common.save')}

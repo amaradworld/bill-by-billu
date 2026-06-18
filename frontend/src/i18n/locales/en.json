@@ -99,7 +99,25 @@
     "quantity": "Quantity",
     "unitPrice": "Unit Price",
     "gstRate": "GST Rate",
-    "lineTotal": "Line Total"
+    "lineTotal": "Line Total",
+    "shareWhatsApp": "Share on WhatsApp",
+    "shareEmail": "Share via Email",
+    "downloadPDF": "Download PDF",
+    "prefix": "Invoice Prefix",
+    "prefixHint": "e.g. INV, BILL, TAX",
+    "recurring": "Recurring",
+    "recurringInterval": "Repeat Every",
+    "recurringNone": "One-time",
+    "recurringMonthly": "Monthly",
+    "recurringQuarterly": "Quarterly",
+    "recurringYearly": "Yearly",
+    "creditNote": "Credit Note",
+    "debitNote": "Debit Note",
+    "originalInvoice": "Original Invoice",
+    "noteType": "Note Type",
+    "currency": "Currency",
+    "exchangeRate": "Exchange Rate",
+    "baseCurrency": "Base Currency (INR)"
   },
   "customer": {
     "title": "Customers",
@@ -170,7 +188,12 @@
     "notifications": "Notifications",
     "export": "Export Data",
     "importData": "Import Data",
-    "about": "About"
+    "about": "About",
+    "invoicePrefix": "Invoice Number Prefix",
+    "invoicePrefixHint": "Custom prefix for invoice numbers (e.g. INV-, BILL-, TAX-)",
+    "currency": "Default Currency",
+    "whatsappNumber": "WhatsApp Number",
+    "whatsappHint": "With country code (e.g. 919876543210)"
   },
   "common": {
     "save": "Save",
@@ -212,7 +235,8 @@
     "inactive": "Inactive",
     "currency": "₹",
     "lakh": "Lakh",
-    "crore": "Crore"
+    "crore": "Crore",
+    "action": "Action"
   },
   "language": {
     "en": "English",

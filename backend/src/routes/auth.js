@@ -20,6 +20,9 @@ const registerSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   pincode: z.string().optional(),
+  invoicePrefix: z.string().optional(),
+  currency: z.string().optional(),
+  whatsappNumber: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -64,10 +67,14 @@ router.post('/register', async (req, res) => {
         city: data.city || null,
         state: state || null,
         pincode: data.pincode || null,
+        invoicePrefix: data.invoicePrefix || 'INV',
+        currency: data.currency || 'INR',
+        whatsappNumber: data.whatsappNumber || null,
       },
       select: {
         id: true, email: true, phone: true, name: true,
         businessName: true, gstNumber: true, plan: true,
+        invoicePrefix: true, currency: true, whatsappNumber: true,
         createdAt: true,
       },
     });
@@ -121,7 +128,8 @@ router.get('/me', authenticate, async (req, res) => {
         id: true, email: true, phone: true, name: true,
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
-        logoUrl: true, plan: true, createdAt: true,
+        logoUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
+        createdAt: true,
       },
     });
     if (!user) {
@@ -150,7 +158,7 @@ router.put('/profile', authenticate, async (req, res) => {
         id: true, email: true, phone: true, name: true,
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
-        plan: true,
+        plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
       },
     });
     res.json(user);

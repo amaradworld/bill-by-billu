@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { useDebounce } from '../hooks/useDebounce';
-import { Plus, Search, FileText } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function InvoicesPage() {
   const { t } = useTranslation();
@@ -25,6 +26,17 @@ export default function InvoicesPage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [token, statusFilter]);
+
+  const handleMarkPaid = async (e, invId) => {
+    e.stopPropagation();
+    try {
+      await api.put(`/api/invoices/${invId}/payment`, { paymentMethod: 'Cash' });
+      toast.success('Marked as paid');
+      setInvoices(prev => prev.map(inv => inv.id === invId ? { ...inv, paymentStatus: 'PAID', status: 'PAID' } : inv));
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
@@ -82,6 +94,7 @@ export default function InvoicesPage() {
                   <th className="text-right px-4 py-3 font-medium text-gray-600">{t('invoice.amount')}</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.status')}</th>
                   <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.paymentStatus')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.action')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -104,6 +117,13 @@ export default function InvoicesPage() {
                         inv.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' :
                         'bg-red-100 text-red-700'
                       }`}>{t(`invoice.payment ${inv.paymentStatus?.toLowerCase()}`)}</span>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {inv.paymentStatus !== 'PAID' && (
+                        <button onClick={(e) => handleMarkPaid(e, inv.id)} className="text-green-500 hover:text-green-700" title={t('invoice.markAsPaid')}>
+                          <CheckCircle size={16} />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

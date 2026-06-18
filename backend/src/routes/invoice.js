@@ -7,6 +7,16 @@ const { calculateInvoiceTotals, formatCurrency } = require('../services/gst');
 const router = express.Router();
 router.use(authenticate);
 
+function calculateNextRecurDate(interval) {
+  const now = new Date();
+  switch (interval) {
+    case 'MONTHLY': return new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    case 'QUARTERLY': return new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
+    case 'YEARLY': return new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    default: return null;
+  }
+}
+
 const itemSchema = z.object({
   productId: z.string().optional(),
   name: z.string().min(1),
@@ -34,6 +44,12 @@ const invoiceSchema = z.object({
   placeOfSupply: z.string().optional(),
   reverseCharge: z.boolean().default(false),
   paymentMethod: z.string().optional(),
+  currency: z.string().optional(),
+  exchangeRate: z.number().optional(),
+  isRecurring: z.boolean().optional(),
+  recurringInterval: z.string().optional(),
+  noteType: z.string().optional(),
+  originalInvoiceId: z.string().optional(),
 });
 
 // GET /api/invoices
@@ -158,11 +174,12 @@ router.post('/', async (req, res) => {
     });
 
     let invoiceNumber;
+    const prefix = user.invoicePrefix || 'INV';
     if (lastInvoice) {
       const num = parseInt(lastInvoice.invoiceNumber.replace(/\D/g, '')) + 1;
-      invoiceNumber = `INV-${String(num).padStart(4, '0')}`;
+      invoiceNumber = `${prefix}-${String(num).padStart(4, '0')}`;
     } else {
-      invoiceNumber = 'INV-0001';
+      invoiceNumber = `${prefix}-0001`;
     }
 
     let customer = null;
@@ -211,6 +228,13 @@ router.post('/', async (req, res) => {
         terms: data.terms || 'Payment due within 30 days',
         placeOfSupply: data.placeOfSupply || customerState,
         reverseCharge: data.reverseCharge,
+        currency: data.currency || user.currency || 'INR',
+        exchangeRate: data.exchangeRate || 1,
+        isRecurring: data.isRecurring || false,
+        recurringInterval: data.recurringInterval || null,
+        nextRecurDate: data.isRecurring ? calculateNextRecurDate(data.recurringInterval) : null,
+        noteType: data.noteType || null,
+        originalInvoiceId: data.originalInvoiceId || null,
         isDraft: true,
         items: {
           create: data.items.map((item, idx) => ({
