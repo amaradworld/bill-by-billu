@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -145,6 +145,22 @@ export default function InvoiceFormPage() {
       `Thank you for your business!`
     );
     window.open(`https://wa.me/?text=${msg}`, '_blank');
+  };
+
+  const handleSendPaymentLink = async () => {
+    if (!id) return;
+    try {
+      const data = await api.post('/api/payments/razorpay/link', {
+        invoiceId: id,
+        amount: grandTotal,
+        currency: form.currency || 'INR',
+        customerName: form.customerName,
+      });
+      toast.success('Payment link created!');
+      if (data.short_url) window.open(data.short_url, '_blank');
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -347,6 +363,9 @@ export default function InvoiceFormPage() {
               </button>
               <button type="button" onClick={handleShareWhatsApp} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
                 <MessageCircle size={16} /> WhatsApp
+              </button>
+              <button type="button" onClick={handleSendPaymentLink} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-purple-50 text-purple-700">
+                <CreditCard size={16} /> Pay Link
               </button>
             </>
           )}

@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
+const { categorizeExpense, suggestCategories } = require('../services/ai');
 
 const router = express.Router();
 router.use(authenticate);
@@ -45,11 +46,27 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/expenses/suggest-category?q=uber ride
+router.get('/suggest-category', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.json({ suggestions: [] });
+    const suggestions = suggestCategories(q);
+    res.json({ suggestions });
+  } catch (err) {
+    console.error('Suggest category error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/expenses
 router.post('/', async (req, res) => {
   try {
     const data = expenseSchema.parse(req.body);
     const gstAmount = Number(data.amount) * Number(data.gstRate) / 100;
+
+    // Auto-categorize using AI if no category provided
+    const category = data.category || categorizeExpense(data.description);
 
     const expense = await prisma.expense.create({
       data: {
@@ -57,7 +74,7 @@ router.post('/', async (req, res) => {
         date: data.date ? new Date(data.date) : new Date(),
         description: data.description,
         amount: data.amount,
-        category: data.category || null,
+        category,
         gstRate: data.gstRate,
         gstAmount,
         isDeductible: data.isDeductible,

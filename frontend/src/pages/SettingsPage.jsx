@@ -20,6 +20,7 @@ export default function SettingsPage() {
     name: '', businessName: '', phone: '', gstNumber: '', panNumber: '',
     address: '', city: '', state: '', pincode: '',
     invoicePrefix: 'INV', currency: 'INR', whatsappNumber: '',
+    razorpayKeyId: '', razorpayKeySecret: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -31,6 +32,7 @@ export default function SettingsPage() {
         address: user.address || '', city: user.city || '', state: user.state || '', pincode: user.pincode || '',
         invoicePrefix: user.invoicePrefix || 'INV', currency: user.currency || 'INR',
         whatsappNumber: user.whatsappNumber || '',
+        razorpayKeyId: user.razorpayKeyId || '', razorpayKeySecret: '',
       });
     }
   }, [user]);
@@ -101,6 +103,22 @@ export default function SettingsPage() {
             <label className="block text-xs text-gray-500 mb-1">{t('settings.whatsappNumber')}</label>
             <input className={input} value={form.whatsappNumber} onChange={set('whatsappNumber')} placeholder="919876543210" />
             <p className="text-xs text-gray-400 mt-1">{t('settings.whatsappHint')}</p>
+          </div>
+        </div>
+
+        {/* Razorpay */}
+        <div className="bg-white rounded-xl border p-6 space-y-4">
+          <h2 className="font-semibold text-gray-700">Razorpay Integration</h2>
+          <p className="text-xs text-gray-500">Add your Razorpay API keys to enable payment links in invoices.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Key ID</label>
+              <input className={input} value={form.razorpayKeyId} onChange={set('razorpayKeyId')} placeholder="rzp_live_..." />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Key Secret</label>
+              <input type="password" className={input} value={form.razorpayKeySecret} onChange={set('razorpayKeySecret')} placeholder="••••••" />
+            </div>
           </div>
         </div>
 

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: bill-by-billu-api
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm install && npx prisma generate && npx prisma migrate deploy
+    startCommand: cd backend && node src/index.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CORS_ORIGINS
+        value: https://billbybillu.vercel.app,https://bill-by-billu.vercel.app
+    healthCheckPath: /api/health
+    autoDeploy: true

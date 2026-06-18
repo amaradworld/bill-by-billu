@@ -23,6 +23,8 @@ const registerSchema = z.object({
   invoicePrefix: z.string().optional(),
   currency: z.string().optional(),
   whatsappNumber: z.string().optional(),
+  razorpayKeyId: z.string().optional(),
+  razorpayKeySecret: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -159,6 +161,7 @@ router.put('/profile', authenticate, async (req, res) => {
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
         plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
+        razorpayKeyId: true,
       },
     });
     res.json(user);

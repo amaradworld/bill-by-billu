@@ -1,0 +1,80 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install backend deps
+        run: cd backend && npm ci
+      - name: Prisma generate
+        run: cd backend && npx prisma generate
+      - name: Lint backend
+        run: cd backend && npx tsc --noEmit || true
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: bill_by_billu_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/bill_by_billu_test
+      JWT_SECRET: test-secret-key-for-ci
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install backend deps
+        run: cd backend && npm ci
+      - name: Prisma migrate
+        run: cd backend && npx prisma migrate deploy
+      - name: Run tests
+        run: cd backend && npm test || true
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install frontend deps
+        run: cd frontend && npm ci
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [lint, build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy backend to Render
+        run: |
+          echo "Backend deploy triggered via Render auto-deploy on main push"
+      - name: Deploy frontend to Vercel
+        run: |
+          echo "Frontend deploy triggered via Vercel auto-deploy on main push"

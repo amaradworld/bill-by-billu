@@ -12,6 +12,8 @@ const productRoutes = require('./routes/product');
 const expenseRoutes = require('./routes/expense');
 const gstr1Routes = require('./routes/gstr1');
 const pdfRoutes = require('./routes/pdf');
+const paymentRoutes = require('./routes/payment');
+const swaggerSpec = require('./swagger');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -82,6 +84,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/gstr1', gstr1Routes);
 app.use('/api/invoices', pdfRoutes);
+app.use('/api/payments', paymentRoutes);
+
+// Swagger docs
+app.get('/api/docs.json', (req, res) => {
+  res.json(swaggerSpec);
+});
 
 // ─── Request logging ───
 app.use((req, res, next) => {

@@ -27,6 +27,11 @@ model User {
   invoicePrefix String?   @default("INV") // Custom invoice prefix
   currency      String?   @default("INR") // Default currency
   whatsappNumber String?  // WhatsApp number for sharing
+
+  // Payment gateway
+  razorpayKeyId     String?
+  razorpayKeySecret String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
