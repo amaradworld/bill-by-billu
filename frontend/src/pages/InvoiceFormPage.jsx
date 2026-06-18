@@ -1,0 +1,249 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
+import { Plus, Trash2, ArrowLeft, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const API = import.meta.env.VITE_API_URL || '';
+const GST_RATES = [0, 5, 12, 18, 28];
+const UNITS = ['NOS', 'KG', 'MTR', 'LTR', 'BOX', 'PCS', 'SET', 'HRS', 'DAY', 'MON'];
+
+const emptyItem = { name: '', description: '', hsnCode: '', unit: 'NOS', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18 };
+
+export default function InvoiceFormPage() {
+  const { t } = useTranslation();
+  const { token } = useAuth();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+
+  const [customers, setCustomers] = useState([]);
+  const [form, setForm] = useState({
+    customerId: '', customerName: '', customerGst: '', customerAddress: '', customerState: '',
+    invoiceDate: new Date().toISOString().split('T')[0], dueDate: '',
+    items: [{ ...emptyItem }], discount: 0, notes: 'Thank you for your business!',
+    terms: 'Payment due within 30 days', placeOfSupply: '', reverseCharge: false, paymentMethod: '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API}/api/customers`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => setCustomers(d.customers || []))
+      .catch(() => {});
+    if (isEdit) {
+      fetch(`${API}/api/invoices/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(inv => {
+          setForm({
+            customerId: inv.customerId || '', customerName: inv.customerName || '',
+            customerGst: inv.customerGst || '', customerAddress: inv.customerAddress || '',
+            customerState: inv.customerState || '',
+            invoiceDate: inv.invoiceDate?.split('T')[0] || '',
+            dueDate: inv.dueDate?.split('T')[0] || '',
+            items: inv.items?.length ? inv.items.map(i => ({
+              name: i.name, description: i.description || '', hsnCode: i.hsnCode || '',
+              unit: i.unit, quantity: Number(i.quantity), unitPrice: Number(i.unitPrice),
+              discount: Number(i.discount), gstRate: Number(i.gstRate),
+            })) : [{ ...emptyItem }],
+            discount: Number(inv.discountAmount) || 0,
+            notes: inv.notes || '', terms: inv.terms || '',
+            placeOfSupply: inv.placeOfSupply || '',
+            reverseCharge: inv.reverseCharge || false,
+            paymentMethod: inv.paymentMethod || '',
+          });
+        })
+        .catch(() => toast.error('Failed to load invoice'));
+    }
+  }, [id, isEdit, token]);
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const setItem = (idx, k) => (e) => setForm(f => {
+    const items = [...f.items];
+    const val = e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+    items[idx] = { ...items[idx], [k]: val };
+    return { ...f, items };
+  });
+  const addItem = () => setForm(f => ({ ...f, items: [...f.items, { ...emptyItem }] }));
+  const removeItem = (idx) => setForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
+
+  const onCustomerSelect = (e) => {
+    const c = customers.find(c => c.id === e.target.value);
+    setForm(f => ({
+      ...f,
+      customerId: c?.id || '', customerName: c?.name || '',
+      customerGst: c?.gstNumber || '', customerAddress: c?.address || '',
+      customerState: c?.state || '', placeOfSupply: c?.state || f.placeOfSupply,
+    }));
+  };
+
+  const calcTotals = () => {
+    let subtotal = 0, totalTax = 0;
+    form.items.forEach(item => {
+      const line = item.quantity * item.unitPrice - item.discount;
+      subtotal += line;
+      totalTax += line * item.gstRate / 100;
+    });
+    const grandTotal = subtotal + totalTax - Number(form.discount);
+    return { subtotal, totalTax, grandTotal };
+  };
+
+  const { subtotal, totalTax, grandTotal } = calcTotals();
+  const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (form.items.length === 0 || !form.items[0].name) return toast.error('Add at least one item');
+    setLoading(true);
+    try {
+      const url = isEdit ? `${API}/api/invoices/${id}` : `${API}/api/invoices`;
+      const method = isEdit ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          customerId: form.customerId || undefined,
+          customerName: form.customerName || undefined,
+          customerGst: form.customerGst || undefined,
+          customerAddress: form.customerAddress || undefined,
+          customerState: form.customerState || undefined,
+          invoiceDate: form.invoiceDate, dueDate: form.dueDate || undefined,
+          items: form.items.map(i => ({ ...i, quantity: Number(i.quantity), unitPrice: Number(i.unitPrice), discount: Number(i.discount), gstRate: Number(i.gstRate) })),
+          discount: Number(form.discount), notes: form.notes, terms: form.terms,
+          placeOfSupply: form.placeOfSupply, reverseCharge: form.reverseCharge,
+          paymentMethod: form.paymentMethod,
+        }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success(isEdit ? 'Invoice updated' : 'Invoice created');
+      navigate('/invoices');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const input = "w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
+  const select = "w-full px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500";
+
+  return (
+    <div className="max-w-4xl space-y-6">
+      <div className="flex items-center gap-3">
+        <button onClick={() => navigate('/invoices')} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft size={18} /></button>
+        <h1 className="text-2xl font-bold">{isEdit ? t('invoice.editInvoice') : t('invoice.createNew')}</h1>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-xl border p-4 md:p-6 space-y-4">
+          <h2 className="font-semibold text-gray-700">{t('customer.title')}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('customer.title')}</label>
+              <select className={select} value={form.customerId} onChange={onCustomerSelect}>
+                <option value="">Walk-in Customer</option>
+                {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('invoice.invoiceNumber')}</label>
+              <input className={input} value={isEdit ? id : 'Auto-generated'} disabled />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('invoice.invoiceDate')}</label>
+              <input type="date" className={input} value={form.invoiceDate} onChange={set('invoiceDate')} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('invoice.dueDate')}</label>
+              <input type="date" className={input} value={form.dueDate} onChange={set('dueDate')} />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border p-4 md:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-gray-700">{t('invoice.item')}s</h2>
+            <button type="button" onClick={addItem} className="flex items-center gap-1 text-sm text-brand-600 hover:underline"><Plus size={14} /> {t('invoice.addItem')}</button>
+          </div>
+          {form.items.map((item, idx) => (
+            <div key={idx} className="border rounded-lg p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-400">#{idx + 1}</span>
+                {form.items.length > 1 && (
+                  <button type="button" onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
+                )}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="col-span-2 sm:col-span-2">
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.itemName')} *</label>
+                  <input className={input} required value={item.name} onChange={setItem(idx, 'name')} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.hsnCode')}</label>
+                  <input className={input} value={item.hsnCode} onChange={setItem(idx, 'hsnCode')} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.unit')}</label>
+                  <select className={select} value={item.unit} onChange={setItem(idx, 'unit')}>
+                    {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.quantity')} *</label>
+                  <input type="number" min="0.01" step="0.01" className={input} required value={item.quantity} onChange={setItem(idx, 'quantity')} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.unitPrice')} *</label>
+                  <input type="number" min="0.01" step="0.01" className={input} required value={item.unitPrice} onChange={setItem(idx, 'unitPrice')} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.discount')}</label>
+                  <input type="number" min="0" step="0.01" className={input} value={item.discount} onChange={setItem(idx, 'discount')} />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{t('invoice.gstRate')} (%)</label>
+                  <select className={select} value={item.gstRate} onChange={setItem(idx, 'gstRate')}>
+                    {GST_RATES.map(r => <option key={r} value={r}>{r}%</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="text-right text-sm text-gray-500">
+                {t('invoice.lineTotal')}: <span className="font-semibold text-gray-900">{fmt(item.quantity * item.unitPrice - item.discount)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border p-4 md:p-6 space-y-3">
+            <h2 className="font-semibold text-gray-700">{t('common.save')}</h2>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('invoice.notes')}</label>
+              <textarea className={input} rows={2} value={form.notes} onChange={set('notes')} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">{t('invoice.terms')}</label>
+              <textarea className={input} rows={2} value={form.terms} onChange={set('terms')} />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border p-4 md:p-6 space-y-3">
+            <h2 className="font-semibold text-gray-700">{t('invoice.total')}</h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">{t('invoice.subtotal')}</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">{t('invoice.totalTax')}</span><span>{fmt(totalTax)}</span></div>
+              {Number(form.discount) > 0 && <div className="flex justify-between"><span className="text-gray-500">{t('invoice.discount')}</span><span className="text-red-600">-{fmt(form.discount)}</span></div>}
+              <div className="flex justify-between border-t pt-2 font-bold text-lg"><span>{t('invoice.grandTotal')}</span><span className="text-brand-600">{fmt(grandTotal)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button type="button" onClick={() => navigate('/invoices')} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">{t('common.cancel')}</button>
+          <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
+            <Save size={16} /> {loading ? t('common.loading') : t('common.save')}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

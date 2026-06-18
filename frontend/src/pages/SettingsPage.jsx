@@ -1,0 +1,76 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
+import LanguageSelector from '../components/LanguageSelector';
+import toast from 'react-hot-toast';
+
+const API = import.meta.env.VITE_API_URL || '';
+
+export default function SettingsPage() {
+  const { t, i18n } = useTranslation();
+  const { user, token } = useAuth();
+  const [form, setForm] = useState({
+    name: user?.name || '', businessName: user?.businessName || '', email: user?.email || '',
+    phone: user?.phone || '', gstNumber: user?.gstNumber || '', panNumber: user?.panNumber || '',
+    address: user?.address || '', city: user?.city || '', state: user?.state || '', pincode: user?.pincode || '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/api/auth/profile`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success(t('common.success'));
+    } catch (err) { toast.error(err.message); }
+    finally { setLoading(false); }
+  };
+
+  const input = "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-700">{t('settings.language')}</h2>
+        <LanguageSelector />
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 space-y-4">
+        <h2 className="font-semibold text-gray-700">{t('settings.profile')}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.name')}</label><input className={input} value={form.name} onChange={set('name')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.businessName')}</label><input className={input} value={form.businessName} onChange={set('businessName')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.email')}</label><input type="email" className={input} value={form.email} disabled /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.phone')}</label><input className={input} value={form.phone} onChange={set('phone')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.gstNumber')}</label><input className={input} value={form.gstNumber} onChange={set('gstNumber')} placeholder="22AAAAA0000A1Z5" /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('auth.panNumber')}</label><input className={input} value={form.panNumber} onChange={set('panNumber')} placeholder="ABCDE1234F" /></div>
+          <div className="sm:col-span-2"><label className="block text-xs text-gray-500 mb-1">{t('customer.address')}</label><input className={input} value={form.address} onChange={set('address')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('customer.city')}</label><input className={input} value={form.city} onChange={set('city')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('customer.state')}</label><input className={input} value={form.state} onChange={set('state')} /></div>
+          <div><label className="block text-xs text-gray-500 mb-1">{t('customer.pincode')}</label><input className={input} value={form.pincode} onChange={set('pincode')} /></div>
+        </div>
+        <div className="flex justify-end pt-2">
+          <button type="submit" disabled={loading} className="px-6 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
+            {loading ? t('common.loading') : t('common.save')}
+          </button>
+        </div>
+      </form>
+
+      <div className="bg-white rounded-xl border p-6">
+        <h2 className="font-semibold text-gray-700 mb-2">{t('settings.plan')}</h2>
+        <div className="flex items-center gap-3">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${user?.plan === 'FREE' ? 'bg-gray-100 text-gray-700' : 'bg-brand-100 text-brand-700'}`}>{user?.plan || 'FREE'}</span>
+          <span className="text-sm text-gray-500">10 {t('invoice.title').toLowerCase()}/{t('dashboard.thisMonth').toLowerCase()}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
