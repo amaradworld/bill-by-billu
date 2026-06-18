@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { useDebounce } from '../hooks/useDebounce';
 import { Plus, Search, Users, Trash2, X, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -19,6 +20,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', phone: '', gstNumber: '', address: '', city: '', state: '', pincode: '', type: 'B2C' });
@@ -70,8 +72,8 @@ export default function CustomersPage() {
   };
 
   const filtered = customers.filter(c =>
-    !search || c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.phone?.includes(search) || c.gstNumber?.toLowerCase().includes(search.toLowerCase())
+    !debouncedSearch || c.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    c.phone?.includes(debouncedSearch) || c.gstNumber?.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const input = "w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";

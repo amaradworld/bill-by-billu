@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import DashboardCharts from '../components/DashboardCharts';
 import { TrendingUp, TrendingDown, FileText, Clock, AlertCircle, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -61,6 +62,8 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <DashboardCharts stats={stats} />
 
       <div className="bg-white rounded-xl border shadow-sm">
         <div className="px-4 py-3 border-b flex items-center justify-between">

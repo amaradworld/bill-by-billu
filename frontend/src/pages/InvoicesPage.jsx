@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { useDebounce } from '../hooks/useDebounce';
 import { Plus, Search, FileText } from 'lucide-react';
 
 export default function InvoicesPage() {
@@ -12,6 +13,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search);
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
@@ -27,8 +29,8 @@ export default function InvoicesPage() {
   const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
   const filtered = invoices.filter(inv =>
-    !search || inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) ||
-    inv.customerName?.toLowerCase().includes(search.toLowerCase())
+    !debouncedSearch || inv.invoiceNumber?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    inv.customerName?.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const statuses = ['DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE'];

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
+import PasswordStrength from '../components/PasswordStrength';
 import toast from 'react-hot-toast';
 
 const INDIAN_STATES = [
@@ -65,6 +66,7 @@ export default function RegisterPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.password')} *</label>
                 <input type="password" className={input} required minLength={8} value={form.password} onChange={set('password')} />
+                <PasswordStrength password={form.password} />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.confirmPassword')} *</label>

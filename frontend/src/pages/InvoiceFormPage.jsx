@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { Plus, Trash2, ArrowLeft, Save, Package } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -113,6 +113,26 @@ export default function InvoiceFormPage() {
 
   const { subtotal, totalTax, grandTotal } = calcTotals();
   const fmt = (n) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
+
+  const handleDownloadPDF = async () => {
+    if (!id) return;
+    try {
+      const token = localStorage.getItem('bbToken');
+      const res = await fetch(`${API || ''}/api/invoices/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to download PDF');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -271,6 +291,11 @@ export default function InvoiceFormPage() {
 
         <div className="flex justify-end gap-3">
           <button type="button" onClick={() => navigate('/invoices')} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">{t('common.cancel')}</button>
+          {isEdit && (
+            <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+              <Download size={16} /> PDF
+            </button>
+          )}
           <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
             <Save size={16} /> {loading ? t('common.loading') : t('common.save')}
           </button>

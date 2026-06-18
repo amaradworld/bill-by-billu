@@ -2,27 +2,44 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const prisma = require('./prisma');
+const logger = require('./logger');
 
 const authRoutes = require('./routes/auth');
 const invoiceRoutes = require('./routes/invoice');
 const customerRoutes = require('./routes/customer');
 const productRoutes = require('./routes/product');
 const expenseRoutes = require('./routes/expense');
+const gstr1Routes = require('./routes/gstr1');
+const pdfRoutes = require('./routes/pdf');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.error('FATAL: JWT_SECRET environment variable is required in production');
+  logger.fatal('JWT_SECRET environment variable is required in production');
   process.exit(1);
 }
 
 // ─── Middleware ───
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
 app.use(cors({
   origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
   credentials: true,
 }));
+
 app.use(express.json({ limit: '10mb' }));
 
 // Rate limiting
@@ -31,8 +48,31 @@ const limiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator: (req) => req.userId || req.ip,
 });
 app.use('/api/', limiter);
+
+// ─── Health check (before auth routes) ───
+app.get('/api/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: 'ok',
+      app: 'Bill By Billu',
+      version: '1.0.0',
+      db: 'connected',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    });
+  } catch (err) {
+    logger.error({ err }, 'Health check failed');
+    res.status(503).json({
+      status: 'error',
+      db: 'disconnected',
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
 // ─── Routes ───
 app.use('/api/auth', authRoutes);
@@ -40,27 +80,42 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/gstr1', gstr1Routes);
+app.use('/api/invoices', pdfRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    app: 'Bill By Billu',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
+// ─── Request logging ───
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.url !== '/api/health') {
+      logger.info({
+        method: req.method,
+        url: req.url,
+        status: res.statusCode,
+        duration: `${duration}ms`,
+        userId: req.userId || '-',
+      });
+    }
   });
+  next();
+});
+
+// ─── 404 handler ───
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
 // ─── Error handler ───
 app.use((err, req, res, _next) => {
-  console.error('Unhandled error:', err);
+  logger.error({ err, method: req.method, url: req.url }, 'Unhandled error');
   res.status(500).json({ error: 'Internal server error' });
 });
 
 // ─── Start ───
 app.listen(PORT, () => {
-  console.log(`[Bill By Billu] Server running on port ${PORT}`);
-  console.log(`[Bill By Billu] Health: http://localhost:${PORT}/api/health`);
+  logger.info(`[Bill By Billu] Server running on port ${PORT}`);
+  logger.info(`[Bill By Billu] Health: http://localhost:${PORT}/api/health`);
 });
 
 module.exports = app;
