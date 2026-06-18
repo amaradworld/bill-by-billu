@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users & Auth ───
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  name          String
+  businessName  String?
+  gstNumber     String?   // 15-digit GSTIN
+  panNumber     String?   // 10-digit PAN
+  address       String?
+  city          String?
+  state         String?   // Indian state
+  pincode       String?
+  logoUrl       String?
+  plan          Plan      @default(FREE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customers     Customer[]
+  invoices      Invoice[]
+  expenses      Expense[]
+  products      Product[]
+  sessions      Session[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+enum Plan {
+  FREE        // 10 invoices/mo, basic features
+  STARTER     // ₹299/mo — unlimited invoices, GST reports
+  PRO         // ₹799/mo — AI features, multi-user, API access
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ─── Customers ───
+
+model Customer {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  email       String?
+  phone       String?
+  gstNumber   String?  // Customer's GSTIN (for B2B)
+  address     String?
+  city        String?
+  state       String?
+  pincode     String?
+  type        CustomerType @default(B2C)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+
+  @@index([userId])
+  @@index([phone])
+  @@index([gstNumber])
+}
+
+enum CustomerType {
+  B2B    // Business to Business (has GSTIN)
+  B2C    // Business to Consumer (no GSTIN)
+}
+
+// ─── Products / Services ───
+
+model Product {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  hsnCode     String?  // HSN/SAC code for GST
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  unit        String   @default("NOS") // NOS, PCS, KGS, MTR, SQF, etc.
+  gstRate     Decimal  @default(18) @db.Decimal(5, 2) // 0, 5, 12, 18, 28
+  category    String?  // AI auto-categorization tag
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items InvoiceItem[]
+
+  @@index([userId])
+  @@index([hsnCode])
+}
+
+// ─── Invoices ───
+
+model Invoice {
+  id              String      @id @default(cuid())
+  userId          String
+  customerId      String?
+  invoiceNumber   String      // User's sequential invoice number (INV-001, INV-002...)
+  invoiceDate     DateTime    @default(now())
+  dueDate         DateTime?
+  status          InvoiceStatus @default(DRAFT)
+
+  // Parties
+  supplierName    String      // From user's business name
+  supplierGst     String?     // User's GSTIN
+  supplierAddress String?
+  supplierState   String?
+
+  customerName    String?
+  customerGst     String?
+  customerAddress String?
+  customerState   String?
+
+  // Amounts
+  subtotal        Decimal     @db.Decimal(12, 2)  // Before tax
+  discountAmount  Decimal     @default(0) @db.Decimal(12, 2)
+  cgst            Decimal     @default(0) @db.Decimal(12, 2)
+  sgst            Decimal     @default(0) @db.Decimal(12, 2)
+  igst            Decimal     @default(0) @db.Decimal(12, 2)
+  cess            Decimal     @default(0) @db.Decimal(12, 2)
+  totalTax        Decimal     @default(0) @db.Decimal(12, 2)
+  totalAmount     Decimal     @db.Decimal(12, 2)  // After tax
+
+  // Payment
+  paymentStatus   PaymentStatus @default(UNPAID)
+  paymentMethod   String?     // UPI, Bank, Cash, Card
+  paymentDate     DateTime?
+  paymentRef      String?     // UPI ref, cheque no, etc.
+
+  // Meta
+  notes           String?     // "Thank you for your business"
+  terms           String?     // "Payment due within 30 days"
+  placeOfSupply   String?     // State name
+  reverseCharge   Boolean     @default(false) // RCM applicability
+  isDraft         Boolean     @default(true)
+  isCancelled     Boolean     @default(false)
+  pdfUrl          String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customer Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items    InvoiceItem[]
+
+  @@unique([userId, invoiceNumber])
+  @@index([userId])
+  @@index([customerId])
+  @@index([status])
+  @@index([invoiceDate])
+  @@index([paymentStatus])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+  PARTIAL
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  productId   String?
+  name        String  // Item name (snapshot)
+  description String?
+  hsnCode     String?
+  unit        String  @default("NOS")
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(12, 2)
+  discount    Decimal @default(0) @db.Decimal(12, 2)
+  gstRate     Decimal @db.Decimal(5, 2)
+  cgst        Decimal @default(0) @db.Decimal(12, 2)
+  sgst        Decimal @default(0) @db.Decimal(12, 2)
+  igst        Decimal @default(0) @db.Decimal(12, 2)
+  totalAmount Decimal @db.Decimal(12, 2)
+
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([hsnCode])
+}
+
+// ─── Expenses ───
+
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime @default(now())
+  description String
+  amount      Decimal  @db.Decimal(12, 2)
+  category    String?  // AI auto-categorized
+  gstRate     Decimal  @default(0) @db.Decimal(5, 2)
+  gstAmount   Decimal  @default(0) @db.Decimal(12, 2)
+  isDeductible Boolean @default(true)
+  receiptUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([category])
+}
+
+// ─── GST Returns ───
+
+model GSTR1 {
+  id          String   @id @default(cuid())
+  userId      String
+  period      String   // "2026-04", "2026-05" (YYYY-MM)
+  status      String   @default("DRAFT") // DRAFT, FILED, ERROR
+  totalInvoices Int    @default(0)
+  totalTaxable  Decimal @default(0) @db.Decimal(15, 2)
+  totalCGST     Decimal @default(0) @db.Decimal(15, 2)
+  totalSGST     Decimal @default(0) @db.Decimal(15, 2)
+  totalIGST     Decimal @default(0) @db.Decimal(15, 2)
+  totalCess     Decimal @default(0) @db.Decimal(15, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([userId])
+}

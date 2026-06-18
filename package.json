@@ -1,0 +1,13 @@
+{
+  "name": "bill-by-billu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bill By Billu — AI Invoice + GST for Indian Freelancers & SMBs",
+  "scripts": {
+    "dev": "cd backend && node src/index.js",
+    "migrate": "cd backend && npx prisma migrate dev",
+    "generate": "cd backend && npx prisma generate",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && node src/index.js"
+  }
+}
