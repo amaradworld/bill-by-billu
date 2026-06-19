@@ -36,7 +36,7 @@ jobs:
         run: cd frontend && npx cap sync android
 
       - name: Decode keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > frontend/android.keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d '\r\n' | base64 -d > frontend/android.keystore
 
       - name: Build AAB
         working-directory: frontend/android
