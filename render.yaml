@@ -15,6 +15,6 @@ services:
       - key: PORT
         value: 5000
       - key: CORS_ORIGINS
-        value: https://billbybillu.vercel.app,https://bill-by-billu.vercel.app
+        value: https://bill-by-billu.vercel.app,https://billbybillu.vercel.app,http://localhost:5173
     healthCheckPath: /api/health
     autoDeploy: true
