@@ -11,7 +11,7 @@ const customerRoutes = require('./routes/customer');
 const productRoutes = require('./routes/product');
 const expenseRoutes = require('./routes/expense');
 const gstr1Routes = require('./routes/gstr1');
-const pdfRoutes = require('./routes/pdf');
+const { generateInvoicePDF, router: pdfRoutes } = require('./routes/pdf');
 const paymentRoutes = require('./routes/payment');
 const swaggerSpec = require('./swagger');
 
