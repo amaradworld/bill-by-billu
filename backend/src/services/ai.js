@@ -16,7 +16,7 @@ const CATEGORY_RULES = [
   { category: 'Miscellaneous', keywords: [] },
 ];
 
-export function categorizeExpense(description) {
+function categorizeExpense(description) {
   if (!description) return 'Miscellaneous';
 
   const desc = description.toLowerCase();
