@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import toast from 'react-hot-toast';
+import { api } from '../lib/api';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -11,13 +12,14 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const googleBtnRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await login(form.email, form.password);
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -25,15 +27,50 @@ export default function LoginPage() {
     }
   };
 
+  useEffect(() => {
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+        callback: async (response) => {
+          try {
+            const data = await api.post('/api/auth/google', { credential: response.credential });
+            localStorage.setItem('bbToken', data.token);
+            window.location.href = '/app';
+          } catch (err) {
+            toast.error(err.message || 'Google login failed');
+          }
+        },
+      });
+      if (googleBtnRef.current) {
+        window.google.accounts.id.renderButton(googleBtnRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+          text: 'signin_with',
+        });
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-white px-4">
       <div className="w-full max-w-md">
         <div className="flex justify-end mb-4"><LanguageSelector /></div>
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-brand-600">Bill By Billu</h1>
+            <Link to="/" className="text-2xl font-bold text-brand-600">Bill By Billu</Link>
             <p className="text-sm text-gray-500 mt-1">{t('auth.welcomeSub')}</p>
           </div>
+
+          <div className="mb-4">
+            <div ref={googleBtnRef} className="w-full" />
+          </div>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-gray-400">or continue with email</span></div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.email')}</label>

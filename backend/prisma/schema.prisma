@@ -28,6 +28,14 @@ model User {
   currency      String?   @default("INR") // Default currency
   whatsappNumber String?  // WhatsApp number for sharing
 
+  // Referral
+  referralCode  String?   @unique
+  referredBy    String?
+  referralCount Int       @default(0)
+
+  // Google OAuth
+  googleId      String?   @unique
+
   // Payment gateway
   razorpayKeyId     String?
   razorpayKeySecret String?
@@ -44,6 +52,7 @@ model User {
 
   @@index([email])
   @@index([phone])
+  @@index([referralCode])
 }
 
 enum Plan {

@@ -43,7 +43,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
-        <Link to="/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
+        <Link to="/app/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
           <Plus size={16} /> {t('dashboard.createInvoice')}
         </Link>
       </div>
@@ -68,12 +68,12 @@ export default function DashboardPage() {
       <div className="bg-white rounded-xl border shadow-sm">
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h2 className="font-semibold">{t('dashboard.recentInvoices')}</h2>
-          <Link to="/invoices" className="text-sm text-brand-600 hover:underline">{t('common.view')} {t('common.all')}</Link>
+          <Link to="/app/invoices" className="text-sm text-brand-600 hover:underline">{t('common.view')} {t('common.all')}</Link>
         </div>
         {stats?.recentInvoices?.length ? (
           <div className="divide-y">
             {stats.recentInvoices.map(inv => (
-              <Link key={inv.id} to={`/invoices/${inv.id}/edit`} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors">
+              <Link key={inv.id} to={`/app/invoices/${inv.id}/edit`} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors">
                 <FileText size={16} className="text-gray-400" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{inv.invoiceNumber}</p>

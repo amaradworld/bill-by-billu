@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
+import { api } from '../lib/api';
+import { Copy, Check, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CURRENCIES = [
@@ -23,6 +25,8 @@ export default function SettingsPage() {
     razorpayKeyId: '', razorpayKeySecret: '',
   });
   const [loading, setLoading] = useState(false);
+  const [referralStats, setReferralStats] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -37,6 +41,12 @@ export default function SettingsPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    api.get('/api/auth/referral/stats')
+      .then(setReferralStats)
+      .catch(() => {});
+  }, []);
+
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
@@ -47,6 +57,14 @@ export default function SettingsPage() {
       toast.success(t('common.success'));
     } catch (err) { toast.error(err.message); }
     finally { setLoading(false); }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      toast.success('Copied to clipboard!');
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => toast.error('Failed to copy'));
   };
 
   const input = "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
@@ -61,7 +79,6 @@ export default function SettingsPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Profile */}
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">{t('settings.profile')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -78,7 +95,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Invoice Settings */}
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">{t('invoice.title')}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -96,7 +112,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* WhatsApp */}
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">WhatsApp Sharing</h2>
           <div>
@@ -106,7 +121,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Razorpay */}
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <h2 className="font-semibold text-gray-700">Razorpay Integration</h2>
           <p className="text-xs text-gray-500">Add your Razorpay API keys to enable payment links in invoices.</p>
@@ -136,6 +150,42 @@ export default function SettingsPage() {
           <span className="text-sm text-gray-500">10 {t('invoice.title').toLowerCase()}/{t('dashboard.thisMonth').toLowerCase()}</span>
         </div>
       </div>
+
+      {referralStats && (
+        <div className="bg-white rounded-xl border p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Users size={20} className="text-brand-600" />
+            <h2 className="font-semibold text-gray-700">Referral Program</h2>
+          </div>
+          <p className="text-sm text-gray-500">Share your referral code and earn rewards when friends sign up!</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Your Referral Code</label>
+              <div className="flex items-center gap-2">
+                <input className={input} value={referralStats.referralCode || ''} readOnly />
+                <button onClick={() => copyToClipboard(referralStats.referralCode)}
+                  className="p-2.5 border rounded-lg hover:bg-gray-50 transition-colors">
+                  {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Referrals Made</label>
+              <div className="px-4 py-2.5 border rounded-lg bg-gray-50 text-sm font-semibold">{referralStats.referralCount} friends referred</div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Share Referral Link</label>
+            <div className="flex items-center gap-2">
+              <input className={input} value={referralStats.referralLink || ''} readOnly />
+              <button onClick={() => copyToClipboard(referralStats.referralLink)}
+                className="px-4 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors whitespace-nowrap">
+                Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

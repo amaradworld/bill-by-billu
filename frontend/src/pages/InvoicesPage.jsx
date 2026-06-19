@@ -51,7 +51,7 @@ export default function InvoicesPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('invoice.title')}</h1>
-        <Link to="/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
+        <Link to="/app/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
           <Plus size={16} /> {t('invoice.createNew')}
         </Link>
       </div>
@@ -78,7 +78,7 @@ export default function InvoicesPage() {
         <div className="bg-white rounded-xl border p-12 text-center text-gray-400">
           <FileText size={40} className="mx-auto mb-3" />
           <p className="mb-3">{t('invoice.noInvoices')}</p>
-          <Link to="/invoices/new" className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
+          <Link to="/app/invoices/new" className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
             <Plus size={16} /> {t('invoice.createNew')}
           </Link>
         </div>
@@ -99,7 +99,7 @@ export default function InvoicesPage() {
               </thead>
               <tbody className="divide-y">
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/invoices/${inv.id}/edit`)}>
+                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/app/invoices/${inv.id}/edit`)}>
                     <td className="px-4 py-3 font-medium">{inv.invoiceNumber}</td>
                     <td className="px-4 py-3 text-gray-600">{inv.customerName || inv.customer?.name || '-'}</td>
                     <td className="px-4 py-3 text-gray-600">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>

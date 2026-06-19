@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -29,6 +29,9 @@ export default function InvoiceFormPage() {
     noteType: '', originalInvoiceId: '',
   });
   const [loading, setLoading] = useState(false);
+  const [whatsappModal, setWhatsappModal] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappSending, setWhatsappSending] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -99,7 +102,6 @@ export default function InvoiceFormPage() {
     });
   };
 
-  // GST calculation — matches backend exactly: discount is per-item percentage
   const calcTotals = () => {
     let subtotal = 0, totalTax = 0;
     form.items.forEach(item => {
@@ -120,7 +122,7 @@ export default function InvoiceFormPage() {
     if (!id) return;
     try {
       const token = localStorage.getItem('bbToken');
-      const res = await fetch(`${API || ''}/api/invoices/${id}/pdf`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/invoices/${id}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Failed to download PDF');
@@ -145,6 +147,28 @@ export default function InvoiceFormPage() {
       `Thank you for your business!`
     );
     window.open(`https://wa.me/?text=${msg}`, '_blank');
+  };
+
+  const handleSendWhatsAppBusiness = async () => {
+    if (!id || !whatsappPhone) return;
+    setWhatsappSending(true);
+    try {
+      const data = await api.post(`/api/invoices/${id}/whatsapp-send`, {
+        phoneNumber: whatsappPhone,
+      });
+      if (data.method === 'wa_me_link') {
+        window.open(data.link, '_blank');
+        toast.success('Opening WhatsApp...');
+      } else {
+        toast.success('Invoice sent via WhatsApp!');
+      }
+      setWhatsappModal(false);
+      setWhatsappPhone('');
+    } catch (err) {
+      toast.error(err.message || 'Failed to send via WhatsApp');
+    } finally {
+      setWhatsappSending(false);
+    }
   };
 
   const handleSendPaymentLink = async () => {
@@ -188,7 +212,7 @@ export default function InvoiceFormPage() {
         paymentMethod: form.paymentMethod,
       });
       toast.success(isEdit ? 'Invoice updated' : 'Invoice created');
-      navigate('/invoices');
+      navigate('/app/invoices');
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -201,8 +225,34 @@ export default function InvoiceFormPage() {
 
   return (
     <div className="max-w-4xl space-y-6">
+      {whatsappModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Send via WhatsApp</h3>
+              <button onClick={() => setWhatsappModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Phone Number</label>
+                <input type="tel" placeholder="919876543210" value={whatsappPhone} onChange={e => setWhatsappPhone(e.target.value)}
+                  className="w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                <p className="text-xs text-gray-400 mt-1">Include country code (e.g. 91 for India)</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setWhatsappModal(false)} className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={handleSendWhatsAppBusiness} disabled={!whatsappPhone || whatsappSending}
+                  className="flex-1 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
+                  {whatsappSending ? 'Sending...' : <><Send size={14} /> Send</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/invoices')} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft size={18} /></button>
+        <button onClick={() => navigate('/app/invoices')} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft size={18} /></button>
         <h1 className="text-2xl font-bold">{isEdit ? t('invoice.editInvoice') : t('invoice.createNew')}</h1>
       </div>
 
@@ -354,8 +404,8 @@ export default function InvoiceFormPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => navigate('/invoices')} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">{t('common.cancel')}</button>
+        <div className="flex flex-wrap justify-end gap-3">
+          <button type="button" onClick={() => navigate('/app/invoices')} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">{t('common.cancel')}</button>
           {isEdit && (
             <>
               <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
@@ -363,6 +413,9 @@ export default function InvoiceFormPage() {
               </button>
               <button type="button" onClick={handleShareWhatsApp} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
                 <MessageCircle size={16} /> WhatsApp
+              </button>
+              <button type="button" onClick={() => setWhatsappModal(true)} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
+                <Send size={16} /> Send WhatsApp
               </button>
               <button type="button" onClick={handleSendPaymentLink} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-purple-50 text-purple-700">
                 <CreditCard size={16} /> Pay Link

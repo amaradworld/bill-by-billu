@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X } from 'lucide-react';
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
-  { to: '/invoices', icon: FileText, key: 'nav.invoices' },
-  { to: '/customers', icon: Users, key: 'nav.customers' },
-  { to: '/products', icon: Package, key: 'nav.products' },
-  { to: '/expenses', icon: Receipt, key: 'nav.expenses' },
-  { to: '/settings', icon: Settings, key: 'nav.settings' },
+  { to: '/app', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
+  { to: '/app/invoices', icon: FileText, key: 'nav.invoices' },
+  { to: '/app/customers', icon: Users, key: 'nav.customers' },
+  { to: '/app/products', icon: Package, key: 'nav.products' },
+  { to: '/app/expenses', icon: Receipt, key: 'nav.expenses' },
+  { to: '/app/settings', icon: Settings, key: 'nav.settings' },
 ];
 
 export default function Sidebar({ onClose }) {
