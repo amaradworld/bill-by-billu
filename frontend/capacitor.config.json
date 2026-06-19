@@ -1,0 +1,39 @@
+{
+  "appId": "com.BillbBillu",
+  "appName": "Bill By Billu",
+  "webDir": "dist",
+  "server": {
+    "url": "https://bill-by-billu.vercel.app",
+    "cleartext": false,
+    "allowNavigation": ["*.vercel.app", "*.onrender.com"]
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#FFFFFF",
+    "buildOptions": {
+      "keystorePath": "../android.keystore",
+      "keystoreAlias": "billbybillu",
+      "keystorePassword": "BillByBillu2026",
+      "keystoreAliasPassword": "BillByBillu2026"
+    }
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 2000,
+      "backgroundColor": "#22C55E",
+      "androidSplashResourceName": "splash",
+      "showSpinner": true,
+      "spinnerColor": "#FFFFFF"
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#FFFFFF",
+      "overlaysWebView": false
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "DARK"
+    }
+  }
+}
