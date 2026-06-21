@@ -20,7 +20,7 @@ export default function ProductsPage() {
     setLoading(true);
     api.get('/api/products')
       .then(d => setProducts(d.products || []))
-      .catch(() => {})
+      .catch(err => toast.error('Failed to load products'))
       .finally(() => setLoading(false));
   };
 

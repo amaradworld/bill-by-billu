@@ -29,7 +29,7 @@ export default function CustomersPage() {
     setLoading(true);
     api.get('/api/customers')
       .then(d => setCustomers(d.customers || []))
-      .catch(() => {})
+      .catch(err => toast.error('Failed to load customers'))
       .finally(() => setLoading(false));
   };
 

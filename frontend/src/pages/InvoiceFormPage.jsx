@@ -121,7 +121,6 @@ export default function InvoiceFormPage() {
   const handleDownloadPDF = async () => {
     if (!id) return;
     try {
-      const token = localStorage.getItem('bbToken');
       const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/invoices/${id}/pdf`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -131,8 +130,12 @@ export default function InvoiceFormPage() {
       const a = document.createElement('a');
       a.href = url;
       a.download = `invoice-${id}.pdf`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
     } catch (err) {
       toast.error(err.message);
     }

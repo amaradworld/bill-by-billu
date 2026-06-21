@@ -26,6 +26,12 @@ router.post('/razorpay/link', async (req, res) => {
       return res.status(400).json({ error: 'Razorpay not configured. Add API keys in Settings.' });
     }
 
+    // Verify invoice belongs to this user
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: data.invoiceId, userId: req.userId },
+    });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+
     // Razorpay Payment Link API
     const auth = Buffer.from(`${user.razorpayKeyId}:${user.razorpayKeySecret}`).toString('base64');
 
@@ -65,7 +71,7 @@ router.post('/razorpay/link', async (req, res) => {
 
     // Update invoice with payment link
     await prisma.invoice.update({
-      where: { id: data.invoiceId },
+      where: { id: data.invoiceId, userId: req.userId },
       data: { paymentRef: link.short_url },
     });
 

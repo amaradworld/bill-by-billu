@@ -3,6 +3,7 @@ const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
 const { validateGSTIN, extractStateFromGSTIN } = require('../services/gst');
+const logger = require('../logger');
 
 const router = express.Router();
 router.use(authenticate);
@@ -23,6 +24,8 @@ const customerSchema = z.object({
 router.get('/', async (req, res) => {
   try {
     const { search, type, page = 1, limit = 50 } = req.query;
+    const safeLimit = Math.min(Math.max(Number(limit), 1), 100);
+    const safePage = Math.max(Number(page), 1);
     const where = { userId: req.userId };
 
     if (search) {
@@ -40,13 +43,13 @@ router.get('/', async (req, res) => {
         where,
         include: { _count: { select: { invoices: true } } },
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: Number(limit),
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
       }),
       prisma.customer.count({ where }),
     ]);
 
-    res.json({ customers, total, page: Number(page), limit: Number(limit) });
+    res.json({ customers, total, page: safePage, limit: safeLimit });
   } catch (err) {
     console.error('List customers error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -122,6 +125,11 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid GSTIN format' });
     }
 
+    const existing = await prisma.customer.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Customer not found' });
+
     const customer = await prisma.customer.update({
       where: { id: req.params.id },
       data,
@@ -131,7 +139,7 @@ router.put('/:id', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Update customer error:', err);
+    logger.error({ err }, 'Update customer error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -139,10 +147,15 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/customers/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const existing = await prisma.customer.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Customer not found' });
+
     await prisma.customer.delete({ where: { id: req.params.id } });
     res.json({ message: 'Customer deleted' });
   } catch (err) {
-    console.error('Delete customer error:', err);
+    logger.error({ err }, 'Delete customer error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });

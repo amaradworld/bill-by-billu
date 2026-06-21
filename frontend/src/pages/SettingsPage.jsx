@@ -44,7 +44,7 @@ export default function SettingsPage() {
   useEffect(() => {
     api.get('/api/auth/referral/stats')
       .then(setReferralStats)
-      .catch(() => {});
+      .catch(() => setReferralStats(null));
   }, []);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -147,7 +147,7 @@ export default function SettingsPage() {
         <h2 className="font-semibold text-gray-700 mb-2">{t('settings.plan')}</h2>
         <div className="flex items-center gap-3">
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${user?.plan === 'FREE' ? 'bg-gray-100 text-gray-700' : 'bg-brand-100 text-brand-700'}`}>{user?.plan || 'FREE'}</span>
-          <span className="text-sm text-gray-500">10 {t('invoice.title').toLowerCase()}/{t('dashboard.thisMonth').toLowerCase()}</span>
+          <span className="text-sm text-gray-500">{user?.plan === 'FREE' ? '10 invoices/month' : 'Unlimited invoices'}</span>
         </div>
       </div>
 

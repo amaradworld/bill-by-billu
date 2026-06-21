@@ -20,7 +20,7 @@ export default function ExpensesPage() {
     setLoading(true);
     api.get('/api/expenses')
       .then(d => setExpenses(d.expenses || []))
-      .catch(() => {})
+      .catch(err => toast.error('Failed to load expenses'))
       .finally(() => setLoading(false));
   };
 

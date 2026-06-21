@@ -3,6 +3,7 @@ const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
 const { categorizeExpense, suggestCategories } = require('../services/ai');
+const logger = require('../logger');
 
 const router = express.Router();
 router.use(authenticate);
@@ -21,6 +22,8 @@ const expenseSchema = z.object({
 router.get('/', async (req, res) => {
   try {
     const { category, from, to, page = 1, limit = 100 } = req.query;
+    const safeLimit = Math.min(Math.max(Number(limit), 1), 200);
+    const safePage = Math.max(Number(page), 1);
     const where = { userId: req.userId };
     if (category) where.category = category;
     if (from || to) {
@@ -33,13 +36,13 @@ router.get('/', async (req, res) => {
       prisma.expense.findMany({
         where,
         orderBy: { date: 'desc' },
-        skip: (page - 1) * limit,
-        take: Number(limit),
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
       }),
       prisma.expense.count({ where }),
     ]);
 
-    res.json({ expenses, total, page: Number(page), limit: Number(limit) });
+    res.json({ expenses, total, page: safePage, limit: safeLimit });
   } catch (err) {
     console.error('List expenses error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -132,8 +135,15 @@ router.get('/stats', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const data = expenseSchema.partial().parse(req.body);
-    if (data.amount && data.gstRate) {
-      data.gstAmount = Number(data.amount) * Number(data.gstRate) / 100;
+    const existing = await prisma.expense.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Expense not found' });
+
+    if (data.amount || data.gstRate) {
+      const amt = Number(data.amount || existing.amount);
+      const rate = Number(data.gstRate || existing.gstRate);
+      data.gstAmount = amt * rate / 100;
     }
     const expense = await prisma.expense.update({
       where: { id: req.params.id },
@@ -144,7 +154,7 @@ router.put('/:id', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Update expense error:', err);
+    logger.error({ err }, 'Update expense error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -152,10 +162,15 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/expenses/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const existing = await prisma.expense.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Expense not found' });
+
     await prisma.expense.delete({ where: { id: req.params.id } });
     res.json({ message: 'Expense deleted' });
   } catch (err) {
-    console.error('Delete expense error:', err);
+    logger.error({ err }, 'Delete expense error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });

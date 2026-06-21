@@ -23,16 +23,18 @@ export default function InvoicesPage() {
     if (statusFilter) params.set('status', statusFilter);
     api.get(`/api/invoices?${params}`)
       .then(d => setInvoices(d.invoices || []))
-      .catch(() => {})
+      .catch(err => toast.error('Failed to load invoices'))
       .finally(() => setLoading(false));
   }, [token, statusFilter]);
 
   const handleMarkPaid = async (e, invId) => {
     e.stopPropagation();
+    const method = prompt('Payment method (Cash/UPI/Bank Transfer/Card/Other):', 'Cash');
+    if (!method) return;
     try {
-      await api.put(`/api/invoices/${invId}/payment`, { paymentMethod: 'Cash' });
+      await api.put(`/api/invoices/${invId}/payment`, { paymentMethod: method });
       toast.success('Marked as paid');
-      setInvoices(prev => prev.map(inv => inv.id === invId ? { ...inv, paymentStatus: 'PAID', status: 'PAID' } : inv));
+      setInvoices(prev => prev.map(inv => inv.id === invId ? { ...inv, paymentStatus: 'PAID', status: 'PAID', paymentMethod: method } : inv));
     } catch (err) {
       toast.error(err.message);
     }

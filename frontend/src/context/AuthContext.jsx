@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import { api } from '../lib/api';
+import { api, setTokenGetter } from '../lib/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
@@ -15,12 +16,20 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setTokenGetter(() => token);
+  }, [token]);
+
+  useEffect(() => {
     getToken().then((storedToken) => {
       if (storedToken) {
         setToken(storedToken);
         api.get('/api/auth/me')
           .then(setUser)
-          .catch(async () => { await Preferences.remove({ key: 'bbToken' }); setToken(null); })
+          .catch(async () => {
+            await Preferences.remove({ key: 'bbToken' });
+            setToken(null);
+            toast.error('Session expired. Please log in again.');
+          })
           .finally(() => setLoading(false));
       } else {
         setLoading(false);
@@ -63,4 +72,8 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
+};

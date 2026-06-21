@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
+const logger = require('../logger');
 
 const router = express.Router();
 router.use(authenticate);
@@ -20,6 +21,8 @@ const productSchema = z.object({
 router.get('/', async (req, res) => {
   try {
     const { search, category, active = 'true', page = 1, limit = 100 } = req.query;
+    const safeLimit = Math.min(Math.max(Number(limit), 1), 200);
+    const safePage = Math.max(Number(page), 1);
     const where = { userId: req.userId };
     if (active === 'true') where.isActive = true;
     if (category) where.category = category;
@@ -34,13 +37,13 @@ router.get('/', async (req, res) => {
       prisma.product.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: Number(limit),
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
       }),
       prisma.product.count({ where }),
     ]);
 
-    res.json({ products, total, page: Number(page), limit: Number(limit) });
+    res.json({ products, total, page: safePage, limit: safeLimit });
   } catch (err) {
     console.error('List products error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -91,6 +94,11 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const data = productSchema.partial().parse(req.body);
+    const existing = await prisma.product.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Product not found' });
+
     const product = await prisma.product.update({
       where: { id: req.params.id },
       data,
@@ -100,7 +108,7 @@ router.put('/:id', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Update product error:', err);
+    logger.error({ err }, 'Update product error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -108,13 +116,18 @@ router.put('/:id', async (req, res) => {
 // DELETE /api/products/:id (soft delete)
 router.delete('/:id', async (req, res) => {
   try {
+    const existing = await prisma.product.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!existing) return res.status(404).json({ error: 'Product not found' });
+
     await prisma.product.update({
       where: { id: req.params.id },
       data: { isActive: false },
     });
     res.json({ message: 'Product deactivated' });
   } catch (err) {
-    console.error('Delete product error:', err);
+    logger.error({ err }, 'Delete product error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });

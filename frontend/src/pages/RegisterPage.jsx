@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Preferences } from '@capacitor/preferences';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import PasswordStrength from '../components/PasswordStrength';
@@ -62,7 +63,7 @@ export default function RegisterPage() {
         callback: async (response) => {
           try {
             const data = await api.post('/api/auth/google', { credential: response.credential });
-            localStorage.setItem('bbToken', data.token);
+            await Preferences.set({ key: 'bbToken', value: data.token });
             window.location.href = '/app';
           } catch (err) {
             toast.error(err.message || 'Google sign-up failed');

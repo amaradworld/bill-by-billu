@@ -1,29 +1,44 @@
 const API = import.meta.env.VITE_API_URL || '';
+const REQUEST_TIMEOUT = 30000;
 
-function getToken() {
-  return localStorage.getItem('bbToken');
+let tokenGetter = () => localStorage.getItem('bbToken');
+
+export function setTokenGetter(fn) {
+  tokenGetter = fn;
 }
 
 async function request(path, options = {}) {
-  const token = getToken();
+  const token = tokenGetter();
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  const res = await fetch(`${API}${path}`, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
-  if (!res.ok) {
-    if (res.status === 401 && token) {
-      localStorage.removeItem('bbToken');
-      window.location.href = '/login';
+  try {
+    const res = await fetch(`${API}${path}`, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.error || `Request failed (${res.status})`);
     }
-    throw new Error(data.error || `Request failed (${res.status})`);
-  }
 
-  return data;
+    return data;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw err;
+  }
 }
 
 export const api = {

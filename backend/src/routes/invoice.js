@@ -3,6 +3,7 @@ const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
 const { calculateInvoiceTotals, formatCurrency } = require('../services/gst');
+const logger = require('../logger');
 
 const router = express.Router();
 router.use(authenticate);
@@ -56,6 +57,8 @@ const invoiceSchema = z.object({
 router.get('/', async (req, res) => {
   try {
     const { status, paymentStatus, from, to, page = 1, limit = 50 } = req.query;
+    const safeLimit = Math.min(Math.max(Number(limit), 1), 100);
+    const safePage = Math.max(Number(page), 1);
 
     const where = { userId: req.userId, isCancelled: false };
     if (status) where.status = status;
@@ -71,15 +74,15 @@ router.get('/', async (req, res) => {
         where,
         include: { items: true, customer: { select: { id: true, name: true, gstNumber: true } } },
         orderBy: { invoiceDate: 'desc' },
-        skip: (page - 1) * limit,
-        take: Number(limit),
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
       }),
       prisma.invoice.count({ where }),
     ]);
 
-    res.json({ invoices, total, page: Number(page), limit: Number(limit) });
+    res.json({ invoices, total, page: safePage, limit: safeLimit });
   } catch (err) {
-    console.error('List invoices error:', err);
+    logger.error('List invoices error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -145,7 +148,7 @@ router.get('/stats', async (req, res) => {
       })),
     });
   } catch (err) {
-    console.error('Stats error:', err);
+    logger.error('Stats error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -262,7 +265,7 @@ router.post('/', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Create invoice error:', err);
+    logger.error('Create invoice error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -277,7 +280,7 @@ router.get('/:id', async (req, res) => {
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
     res.json(invoice);
   } catch (err) {
-    console.error('Get invoice error:', err);
+    logger.error('Get invoice error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -366,23 +369,34 @@ router.put('/:id', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Update invoice error:', err);
+    logger.error('Update invoice error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // PUT /api/invoices/:id/status
+const validStatuses = ['DRAFT', 'SENT', 'PAID', 'CANCELLED', 'OVERDUE'];
 router.put('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
-    const invoice = await prisma.invoice.update({
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be one of: ' + validStatuses.join(', ') });
+    }
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+    if (invoice.status === 'PAID' && status !== 'PAID') {
+      return res.status(400).json({ error: 'Cannot change status of a paid invoice' });
+    }
+    const updated = await prisma.invoice.update({
       where: { id: req.params.id },
       data: { status },
       include: { items: true },
     });
-    res.json(invoice);
+    res.json(updated);
   } catch (err) {
-    console.error('Update status error:', err);
+    logger.error({ err }, 'Update status error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -391,20 +405,24 @@ router.put('/:id/status', async (req, res) => {
 router.put('/:id/payment', async (req, res) => {
   try {
     const { paymentMethod, paymentRef } = req.body;
-    const invoice = await prisma.invoice.update({
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+    const updated = await prisma.invoice.update({
       where: { id: req.params.id },
       data: {
         paymentStatus: 'PAID',
-        paymentMethod,
-        paymentRef,
+        paymentMethod: paymentMethod || 'Other',
+        paymentRef: paymentRef || null,
         paymentDate: new Date(),
         status: 'PAID',
       },
       include: { items: true },
     });
-    res.json(invoice);
+    res.json(updated);
   } catch (err) {
-    console.error('Update payment error:', err);
+    logger.error({ err }, 'Update payment error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -412,13 +430,17 @@ router.put('/:id/payment', async (req, res) => {
 // DELETE /api/invoices/:id
 router.delete('/:id', async (req, res) => {
   try {
+    const invoice = await prisma.invoice.findFirst({
+      where: { id: req.params.id, userId: req.userId },
+    });
+    if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
     await prisma.invoice.update({
       where: { id: req.params.id },
       data: { isCancelled: true, status: 'CANCELLED' },
     });
     res.json({ message: 'Invoice cancelled' });
   } catch (err) {
-    console.error('Delete invoice error:', err);
+    logger.error({ err }, 'Delete invoice error');
     res.status(500).json({ error: 'Internal server error' });
   }
 });
