@@ -1,27 +1,36 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { Preferences } from '@capacitor/preferences';
 import { api } from '../lib/api';
 
 const AuthContext = createContext(null);
 
+async function getToken() {
+  const result = await Preferences.get({ key: 'bbToken' });
+  return result.value;
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('bbToken'));
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      api.get('/api/auth/me')
-        .then(setUser)
-        .catch(() => { localStorage.removeItem('bbToken'); setToken(null); })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+    getToken().then((storedToken) => {
+      if (storedToken) {
+        setToken(storedToken);
+        api.get('/api/auth/me')
+          .then(setUser)
+          .catch(async () => { await Preferences.remove({ key: 'bbToken' }); setToken(null); })
+          .finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+  }, []);
 
   const login = async (email, password) => {
     const data = await api.post('/api/auth/login', { email, password });
-    localStorage.setItem('bbToken', data.token);
+    await Preferences.set({ key: 'bbToken', value: data.token });
     setToken(data.token);
     setUser(data.user);
     return data.user;
@@ -29,7 +38,7 @@ export function AuthProvider({ children }) {
 
   const register = async (formData) => {
     const data = await api.post('/api/auth/register', formData);
-    localStorage.setItem('bbToken', data.token);
+    await Preferences.set({ key: 'bbToken', value: data.token });
     setToken(data.token);
     setUser(data.user);
     return data.user;
@@ -41,8 +50,8 @@ export function AuthProvider({ children }) {
     return updated;
   };
 
-  const logout = () => {
-    localStorage.removeItem('bbToken');
+  const logout = async () => {
+    await Preferences.remove({ key: 'bbToken' });
     setToken(null);
     setUser(null);
   };
