@@ -108,8 +108,6 @@ router.get('/razorpay/status/:invoiceId', async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // ─── Razorpay Webhook (unauthenticated) ───
 const webhookRouter = express.Router();
 
@@ -188,4 +186,4 @@ webhookRouter.post('/webhook/razorpay', async (req, res) => {
   }
 });
 
-module.exports.webhookRouter = webhookRouter;
+module.exports = { router, webhookRouter };

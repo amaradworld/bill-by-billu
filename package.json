@@ -9,5 +9,8 @@
     "generate": "cd backend && npx prisma generate",
     "build:frontend": "cd frontend && npm run build",
     "start": "cd backend && node src/index.js"
+  },
+  "dependencies": {
+    "googleapis": "^173.0.0"
   }
 }
