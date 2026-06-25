@@ -57,19 +57,19 @@ export default function RemindersPage() {
         </button>
         <div className="flex items-center gap-2">
           <Bell size={20} className="text-amber-500" />
-          <h1 className="text-2xl font-bold">Payment Reminders</h1>
+          <h1 className="text-2xl font-bold">{t('reminders.title')}</h1>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">AI-generated payment reminder messages for unpaid invoices</p>
+        <p className="text-sm text-gray-500">{t('reminders.description')}</p>
         <button
           onClick={generateReminders}
           disabled={generating}
           className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
         >
           {generating ? <Loader size={16} className="animate-spin" /> : <Bell size={16} />}
-          {generating ? 'Generating...' : 'Refresh'}
+          {generating ? t('reminders.generating') : t('reminders.refresh')}
         </button>
       </div>
 
@@ -80,8 +80,8 @@ export default function RemindersPage() {
       ) : reminders.length === 0 ? (
         <div className="bg-white rounded-xl border p-12 text-center text-gray-400">
           <Bell size={40} className="mx-auto mb-3" />
-          <p className="text-lg font-medium text-gray-600 mb-1">No unpaid invoices!</p>
-          <p className="text-sm">All your invoices are paid. Great job!</p>
+          <p className="text-lg font-medium text-gray-600 mb-1">{t('reminders.noUnpaid')}</p>
+          <p className="text-sm">{t('reminders.allPaid')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -110,14 +110,14 @@ export default function RemindersPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
                 >
                   {copiedIdx === idx ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
-                  {copiedIdx === idx ? 'Copied!' : 'Copy'}
+                  {copiedIdx === idx ? t('reminders.copied') : t('reminders.copy')}
                 </button>
                 {r.customerPhone && (
                   <button
                     onClick={() => sendWhatsApp(r.customerPhone, r.message)}
                     className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
                   >
-                    <MessageCircle size={14} /> WhatsApp
+                    <MessageCircle size={14} /> {t('common.whatsapp')}
                   </button>
                 )}
               </div>

@@ -50,7 +50,7 @@ export default function InsightsPage() {
         </button>
         <div className="flex items-center gap-2">
           <Sparkles size={20} className="text-amber-500" />
-          <h1 className="text-2xl font-bold">Business Insights</h1>
+          <h1 className="text-2xl font-bold">{t('insights.title')}</h1>
         </div>
       </div>
 
@@ -63,7 +63,7 @@ export default function InsightsPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleQuery()}
-              placeholder="Ask anything about your business..."
+              placeholder={t('insights.askAnything')}
               className="w-full pl-10 pr-4 py-3 bg-white rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
@@ -73,7 +73,7 @@ export default function InsightsPage() {
             className="px-6 py-3 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 disabled:opacity-50 flex items-center gap-2"
           >
             {loading ? <Loader size={16} className="animate-spin" /> : <Sparkles size={16} />}
-            Ask
+            {t('insights.ask')}
           </button>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function InsightsPage() {
       {/* History */}
       {history.length > 0 && (
         <div className="bg-white rounded-xl border p-6 space-y-3">
-          <h2 className="font-semibold text-gray-700 text-sm">Recent Queries</h2>
+          <h2 className="font-semibold text-gray-700 text-sm">{t('insights.recentQueries')}</h2>
           <div className="space-y-2">
             {history.map((h, i) => (
               <button

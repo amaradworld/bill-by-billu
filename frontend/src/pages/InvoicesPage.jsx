@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { useDebounce } from '../hooks/useDebounce';
-import { Plus, Search, FileText, CheckCircle } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function InvoicesPage() {
@@ -16,6 +16,8 @@ export default function InvoicesPage() {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
   const [statusFilter, setStatusFilter] = useState('');
+  const [paymentModal, setPaymentModal] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
 
   useEffect(() => {
     setLoading(true);
@@ -29,12 +31,29 @@ export default function InvoicesPage() {
 
   const handleMarkPaid = async (e, invId) => {
     e.stopPropagation();
-    const method = prompt('Payment method (Cash/UPI/Bank Transfer/Card/Other):', 'Cash');
-    if (!method) return;
+    setPaymentModal(invId);
+  };
+
+  const confirmPayment = async () => {
+    if (!paymentModal) return;
     try {
-      await api.put(`/api/invoices/${invId}/payment`, { paymentMethod: method });
+      await api.put(`/api/invoices/${paymentModal}/payment`, { paymentMethod });
       toast.success('Marked as paid');
-      setInvoices(prev => prev.map(inv => inv.id === invId ? { ...inv, paymentStatus: 'PAID', status: 'PAID', paymentMethod: method } : inv));
+      setInvoices(prev => prev.map(inv => inv.id === paymentModal ? { ...inv, paymentStatus: 'PAID', status: 'PAID', paymentMethod } : inv));
+      setPaymentModal(null);
+      setPaymentMethod('Cash');
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDelete = async (e, invId) => {
+    e.stopPropagation();
+    if (!confirm('Cancel this invoice? This cannot be undone.')) return;
+    try {
+      await api.delete(`/api/invoices/${invId}`);
+      toast.success('Invoice cancelled');
+      setInvoices(prev => prev.filter(inv => inv.id !== invId));
     } catch (err) {
       toast.error(err.message);
     }
@@ -48,9 +67,44 @@ export default function InvoicesPage() {
   );
 
   const statuses = ['DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE'];
+  const paymentMethods = ['Cash', 'UPI', 'Bank Transfer', 'Card', 'Cheque', 'Other'];
 
   return (
     <div className="space-y-4">
+      {/* Payment Modal */}
+      {paymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900">Mark as Paid</h3>
+              <button onClick={() => setPaymentModal(null)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Payment Method</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {paymentMethods.map(m => (
+                    <button key={m} onClick={() => setPaymentMethod(m)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        paymentMethod === m ? 'bg-green-50 border-green-300 text-green-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}>
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setPaymentModal(null)} className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={confirmPayment}
+                  className="flex-1 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t('invoice.title')}</h1>
         <Link to="/app/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700">
@@ -121,11 +175,18 @@ export default function InvoicesPage() {
                       }`}>{t(`invoice.payment ${inv.paymentStatus?.toLowerCase()}`)}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      {inv.paymentStatus !== 'PAID' && (
-                        <button onClick={(e) => handleMarkPaid(e, inv.id)} className="text-green-500 hover:text-green-700" title={t('invoice.markAsPaid')}>
-                          <CheckCircle size={16} />
-                        </button>
-                      )}
+                      <div className="flex items-center justify-center gap-2">
+                        {inv.paymentStatus !== 'PAID' && (
+                          <button onClick={(e) => handleMarkPaid(e, inv.id)} className="text-green-500 hover:text-green-700" title={t('invoice.markAsPaid')}>
+                            <CheckCircle size={16} />
+                          </button>
+                        )}
+                        {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
+                          <button onClick={(e) => handleDelete(e, inv.id)} className="text-red-400 hover:text-red-600" title="Cancel invoice">
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

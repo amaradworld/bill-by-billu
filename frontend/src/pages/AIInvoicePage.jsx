@@ -28,7 +28,7 @@ export default function AIInvoicePage() {
       });
       setParsed(data);
     } catch (err) {
-      toast.error(err.message || 'Failed to parse');
+      toast.error(t('ai.failedToParse'));
     } finally {
       setLoading(false);
     }
@@ -43,10 +43,10 @@ export default function AIInvoicePage() {
         customerName: parsed.customer?.name,
         items: parsed.items,
       });
-      toast.success(`Invoice ${invoice.invoiceNumber} created!`);
+      toast.success(t('ai.invoiceCreated'));
       navigate('/app/invoices');
     } catch (err) {
-      toast.error(err.message || 'Failed to create invoice');
+      toast.error(t('ai.failedToCreate'));
     } finally {
       setCreating(false);
     }
@@ -54,7 +54,7 @@ export default function AIInvoicePage() {
 
   const startVoice = () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      toast.error('Voice input not supported');
+      toast.error(t('common.voiceNotSupported'));
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -95,7 +95,7 @@ export default function AIInvoicePage() {
       // In real app, send to Tesseract.js or Google Vision API
       // For demo, we'll show the image and ask user to type the text
       setInput('');
-      toast.success('Image uploaded. Please type the text from the image, or we\'ll add OCR support soon.');
+      toast.error(t('ai.failedToParse'));
     };
     reader.readAsDataURL(file);
   };
@@ -125,7 +125,7 @@ export default function AIInvoicePage() {
         </button>
         <div className="flex items-center gap-2">
           <Sparkles size={20} className="text-amber-500" />
-          <h1 className="text-2xl font-bold">AI Invoice Creator</h1>
+          <h1 className="text-2xl font-bold">{t('ai.title')}</h1>
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export default function AIInvoicePage() {
       <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-6 space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Bot size={20} className="text-amber-600" />
-          <span className="font-semibold text-amber-800">Describe your invoice in plain language</span>
+          <span className="font-semibold text-amber-800">{t('ai.describeInvoice')}</span>
         </div>
 
         <div className="flex gap-2">
@@ -155,14 +155,14 @@ export default function AIInvoicePage() {
             }`}
           >
             {listening ? <MicOff size={16} className="animate-pulse" /> : <Mic size={16} />}
-            {listening ? 'Listening...' : 'Voice Input'}
+            {listening ? t('common.listening') : t('common.voiceInput')}
           </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-amber-300 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100"
           >
-            <Camera size={16} /> Upload Image
+            <Camera size={16} /> {t('ai.uploadImage')}
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
 
@@ -172,7 +172,7 @@ export default function AIInvoicePage() {
             className="flex items-center gap-2 px-6 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
           >
             {loading ? <Loader size={16} className="animate-spin" /> : <Sparkles size={16} />}
-            {loading ? 'Parsing...' : 'Parse Invoice'}
+            {loading ? t('ai.parsing') : t('ai.parseInvoice')}
           </button>
         </div>
 
@@ -188,16 +188,16 @@ export default function AIInvoicePage() {
         <div className="space-y-4">
           <div className="bg-white rounded-xl border p-6 space-y-4">
             <h2 className="font-semibold text-gray-700 flex items-center gap-2">
-              <Package size={18} /> Parsed Invoice
-              {parsed.source === 'whatsapp' && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">WhatsApp</span>}
-              {parsed.source === 'ocr' && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">OCR</span>}
+              <Package size={18} /> {t('ai.parsedInvoice')}
+              {parsed.source === 'whatsapp' && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{t('ai.sourceWhatsApp')}</span>}
+              {parsed.source === 'ocr' && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{t('ai.sourceOCR')}</span>}
             </h2>
 
             {parsed.customer && (
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-500">Customer</p>
                 <p className="font-medium">{parsed.customer.name}</p>
-                {parsed.customer.id && <span className="text-xs text-green-600">✓ Matched from your customers</span>}
+                {parsed.customer.id && <span className="text-xs text-green-600">✓ {t('ai.matchedFromCustomers')}</span>}
               </div>
             )}
 
@@ -207,7 +207,7 @@ export default function AIInvoicePage() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-gray-400">#{idx + 1}</span>
                     <div className="flex items-center gap-2">
-                      {item.matched && <span className="text-xs text-green-600">✓ Product matched</span>}
+                      {item.matched && <span className="text-xs text-green-600">✓ {t('ai.productMatched')}</span>}
                       {parsed.items.length > 1 && (
                         <button onClick={() => removeItem(idx)} className="text-red-400 hover:text-red-600">
                           <Trash2 size={14} />
@@ -251,7 +251,7 @@ export default function AIInvoicePage() {
 
             <div className="border-t pt-4">
               <div className="flex justify-between text-lg font-bold">
-                <span>Grand Total</span>
+                <span>{t('ai.grandTotal')}</span>
                 <span className="text-amber-600">
                   {fmt(parsed.items.reduce((s, i) => s + i.quantity * (i.unitPrice || 0) * (1 + i.gstRate / 100), 0))}
                 </span>
@@ -261,7 +261,7 @@ export default function AIInvoicePage() {
 
           <div className="flex justify-end gap-3">
             <button onClick={() => setParsed(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
-              Start Over
+              {t('ai.startOver')}
             </button>
             <button
               onClick={handleCreate}
@@ -269,7 +269,7 @@ export default function AIInvoicePage() {
               className="flex items-center gap-2 px-6 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 disabled:opacity-50"
             >
               {creating ? <Loader size={16} className="animate-spin" /> : <Save size={16} />}
-              {creating ? 'Creating...' : 'Create Invoice'}
+              {creating ? t('ai.creating') : t('ai.createInvoice')}
             </button>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function AIInvoicePage() {
       {/* Example Queries */}
       {!parsed && !loading && (
         <div className="bg-white rounded-xl border p-6 space-y-3">
-          <h2 className="font-semibold text-gray-700 text-sm">Try these examples:</h2>
+          <h2 className="font-semibold text-gray-700 text-sm">{t('ai.tryExamples')}</h2>
           <div className="space-y-2">
             {[
               'Create invoice for Rahul Traders, 10 T-shirts at ₹450 each and 5 jeans at ₹1,200',

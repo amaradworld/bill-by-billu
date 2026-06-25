@@ -23,6 +23,8 @@ model User {
   state         String?   // Indian state
   pincode       String?
   logoUrl       String?
+  upiId         String?   // UPI ID for QR code payments (e.g. name@upi)
+  role          UserRole  @default(OWNER)
   plan          Plan      @default(FREE)
   invoicePrefix String?   @default("INV") // Custom invoice prefix
   currency      String?   @default("INR") // Default currency
@@ -53,6 +55,12 @@ model User {
   @@index([email])
   @@index([phone])
   @@index([referralCode])
+}
+
+enum UserRole {
+  OWNER       // Full access
+  ACCOUNTANT  // Read + Write (no billing/settings)
+  VIEWER      // Read only
 }
 
 enum Plan {
@@ -117,6 +125,12 @@ model Product {
   gstRate     Decimal  @default(18) @db.Decimal(5, 2) // 0, 5, 12, 18, 28
   category    String?  // AI auto-categorization tag
   isActive    Boolean  @default(true)
+
+  // Inventory
+  stockQuantity Int     @default(0)   // Current stock level
+  reorderLevel  Int     @default(0)   // Reorder when stock falls below this
+  costPrice     Decimal? @db.Decimal(12, 2) // Cost price for profit calculation
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
