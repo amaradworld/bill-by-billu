@@ -7,9 +7,12 @@
   "nav": {
     "dashboard": "Dashboard",
     "invoices": "Invoices",
+    "aiInvoice": "AI Invoice",
     "customers": "Customers",
     "products": "Products & Services",
     "expenses": "Expenses",
+    "insights": "Insights",
+    "reminders": "Reminders",
     "reports": "Reports",
     "gstReturns": "GST Returns",
     "settings": "Settings",

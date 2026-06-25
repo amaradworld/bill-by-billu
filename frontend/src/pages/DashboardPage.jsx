@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import DashboardCharts from '../components/DashboardCharts';
-import { TrendingUp, TrendingDown, FileText, Clock, AlertCircle, Plus } from 'lucide-react';
+import { TrendingUp, TrendingDown, FileText, Clock, AlertCircle, Plus, Sparkles } from 'lucide-react';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -43,6 +43,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
+        <Link to="/app/ai-invoice" className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm">
+          <Sparkles size={16} /> AI Invoice
+        </Link>
         <Link to="/app/invoices/new" className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors">
           <Plus size={16} /> {t('dashboard.createInvoice')}
         </Link>

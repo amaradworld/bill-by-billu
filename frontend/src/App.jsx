@@ -12,6 +12,9 @@ import CustomersPage from './pages/CustomersPage';
 import ProductsPage from './pages/ProductsPage';
 import ExpensesPage from './pages/ExpensesPage';
 import SettingsPage from './pages/SettingsPage';
+import AIInvoicePage from './pages/AIInvoicePage';
+import RemindersPage from './pages/RemindersPage';
+import InsightsPage from './pages/InsightsPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -35,6 +38,9 @@ export default function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="ai-invoice" element={<AIInvoicePage />} />
+          <Route path="reminders" element={<RemindersPage />} />
+          <Route path="insights" element={<InsightsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

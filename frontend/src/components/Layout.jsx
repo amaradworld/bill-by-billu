@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import AIAssistant from './AIAssistant';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
@@ -25,6 +26,7 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+      <AIAssistant />
     </div>
   );
 }

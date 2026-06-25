@@ -1,14 +1,17 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3 } from 'lucide-react';
 
 const navItems = [
   { to: '/app', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
   { to: '/app/invoices', icon: FileText, key: 'nav.invoices' },
+  { to: '/app/ai-invoice', icon: Sparkles, key: 'nav.aiInvoice' },
   { to: '/app/customers', icon: Users, key: 'nav.customers' },
   { to: '/app/products', icon: Package, key: 'nav.products' },
   { to: '/app/expenses', icon: Receipt, key: 'nav.expenses' },
+  { to: '/app/insights', icon: BarChart3, key: 'nav.insights' },
+  { to: '/app/reminders', icon: Bell, key: 'nav.reminders' },
   { to: '/app/settings', icon: Settings, key: 'nav.settings' },
 ];
 

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
-import { Package, Plus, X, Trash2, Edit2 } from 'lucide-react';
+import { Package, Plus, X, Trash2, Edit2, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -27,6 +27,29 @@ export default function ProductsPage() {
   useEffect(() => { fetchProducts(); }, [token]);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const classifyTimeout = useRef(null);
+  const handleNameChange = (e) => {
+    const name = e.target.value;
+    setForm(f => ({ ...f, name }));
+
+    // Auto-classify HSN/GST after user stops typing
+    clearTimeout(classifyTimeout.current);
+    if (name.length >= 3) {
+      classifyTimeout.current = setTimeout(async () => {
+        try {
+          const data = await api.post('/api/ai/classify-product', { name });
+          setForm(f => ({
+            ...f,
+            hsnCode: f.hsnCode || data.hsnCode || '',
+            gstRate: f.gstRate === '18' ? String(data.gstRate || 18) : f.gstRate,
+            category: f.category || data.category || '',
+            unit: f.unit === 'NOS' ? (data.unit || 'NOS') : f.unit,
+          }));
+        } catch {}
+      }, 500);
+    }
+  };
 
   const openCreate = () => {
     setEditId(null);
@@ -84,7 +107,12 @@ export default function ProductsPage() {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2"><label className="block text-xs text-gray-500 mb-1">{t('product.name')} *</label><input className={input} required value={form.name} onChange={set('name')} /></div>
+                <div className="sm:col-span-2"><label className="block text-xs text-gray-500 mb-1">{t('product.name')} *</label>
+                  <div className="relative">
+                    <input className={input} required value={form.name} onChange={handleNameChange} placeholder="Type product name (AI auto-fills HSN & GST)" />
+                    <Sparkles size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-400" title="AI auto-classifies HSN & GST rate" />
+                  </div>
+                </div>
                 <div className="sm:col-span-2"><label className="block text-xs text-gray-500 mb-1">{t('product.description')}</label><textarea className={input} rows={2} value={form.description} onChange={set('description')} /></div>
                 <div><label className="block text-xs text-gray-500 mb-1">{t('product.hsnCode')}</label><input className={input} value={form.hsnCode} onChange={set('hsnCode')} /></div>
                 <div><label className="block text-xs text-gray-500 mb-1">{t('product.unitPrice')} *</label><input type="number" min="0.01" step="0.01" className={input} required value={form.unitPrice} onChange={set('unitPrice')} /></div>
