@@ -12,7 +12,7 @@ const productRoutes = require('./routes/product');
 const expenseRoutes = require('./routes/expense');
 const gstr1Routes = require('./routes/gstr1');
 const { generateInvoicePDF, router: pdfRoutes } = require('./routes/pdf');
-const paymentRoutes = require('./routes/payment');
+const { router: paymentRoutes, webhookRouter } = require('./routes/payment');
 const whatsappRoutes = require('./routes/whatsapp');
 const aiRoutes = require('./routes/ai');
 const swaggerSpec = require('./swagger');
@@ -55,6 +55,9 @@ const limiter = rateLimit({
   keyGenerator: (req) => req.userId || req.ip,
 });
 app.use('/api/', limiter);
+
+// Razorpay webhook (must be before JSON parser — uses raw body)
+app.use('/api', webhookRouter);
 
 // ─── Health check (before auth routes) ───
 app.get('/api/health', async (req, res) => {

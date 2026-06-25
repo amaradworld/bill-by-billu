@@ -1,11 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { z } = require('zod');
 const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../prisma');
 const { authenticate, JWT_SECRET } = require('../middlewares/auth');
 const { validateGSTIN, extractStateFromGSTIN } = require('../services/gst');
+const { encrypt, decrypt } = require('../services/crypto');
+const logger = require('../logger');
 
 const router = express.Router();
 const googleClient = new OAuth2Client();
@@ -282,6 +285,11 @@ router.put('/profile', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Invalid GSTIN format' });
     }
 
+    // Encrypt Razorpay secret before saving
+    if (data.razorpayKeySecret) {
+      data.razorpayKeySecret = encrypt(data.razorpayKeySecret);
+    }
+
     const user = await prisma.user.update({
       where: { id: req.userId },
       data,
@@ -299,6 +307,105 @@ router.put('/profile', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
     console.error('Update profile error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// ─── Forgot Password ───
+
+// In-memory reset tokens (in production, use Redis or DB)
+const resetTokens = new Map();
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      return res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
+    }
+
+    // Generate secure token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 60 * 60 * 1000; // 1 hour
+
+    resetTokens.set(user.id, { token, expires });
+
+    // Try to send email via nodemailer if configured
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://billbybillu.vercel.app'}/reset-password?token=${token}&userId=${user.id}`;
+
+    try {
+      const nodemailer = require('nodemailer');
+      if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: false,
+          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        });
+
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: user.email,
+          subject: 'Reset Your Bill By Billu Password',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+              <h2 style="color: #f59e0b;">Reset Your Password</h2>
+              <p>Hi ${user.name},</p>
+              <p>Click the button below to reset your password. This link expires in 1 hour.</p>
+              <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #f59e0b; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
+              <p style="margin-top: 20px; color: #666; font-size: 12px;">If you didn't request this, ignore this email.</p>
+            </div>
+          `,
+        });
+        logger.info({ userId: user.id }, 'Password reset email sent');
+      } else {
+        logger.warn('SMTP not configured — password reset token generated but email not sent');
+      }
+    } catch (emailErr) {
+      logger.error({ err: emailErr }, 'Failed to send reset email');
+    }
+
+    res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
+  } catch (err) {
+    logger.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, userId, newPassword } = req.body;
+    if (!token || !userId || !newPassword) {
+      return res.status(400).json({ error: 'Token, userId, and newPassword are required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    const stored = resetTokens.get(userId);
+    if (!stored || stored.token !== token) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    if (Date.now() > stored.expires) {
+      resetTokens.delete(userId);
+      return res.status(400).json({ error: 'Reset token has expired' });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    resetTokens.delete(userId);
+
+    res.json({ message: 'Password reset successful' });
+  } catch (err) {
+    logger.error('Reset password error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

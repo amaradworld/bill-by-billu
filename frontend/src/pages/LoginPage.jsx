@@ -82,6 +82,9 @@ export default function LoginPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('auth.password')}</label>
               <input type="password" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                 className="w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <div className="mt-1 text-right">
+                <Link to="/forgot-password" className="text-xs text-brand-600 hover:underline">{t('auth.forgotPassword')}</Link>
+              </div>
             </div>
             <button type="submit" disabled={loading}
               className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors">

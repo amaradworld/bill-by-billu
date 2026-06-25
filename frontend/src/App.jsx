@@ -15,6 +15,8 @@ import SettingsPage from './pages/SettingsPage';
 import AIInvoicePage from './pages/AIInvoicePage';
 import RemindersPage from './pages/RemindersPage';
 import InsightsPage from './pages/InsightsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route index element={<DashboardPage />} />
           <Route path="invoices" element={<InvoicesPage />} />

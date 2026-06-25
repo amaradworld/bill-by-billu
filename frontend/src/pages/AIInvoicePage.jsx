@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { createWorker } from 'tesseract.js';
 import { api } from '../lib/api';
 import { Bot, Mic, MicOff, Camera, ArrowLeft, Save, Trash2, Loader, Sparkles, Package, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -15,6 +16,8 @@ export default function AIInvoicePage() {
   const [listening, setListening] = useState(false);
   const [creating, setCreating] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrRunning, setOcrRunning] = useState(false);
   const recognitionRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -81,23 +84,40 @@ export default function AIInvoicePage() {
     setListening(false);
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setImagePreview(URL.createObjectURL(file));
     setSource('ocr');
+    setOcrRunning(true);
+    setOcrProgress(0);
 
-    // Simulate OCR — in production, send to OCR API
-    // For now, use a simple approach: extract text from image description
-    const reader = new FileReader();
-    reader.onload = () => {
-      // In real app, send to Tesseract.js or Google Vision API
-      // For demo, we'll show the image and ask user to type the text
-      setInput('');
-      toast.error(t('ai.failedToParse'));
-    };
-    reader.readAsDataURL(file);
+    try {
+      const worker = await createWorker('eng', 1, {
+        logger: (m) => {
+          if (m.status === 'recognizing text') {
+            setOcrProgress(Math.round(m.progress * 100));
+          }
+        },
+      });
+
+      const { data: { text } } = await worker.recognize(file);
+      await worker.terminate();
+
+      if (text && text.trim().length > 5) {
+        setInput(text.trim());
+        toast.success('OCR complete! Review the parsed text below.');
+      } else {
+        setInput('');
+        toast.error('Could not read text from image. Try a clearer photo.');
+      }
+    } catch (err) {
+      toast.error('OCR failed. Please type the text manually.');
+    } finally {
+      setOcrRunning(false);
+      setOcrProgress(0);
+    }
   };
 
   const updateItem = (idx, key, value) => {
@@ -177,8 +197,19 @@ export default function AIInvoicePage() {
         </div>
 
         {imagePreview && (
-          <div className="mt-3">
+          <div className="mt-3 space-y-2">
             <img src={imagePreview} alt="Uploaded order" className="max-h-40 rounded-lg border" />
+            {ocrRunning && (
+              <div className="flex items-center gap-3 bg-blue-50 rounded-lg px-4 py-2">
+                <Loader size={14} className="animate-spin text-blue-500" />
+                <div className="flex-1">
+                  <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${ocrProgress}%` }} />
+                  </div>
+                </div>
+                <span className="text-xs text-blue-600 font-medium">{ocrProgress}%</span>
+              </div>
+            )}
           </div>
         )}
       </div>
