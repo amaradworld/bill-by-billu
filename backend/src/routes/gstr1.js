@@ -115,12 +115,16 @@ router.get('/export', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
 
     if (format === 'csv') {
+      const sanitize = (val) => {
+        const s = String(val || '');
+        return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+      };
       const csvRows = ['Invoice Number,Date,Customer,GSTIN,Subtotal,CGST,SGST,IGST,Total'];
       invoices.forEach(inv => {
         csvRows.push([
           inv.invoiceNumber,
           inv.invoiceDate.toISOString().split('T')[0],
-          `"${inv.customerName || ''}"`,
+          `"${sanitize(inv.customerName)}"`,
           inv.customerGst || '',
           Number(inv.subtotal) - Number(inv.discountAmount),
           Number(inv.cgst), Number(inv.sgst), Number(inv.igst), Number(inv.totalAmount),

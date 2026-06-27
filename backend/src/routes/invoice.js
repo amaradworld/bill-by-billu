@@ -170,95 +170,110 @@ router.post('/', async (req, res) => {
       }
     }
 
-    const lastInvoice = await prisma.invoice.findFirst({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-      select: { invoiceNumber: true },
-    });
-
-    let invoiceNumber;
     const prefix = user.invoicePrefix || 'INV';
-    if (lastInvoice) {
-      const num = parseInt(lastInvoice.invoiceNumber.replace(/\D/g, '')) + 1;
-      invoiceNumber = `${prefix}-${String(num).padStart(4, '0')}`;
-    } else {
-      invoiceNumber = `${prefix}-0001`;
-    }
+    let invoice;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const lastInvoice = await prisma.invoice.findFirst({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        select: { invoiceNumber: true },
+      });
 
-    let customer = null;
-    if (data.customerId) {
-      customer = await prisma.customer.findUnique({ where: { id: data.customerId } });
-    }
+      let invoiceNumber;
+      if (lastInvoice) {
+        const num = parseInt(lastInvoice.invoiceNumber.replace(/\D/g, '')) + 1;
+        invoiceNumber = `${prefix}-${String(num).padStart(4, '0')}`;
+      } else {
+        invoiceNumber = `${prefix}-0001`;
+      }
 
-    const customerName = data.customerName || customer?.name || 'Walk-in Customer';
-    const customerGst = data.customerGst || customer?.gstNumber || null;
-    const customerState = data.customerState || customer?.state || null;
-    const customerAddress = data.customerAddress || customer?.address || null;
+      let customer = null;
+      if (data.customerId) {
+        customer = await prisma.customer.findUnique({ where: { id: data.customerId } });
+      }
 
-    const totals = calculateInvoiceTotals({
-      items: data.items,
-      supplierState: user.state,
-      customerState: customerState,
-      discount: data.discount,
-      reverseCharge: data.reverseCharge,
-    });
+      const customerName = data.customerName || customer?.name || 'Walk-in Customer';
+      const customerGst = data.customerGst || customer?.gstNumber || null;
+      const customerState = data.customerState || customer?.state || null;
+      const customerAddress = data.customerAddress || customer?.address || null;
 
-    const invoice = await prisma.invoice.create({
-      data: {
-        userId: req.userId,
-        customerId: data.customerId || null,
-        invoiceNumber,
-        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : new Date(),
-        dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        status: 'DRAFT',
-        supplierName: user.businessName || user.name,
-        supplierGst: user.gstNumber,
-        supplierAddress: [user.address, user.city, user.state, user.pincode].filter(Boolean).join(', '),
+      const totals = calculateInvoiceTotals({
+        items: data.items,
         supplierState: user.state,
-        customerName,
-        customerGst,
-        customerAddress,
-        customerState,
-        subtotal: totals.subtotal,
-        discountAmount: totals.discountAmount,
-        cgst: totals.cgst,
-        sgst: totals.sgst,
-        igst: totals.igst,
-        totalTax: totals.totalTax,
-        totalAmount: totals.totalAmount,
-        paymentStatus: 'UNPAID',
-        notes: data.notes || 'Thank you for your business!',
-        terms: data.terms || 'Payment due within 30 days',
-        placeOfSupply: data.placeOfSupply || customerState,
+        customerState: customerState,
+        discount: data.discount,
         reverseCharge: data.reverseCharge,
-        currency: data.currency || user.currency || 'INR',
-        exchangeRate: data.exchangeRate || 1,
-        isRecurring: data.isRecurring || false,
-        recurringInterval: data.recurringInterval || null,
-        nextRecurDate: data.isRecurring ? calculateNextRecurDate(data.recurringInterval) : null,
-        noteType: data.noteType || null,
-        originalInvoiceId: data.originalInvoiceId || null,
-        isDraft: true,
-        items: {
-          create: data.items.map((item, idx) => ({
-            productId: item.productId || null,
-            name: item.name,
-            description: item.description || null,
-            hsnCode: item.hsnCode || null,
-            unit: item.unit,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            discount: item.discount,
-            gstRate: item.gstRate,
-            cgst: totals.items[idx]?.cgst || 0,
-            sgst: totals.items[idx]?.sgst || 0,
-            igst: totals.items[idx]?.igst || 0,
-            totalAmount: totals.items[idx]?.totalAmount || 0,
-          })),
-        },
-      },
-      include: { items: true, customer: true },
-    });
+      });
+
+      try {
+        invoice = await prisma.invoice.create({
+          data: {
+            userId: req.userId,
+            customerId: data.customerId || null,
+            invoiceNumber,
+            invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : new Date(),
+            dueDate: data.dueDate ? new Date(data.dueDate) : null,
+            status: 'DRAFT',
+            supplierName: user.businessName || user.name,
+            supplierGst: user.gstNumber,
+            supplierAddress: [user.address, user.city, user.state, user.pincode].filter(Boolean).join(', '),
+            supplierState: user.state,
+            customerName,
+            customerGst,
+            customerAddress,
+            customerState,
+            subtotal: totals.subtotal,
+            discountAmount: totals.discountAmount,
+            cgst: totals.cgst,
+            sgst: totals.sgst,
+            igst: totals.igst,
+            totalTax: totals.totalTax,
+            totalAmount: totals.totalAmount,
+            paymentStatus: 'UNPAID',
+            notes: data.notes || 'Thank you for your business!',
+            terms: data.terms || 'Payment due within 30 days',
+            placeOfSupply: data.placeOfSupply || customerState,
+            reverseCharge: data.reverseCharge,
+            currency: data.currency || user.currency || 'INR',
+            exchangeRate: data.exchangeRate || 1,
+            isRecurring: data.isRecurring || false,
+            recurringInterval: data.recurringInterval || null,
+            nextRecurDate: data.isRecurring ? calculateNextRecurDate(data.recurringInterval) : null,
+            noteType: data.noteType || null,
+            originalInvoiceId: data.originalInvoiceId || null,
+            isDraft: true,
+            items: {
+              create: data.items.map((item, idx) => ({
+                productId: item.productId || null,
+                name: item.name,
+                description: item.description || null,
+                hsnCode: item.hsnCode || null,
+                unit: item.unit,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                discount: item.discount,
+                gstRate: item.gstRate,
+                cgst: totals.items[idx]?.cgst || 0,
+                sgst: totals.items[idx]?.sgst || 0,
+                igst: totals.items[idx]?.igst || 0,
+                totalAmount: totals.items[idx]?.totalAmount || 0,
+              })),
+            },
+          },
+          include: { items: true, customer: true },
+        });
+        break; // Success
+      } catch (createErr) {
+        if (createErr.code === 'P2002' && createErr.meta?.target?.includes('invoiceNumber')) {
+          continue; // Duplicate invoice number, retry with next number
+        }
+        throw createErr;
+      }
+    }
+
+    if (!invoice) {
+      return res.status(500).json({ error: 'Failed to generate unique invoice number' });
+    }
 
     res.status(201).json(invoice);
   } catch (err) {
@@ -390,7 +405,7 @@ router.put('/:id/status', async (req, res) => {
       return res.status(400).json({ error: 'Cannot change status of a paid invoice' });
     }
     const updated = await prisma.invoice.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, userId: req.userId },
       data: { status },
       include: { items: true },
     });
@@ -410,7 +425,7 @@ router.put('/:id/payment', async (req, res) => {
     });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
     const updated = await prisma.invoice.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, userId: req.userId },
       data: {
         paymentStatus: 'PAID',
         paymentMethod: paymentMethod || 'Other',
@@ -435,7 +450,7 @@ router.delete('/:id', async (req, res) => {
     });
     if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
     await prisma.invoice.update({
-      where: { id: req.params.id },
+      where: { id: req.params.id, userId: req.userId },
       data: { isCancelled: true, status: 'CANCELLED' },
     });
     res.json({ message: 'Invoice cancelled' });

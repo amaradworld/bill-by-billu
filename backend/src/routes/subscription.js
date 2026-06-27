@@ -130,15 +130,20 @@ router.post('/verify', async (req, res) => {
       razorpayKeySecret = decrypt(user.razorpayKeySecret);
     }
 
-    if (razorpayKeySecret) {
-      const expectedSig = crypto
-        .createHmac('sha256', razorpayKeySecret)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest('hex');
+    if (!razorpayKeySecret) {
+      return res.status(500).json({ error: 'Payment verification not configured. Contact support.' });
+    }
 
-      if (razorpay_signature !== expectedSig) {
-        return res.status(401).json({ error: 'Invalid payment signature' });
-      }
+    const expectedSig = crypto
+      .createHmac('sha256', razorpayKeySecret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    // Timing-safe comparison
+    const sigBuf = Buffer.from(razorpay_signature, 'hex');
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return res.status(401).json({ error: 'Invalid payment signature' });
     }
 
     // Calculate expiry

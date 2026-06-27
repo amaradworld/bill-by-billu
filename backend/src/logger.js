@@ -10,7 +10,7 @@ const logger = pino({
     req: pino.stdSerializers.req,
     res: pino.stdSerializers.res,
   },
-  redact: ['req.headers.authorization', 'password', 'passwordHash'],
+  redact: ['req.headers.authorization', 'password', 'passwordHash', 'razorpayKeySecret'],
 });
 
 module.exports = logger;

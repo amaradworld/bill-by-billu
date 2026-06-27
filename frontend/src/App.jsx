@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { useAuth } from './context/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -26,28 +27,30 @@ function PrivateRoute({ children }) {
 
 export default function App() {
   return (
-    <HelmetProvider>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
-          <Route index element={<DashboardPage />} />
-          <Route path="invoices" element={<InvoicesPage />} />
-          <Route path="invoices/new" element={<InvoiceFormPage />} />
-          <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
-          <Route path="customers" element={<CustomersPage />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="expenses" element={<ExpensesPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="ai-invoice" element={<AIInvoicePage />} />
-          <Route path="reminders" element={<RemindersPage />} />
-          <Route path="insights" element={<InsightsPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
+            <Route index element={<DashboardPage />} />
+            <Route path="invoices" element={<InvoicesPage />} />
+            <Route path="invoices/new" element={<InvoiceFormPage />} />
+            <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="ai-invoice" element={<AIInvoicePage />} />
+            <Route path="reminders" element={<RemindersPage />} />
+            <Route path="insights" element={<InsightsPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </HelmetProvider>
+    </ErrorBoundary>
   );
 }

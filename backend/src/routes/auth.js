@@ -22,8 +22,6 @@ function generateReferralCode() {
   return code;
 }
 
-const emptyToUndef = z.preprocess(v => (v === '' || v === null) ? undefined : v, z.any());
-
 const registerSchema = z.object({
   email: z.string().email(),
   phone: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().min(10).max(15).optional()),
@@ -117,7 +115,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role || 'OWNER' }, JWT_SECRET, { expiresIn: '30d' });
 
     res.status(201).json({ user, token });
   } catch (err) {
@@ -144,7 +142,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
 
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
@@ -199,14 +197,14 @@ router.post('/google', async (req, res) => {
           email,
           name: name || email.split('@')[0],
           googleId,
-          passwordHash: await bcrypt.hash(require('crypto').randomBytes(32).toString('hex'), 12),
+          passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12),
           referralCode: referralCodeGen,
           logoUrl: picture || null,
         },
       });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {
@@ -321,12 +319,26 @@ router.put('/profile', authenticate, async (req, res) => {
 
 // In-memory reset tokens (in production, use Redis or DB)
 const resetTokens = new Map();
+const resetRateLimits = new Map();
 
 // POST /api/auth/forgot-password
 router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    // Rate limit: max 3 requests per hour per email
+    const rateKey = email.toLowerCase();
+    const now = Date.now();
+    const rateLimit = resetRateLimits.get(rateKey);
+    if (rateLimit && now - rateLimit.lastReset < 3600000 && rateLimit.count >= 3) {
+      return res.status(429).json({ error: 'Too many reset attempts. Try again in 1 hour.' });
+    }
+    if (!rateLimit || now - rateLimit.lastReset > 3600000) {
+      resetRateLimits.set(rateKey, { count: 1, lastReset: now });
+    } else {
+      rateLimit.count++;
+    }
 
     const user = await prisma.user.findUnique({ where: { email } });
 
@@ -396,7 +408,14 @@ router.post('/reset-password', async (req, res) => {
     }
 
     const stored = resetTokens.get(userId);
-    if (!stored || stored.token !== token) {
+    if (!stored) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    // Timing-safe comparison
+    const tokenBuf = Buffer.from(token, 'hex');
+    const storedBuf = Buffer.from(stored.token, 'hex');
+    if (tokenBuf.length !== storedBuf.length || !crypto.timingSafeEqual(tokenBuf, storedBuf)) {
       return res.status(400).json({ error: 'Invalid or expired reset token' });
     }
 

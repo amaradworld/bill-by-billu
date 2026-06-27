@@ -8,7 +8,11 @@ const KEY_LENGTH = 32;
 const ITERATIONS = 100000;
 
 // Encryption key from env (must be 32+ chars)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET || 'billbybillu-default-encryption-key-change-in-production!';
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || process.env.JWT_SECRET;
+if (!ENCRYPTION_KEY) {
+  console.error('FATAL: ENCRYPTION_KEY or JWT_SECRET environment variable is required');
+  process.exit(1);
+}
 
 function deriveKey(salt) {
   return crypto.pbkdf2Sync(ENCRYPTION_KEY, salt, ITERATIONS, KEY_LENGTH, 'sha512');
