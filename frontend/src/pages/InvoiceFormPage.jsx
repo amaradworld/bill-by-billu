@@ -139,8 +139,8 @@ export default function InvoiceFormPage() {
           reader.onloadend = () => resolve(reader.result.split(',')[1]);
           reader.readAsDataURL(blob);
         });
-        await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
-        await Share.share({ title: fileName, dialogTitle: 'Save Invoice PDF', files: [] });
+        const result = await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
+        await Share.share({ title: fileName, text: `Invoice ${fileName}`, url: result.uri, dialogTitle: 'Save Invoice PDF' });
       } else {
         // Web fallback: blob download
         const url = URL.createObjectURL(blob);
