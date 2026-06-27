@@ -185,4 +185,122 @@ router.post('/cancel', async (req, res) => {
   }
 });
 
+// POST /api/subscription/upi-request — Submit UPI payment request for manual verification
+router.post('/upi-request', async (req, res) => {
+  try {
+    const { plan, period, utrNumber } = req.body;
+    if (!plan || !['STARTER', 'PRO'].includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan' });
+    }
+    if (!period || !['monthly', 'yearly'].includes(period)) {
+      return res.status(400).json({ error: 'Invalid period' });
+    }
+
+    const planInfo = PLANS[plan];
+    const amount = period === 'yearly' ? planInfo.yearlyPrice : planInfo.monthlyPrice;
+
+    const paymentRequest = await prisma.paymentRequest.create({
+      data: {
+        userId: req.userId,
+        plan,
+        period,
+        amount: amount * 100, // store in paise
+        utrNumber: utrNumber || null,
+        status: 'pending',
+      },
+    });
+
+    logger.info({ userId: req.userId, plan, period, amount }, 'UPI payment request created');
+    res.json({ success: true, requestId: paymentRequest.id });
+  } catch (err) {
+    logger.error('UPI request error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/subscription/requests — List pending payment requests (admin only)
+router.get('/requests', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'OWNER') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const requests = await prisma.paymentRequest.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true, email: true, businessName: true } } },
+    });
+
+    res.json(requests);
+  } catch (err) {
+    logger.error('List payment requests error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/subscription/approve/:requestId — Approve a payment request (admin only)
+router.post('/approve/:requestId', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'OWNER') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const paymentRequest = await prisma.paymentRequest.findUnique({ where: { id: req.params.requestId } });
+    if (!paymentRequest) return res.status(404).json({ error: 'Request not found' });
+    if (paymentRequest.status !== 'pending') return res.status(400).json({ error: 'Request already processed' });
+
+    // Calculate expiry
+    const now = new Date();
+    let expiry;
+    if (paymentRequest.period === 'yearly') {
+      expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    } else {
+      expiry = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    }
+
+    // Update user plan and payment request status
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: paymentRequest.userId },
+        data: { plan: paymentRequest.plan, planExpiry: expiry },
+      }),
+      prisma.paymentRequest.update({
+        where: { id: paymentRequest.id },
+        data: { status: 'approved' },
+      }),
+    ]);
+
+    logger.info({ requestId: paymentRequest.id, userId: paymentRequest.userId, plan: paymentRequest.plan }, 'Payment request approved');
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Approve payment error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/subscription/reject/:requestId — Reject a payment request (admin only)
+router.post('/reject/:requestId', async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user || user.role !== 'OWNER') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const paymentRequest = await prisma.paymentRequest.findUnique({ where: { id: req.params.requestId } });
+    if (!paymentRequest) return res.status(404).json({ error: 'Request not found' });
+    if (paymentRequest.status !== 'pending') return res.status(400).json({ error: 'Request already processed' });
+
+    await prisma.paymentRequest.update({
+      where: { id: paymentRequest.id },
+      data: { status: 'rejected' },
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Reject payment error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
