@@ -27,7 +27,7 @@ async function generateInvoicePDF(invoice, user) {
       let qrImage = null;
       if (invoice.paymentMethod === 'UPI' && user.upiId) {
         const upiString = `upi://pay?pa=${user.upiId}&pn=${encodeURIComponent(user.businessName || user.name)}&am=${Number(invoice.totalAmount)}&cu=INR`;
-        qrImage = await QRCode.toBuffer(upiString, { width: 150, margin: 1 });
+        qrImage = await QRCode.toBuffer(upiString, { width: 120, margin: 1 });
       }
 
       // Parse static QR image if available
@@ -40,84 +40,117 @@ async function generateInvoicePDF(invoice, user) {
         }
       }
 
-      // Header with logo
       const leftX = 50;
       const rightX = 350;
-      let headerY = 50;
+      const pageWidth = 545; // A4 width minus margins
 
+      // ─── HEADER ───
+      let headerTopY = 50;
+
+      // Logo (top-left, max 60x60)
       if (user.logoUrl) {
         try {
           const logoData = parseDataUri(user.logoUrl);
           if (logoData) {
-            doc.image(logoData.buffer, leftX, headerY, { width: 80, height: 80, fit: [80, 80] });
+            doc.image(logoData.buffer, leftX, headerTopY, { width: 60, height: 60, fit: [60, 60] });
           }
         } catch (e) {
           logger.warn('Failed to render logo in PDF:', e.message);
         }
       }
 
-      doc.fontSize(20).font('Helvetica-Bold').text('TAX INVOICE', { align: 'center' });
-      doc.moveDown(0.5);
+      // Title — centered, below logo
+      const titleY = headerTopY + (user.logoUrl ? 70 : 0);
+      doc.fontSize(22).font('Helvetica-Bold').text('TAX INVOICE', leftX, titleY, { align: 'center', width: pageWidth });
+      doc.moveDown(0.3);
 
-      // Supplier info (left) + Invoice details (right)
-      headerY = user.logoUrl ? 50 : doc.y;
+      // ─── SUPPLIER INFO (left) + INVOICE DETAILS (right) ───
+      const infoY = titleY + 35;
 
-      doc.fontSize(10).font('Helvetica-Bold');
-      doc.text('From:', leftX, doc.y);
-      doc.font('Helvetica');
-      doc.text(invoice.supplierName || user.businessName || user.name, leftX);
-      if (invoice.supplierGst) doc.text(`GSTIN: ${invoice.supplierGst}`, leftX);
-      if (invoice.supplierAddress) doc.text(invoice.supplierAddress, leftX);
-
-      doc.font('Helvetica-Bold');
-      doc.text('Invoice #:', rightX, 90);
-      doc.font('Helvetica');
-      doc.text(invoice.invoiceNumber, rightX + 70, 90);
-      doc.font('Helvetica-Bold');
-      doc.text('Date:', rightX, 105);
-      doc.font('Helvetica');
-      doc.text(new Date(invoice.invoiceDate).toLocaleDateString('en-IN'), rightX + 70, 105);
-      if (invoice.dueDate) {
-        doc.font('Helvetica-Bold');
-        doc.text('Due Date:', rightX, 120);
-        doc.font('Helvetica');
-        doc.text(new Date(invoice.dueDate).toLocaleDateString('en-IN'), rightX + 70, 120);
+      // Supplier info (left)
+      doc.fontSize(10).font('Helvetica-Bold').text('From:', leftX, infoY);
+      doc.font('Helvetica').text(invoice.supplierName || user.businessName || user.name, leftX, infoY + 14);
+      let supplierY = infoY + 28;
+      if (invoice.supplierGst) {
+        doc.text(`GSTIN: ${invoice.supplierGst}`, leftX, supplierY);
+        supplierY += 14;
+      }
+      if (invoice.supplierAddress) {
+        doc.text(invoice.supplierAddress, leftX, supplierY, { width: 250 });
+        supplierY += 14;
       }
 
-      // Customer info
-      doc.moveDown(2);
-      doc.fontSize(10).font('Helvetica-Bold').text('To:', leftX);
-      doc.font('Helvetica');
-      doc.text(invoice.customerName || 'Walk-in Customer', leftX);
-      if (invoice.customerGst) doc.text(`GSTIN: ${invoice.customerGst}`, leftX);
-      if (invoice.customerAddress) doc.text(invoice.customerAddress, leftX);
+      // Invoice details (right)
+      let detailY = infoY;
+      const detailLabelX = rightX;
+      const detailValueX = rightX + 75;
 
-      // Items table
-      doc.moveDown(2);
-      const tableTop = doc.y;
+      doc.font('Helvetica-Bold').text('Invoice #:', detailLabelX, detailY);
+      doc.font('Helvetica').text(invoice.invoiceNumber, detailValueX, detailY);
+      detailY += 15;
+
+      doc.font('Helvetica-Bold').text('Date:', detailLabelX, detailY);
+      doc.font('Helvetica').text(new Date(invoice.invoiceDate).toLocaleDateString('en-IN'), detailValueX, detailY);
+      detailY += 15;
+
+      if (invoice.dueDate) {
+        doc.font('Helvetica-Bold').text('Due Date:', detailLabelX, detailY);
+        doc.font('Helvetica').text(new Date(invoice.dueDate).toLocaleDateString('en-IN'), detailValueX, detailY);
+        detailY += 15;
+      }
+      if (invoice.paymentMethod) {
+        doc.font('Helvetica-Bold').text('Payment:', detailLabelX, detailY);
+        doc.font('Helvetica').text(invoice.paymentMethod, detailValueX, detailY);
+        detailY += 15;
+      }
+
+      // ─── DIVIDER ───
+      const dividerY = Math.max(supplierY, detailY) + 15;
+      doc.moveTo(leftX, dividerY).lineTo(leftX + pageWidth, dividerY).stroke();
+
+      // ─── CUSTOMER INFO ───
+      let custY = dividerY + 15;
+      doc.fontSize(10).font('Helvetica-Bold').text('To:', leftX, custY);
+      custY += 14;
+      doc.font('Helvetica').text(invoice.customerName || 'Walk-in Customer', leftX, custY);
+      custY += 14;
+      if (invoice.customerGst) {
+        doc.text(`GSTIN: ${invoice.customerGst}`, leftX, custY);
+        custY += 14;
+      }
+      if (invoice.customerAddress) {
+        doc.text(invoice.customerAddress, leftX, custY, { width: 250 });
+        custY += 14;
+      }
+
+      // ─── ITEMS TABLE ───
+      custY += 10;
+      const tableTop = custY;
       const colWidths = [30, 150, 60, 50, 50, 50, 80];
+      const colX = [50, 80, 230, 290, 340, 390, 440];
       const headers = ['#', 'Description', 'HSN', 'Qty', 'Rate', 'GST%', 'Amount'];
 
-      // Table header
+      // Table header background
+      doc.rect(leftX, tableTop - 2, pageWidth, 18).fill('#f3f4f6');
+      doc.fillColor('#000000');
+
+      // Table header text
       doc.fontSize(8).font('Helvetica-Bold');
-      let x = 50;
       headers.forEach((h, i) => {
-        doc.text(h, x, tableTop, { width: colWidths[i], align: i === 0 ? 'center' : i < 3 ? 'left' : 'right' });
-        x += colWidths[i];
+        doc.text(h, colX[i], tableTop + 2, { width: colWidths[i], align: i === 0 ? 'center' : i < 3 ? 'left' : 'right' });
       });
 
-      // Header line
-      doc.moveTo(50, tableTop + 15).lineTo(540, tableTop + 15).stroke();
+      // Header bottom line
+      doc.moveTo(leftX, tableTop + 16).lineTo(leftX + pageWidth, tableTop + 16).stroke();
 
       // Table rows
       doc.font('Helvetica').fontSize(8);
       let y = tableTop + 22;
       invoice.items.forEach((item, idx) => {
-        if (y > 700) {
+        if (y > 650) {
           doc.addPage();
           y = 50;
         }
-        x = 50;
         const rowData = [
           String(idx + 1),
           item.name + (item.description ? ` (${item.description})` : ''),
@@ -128,15 +161,14 @@ async function generateInvoicePDF(invoice, user) {
           formatCurrency(item.totalAmount),
         ];
         rowData.forEach((val, i) => {
-          doc.text(val, x, y, { width: colWidths[i], align: i === 0 ? 'center' : i < 3 ? 'left' : 'right' });
-          x += colWidths[i];
+          doc.text(val, colX[i], y, { width: colWidths[i], align: i === 0 ? 'center' : i < 3 ? 'left' : 'right' });
         });
         y += 18;
       });
 
-      // Totals
-      y += 10;
-      doc.moveTo(350, y).lineTo(540, y).stroke();
+      // ─── TOTALS ───
+      y += 5;
+      doc.moveTo(350, y).lineTo(leftX + pageWidth, y).stroke();
       y += 8;
 
       const addTotalRow = (label, value, bold = false) => {
@@ -148,41 +180,50 @@ async function generateInvoicePDF(invoice, user) {
 
       addTotalRow('Subtotal:', formatCurrency(invoice.subtotal));
       if (Number(invoice.discountAmount) > 0) addTotalRow('Discount:', `-${formatCurrency(invoice.discountAmount)}`);
-      if (Number(invoice.cgst) > 0) addTotalRow(`CGST:`, formatCurrency(invoice.cgst));
-      if (Number(invoice.sgst) > 0) addTotalRow(`SGST:`, formatCurrency(invoice.sgst));
-      if (Number(invoice.igst) > 0) addTotalRow(`IGST:`, formatCurrency(invoice.igst));
+      if (Number(invoice.cgst) > 0) addTotalRow('CGST:', formatCurrency(invoice.cgst));
+      if (Number(invoice.sgst) > 0) addTotalRow('SGST:', formatCurrency(invoice.sgst));
+      if (Number(invoice.igst) > 0) addTotalRow('IGST:', formatCurrency(invoice.igst));
       addTotalRow('Total Tax:', formatCurrency(invoice.totalTax));
       y += 4;
-      doc.moveTo(350, y).lineTo(540, y).stroke();
+      doc.moveTo(350, y).lineTo(leftX + pageWidth, y).stroke();
       y += 8;
       addTotalRow('Grand Total:', formatCurrency(invoice.totalAmount), true);
 
-      // QR code
+      // ─── QR CODES (bottom-left) ───
+      let qrBottomY = y + 15;
+
       if (qrImage) {
-        doc.image(qrImage, 50, y + 10, { width: 100 });
-        doc.fontSize(8).text('Scan UPI to pay', 50, y + 115);
-        if (staticQrImage) {
-          doc.image(staticQrImage.buffer, 170, y + 10, { width: 100, fit: [100, 100] });
-          doc.fontSize(8).text('Or scan Paytm QR', 170, y + 115);
-        }
-      } else if (staticQrImage) {
-        doc.image(staticQrImage.buffer, 50, y + 10, { width: 100, fit: [100, 100] });
-        doc.fontSize(8).text('Scan to pay', 50, y + 115);
+        doc.image(qrImage, leftX, qrBottomY, { width: 90, fit: [90, 90] });
+        doc.fontSize(7).font('Helvetica').text('Scan UPI to pay', leftX, qrBottomY + 95, { width: 90, align: 'center' });
       }
 
-      // Notes & Terms
+      if (staticQrImage) {
+        const staticQrX = qrImage ? leftX + 110 : leftX;
+        try {
+          doc.image(staticQrImage.buffer, staticQrX, qrBottomY, { width: 90, fit: [90, 90] });
+          doc.fontSize(7).font('Helvetica').text('Scan Paytm QR', staticQrX, qrBottomY + 95, { width: 90, align: 'center' });
+        } catch (e) {
+          logger.warn('Failed to render static QR in PDF:', e.message);
+        }
+      }
+
+      // ─── NOTES & TERMS (right side or below QR) ───
+      const notesX = (qrImage || staticQrImage) ? leftX + 240 : leftX;
+      let notesY = qrBottomY;
+
       if (invoice.notes) {
-        doc.fontSize(8).font('Helvetica-Bold').text('Notes:', 50, y + 130);
-        doc.font('Helvetica').text(invoice.notes, 50, y + 142);
+        doc.fontSize(8).font('Helvetica-Bold').text('Notes:', notesX, notesY);
+        doc.font('Helvetica').text(invoice.notes, notesX, notesY + 12, { width: 250 });
+        notesY += 30;
       }
       if (invoice.terms) {
-        doc.fontSize(8).font('Helvetica-Bold').text('Terms & Conditions:', 50, y + 165);
-        doc.font('Helvetica').text(invoice.terms, 50, y + 177);
+        doc.fontSize(8).font('Helvetica-Bold').text('Terms & Conditions:', notesX, notesY);
+        doc.font('Helvetica').text(invoice.terms, notesX, notesY + 12, { width: 250 });
       }
 
-      // Footer
-      doc.fontSize(7).font('Helvetica')
-        .text('Generated by Bill By Billu — AI Invoice + GST for Indian Freelancers & SMBs', 50, 780, { align: 'center' });
+      // ─── FOOTER ───
+      doc.fontSize(7).font('Helvetica').fillColor('#999999')
+        .text('Generated by Bill By Billu — AI Invoice + GST for Indian Freelancers & SMBs', leftX, 810, { align: 'center', width: pageWidth });
 
       doc.end();
     } catch (err) {
