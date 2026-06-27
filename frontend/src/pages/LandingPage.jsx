@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star } from 'lucide-react';
+import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar } from 'lucide-react';
 
 const trackEvent = (eventName, params = {}) => {
   if (typeof window !== 'undefined' && window.gtag) {
@@ -50,11 +50,11 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>Bill By Billu — AI-Powered Invoice + GST for Indian Freelancers</title>
-        <meta name="description" content="Create GST-compliant invoices in seconds. Free invoice generator for Indian freelancers and SMBs with WhatsApp sharing, UPI payments, and multi-language support." />
-        <meta name="keywords" content="invoice generator India, GST invoice, free invoicing software, WhatsApp invoice, UPI payment, Indian freelancer tools, GST filing" />
-        <meta property="og:title" content="Bill By Billu — AI-Powered Invoice + GST" />
-        <meta property="og:description" content="Create GST-compliant invoices in seconds. Free for Indian freelancers." />
+        <title>Bill By Billu — AI-Powered Billing Software for Indian Businesses</title>
+        <meta name="description" content="AI-powered billing software for retailers, restaurants & small businesses. Generate invoices, manage inventory, send WhatsApp bills, and get AI-powered insights." />
+        <meta name="keywords" content="billing software India, invoice generator, GST invoice, WhatsApp billing, UPI payment, inventory management, restaurant billing, retail POS, Indian SMB tools" />
+        <meta property="og:title" content="Bill By Billu — AI-Powered Billing Software" />
+        <meta property="og:description" content="Generate invoices, manage inventory, send WhatsApp bills, and get AI-powered business insights." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.billbybillu.in" />
         <link rel="canonical" href="https://www.billbybillu.in" />
@@ -72,40 +72,45 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-2">Login</Link>
               <Link to="/register" onClick={() => trackEvent('cta_click', { location: 'nav' })}
-                className="text-sm font-medium bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700 transition-colors">
-                Start Free
+                className="btn-press text-sm font-medium bg-brand-600 text-white px-5 py-2 rounded-xl hover:bg-brand-700 transition-all shadow-sm">
+                Start Free Trial
               </Link>
             </div>
           </div>
         </nav>
 
-        <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-brand-50 pt-20 pb-24">
+        <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-indigo-50 pt-20 pb-24">
           <div className="absolute inset-0 opacity-30">
             <div className="absolute top-20 left-10 w-72 h-72 bg-brand-200 rounded-full blur-3xl" />
-            <div className="absolute bottom-10 right-10 w-96 h-96 bg-brand-300 rounded-full blur-3xl" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-300 rounded-full blur-3xl" />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-brand-100 text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+            <div className="inline-flex items-center gap-2 bg-brand-100/80 backdrop-blur text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-6 animate-fade-in">
               <span className="w-2 h-2 bg-brand-500 rounded-full animate-pulse" />
               Trusted by 500+ Indian businesses
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
-              AI-Powered Invoice + GST<br />
-              <span className="text-brand-600">for Indian Freelancers</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.1] animate-slide-up">
+              AI-Powered Billing Software<br />
+              <span className="text-gradient">for Retailers, Restaurants & Small Businesses</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-              Create GST-compliant invoices in 30 seconds. Share via WhatsApp, accept UPI payments, and file GST returns — all from one beautiful dashboard.
+            <p className="mt-6 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed animate-slide-up animation-delay-100">
+              Generate invoices, manage inventory, send WhatsApp bills, and get AI-powered business insights — all from one dashboard.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up animation-delay-200">
               <Link to="/register" onClick={() => trackEvent('cta_click', { location: 'hero' })}
-                className="inline-flex items-center gap-2 bg-brand-600 text-white px-8 py-3.5 rounded-xl text-lg font-semibold hover:bg-brand-700 shadow-lg shadow-brand-200 transition-all hover:scale-105">
-                Start Free <ArrowRight size={20} />
+                className="btn-press inline-flex items-center gap-2 bg-brand-600 text-white px-8 py-3.5 rounded-xl text-lg font-semibold hover:bg-brand-700 shadow-lg shadow-brand-200/50 transition-all hover:shadow-glow">
+                Start Free Trial <ArrowRight size={20} />
               </Link>
-              <a href="#features" className="text-gray-600 hover:text-gray-900 font-medium px-4 py-3.5 transition-colors">
-                See Features ↓
+              <button onClick={() => trackEvent('cta_click', { location: 'hero', action: 'demo' })}
+                className="btn-press inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-6 py-3.5 rounded-xl text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 shadow-sm transition-all">
+                <Play size={18} className="text-brand-600" /> Watch Demo
+              </button>
+              <a href="https://wa.me/917906130862" target="_blank" rel="noopener noreferrer"
+                className="btn-press inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-3.5 rounded-xl text-lg font-semibold hover:bg-emerald-100 hover:border-emerald-300 shadow-sm transition-all">
+                <Calendar size={18} /> Book Demo
               </a>
             </div>
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 animate-slide-up animation-delay-300">
               <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> No credit card required</span>
               <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> 10 free invoices/month</span>
               <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> Cancel anytime</span>
