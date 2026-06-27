@@ -56,8 +56,8 @@ export default function LandingPage() {
         <meta property="og:title" content="Bill By Billu — AI-Powered Invoice + GST" />
         <meta property="og:description" content="Create GST-compliant invoices in seconds. Free for Indian freelancers." />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://bill-by-billu.vercel.app" />
-        <link rel="canonical" href="https://bill-by-billu.vercel.app" />
+        <meta property="og:url" content="https://www.billbybillu.in" />
+        <link rel="canonical" href="https://www.billbybillu.in" />
       </Helmet>
 
       <div className="min-h-screen bg-white">
@@ -292,8 +292,8 @@ export default function LandingPage() {
               <div>
                 <h4 className="font-semibold text-white mb-3">Contact</h4>
                 <ul className="space-y-2 text-sm">
-                  <li><a href="mailto:support@billbybillu.com" className="hover:text-white transition-colors">support@billbybillu.com</a></li>
-                  <li><a href="https://wa.me/919876543210" className="hover:text-white transition-colors">WhatsApp Support</a></li>
+                  <li><a href="mailto:support@billbybillu.in" className="hover:text-white transition-colors">support@billbybillu.in</a></li>
+                  <li><a href="https://wa.me/917906130862" className="hover:text-white transition-colors">WhatsApp Support</a></li>
                 </ul>
               </div>
             </div>
