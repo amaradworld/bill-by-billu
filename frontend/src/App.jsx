@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { useAuth } from './context/AuthContext';
+import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
@@ -16,14 +17,21 @@ import SettingsPage from './pages/SettingsPage';
 import AIInvoicePage from './pages/AIInvoicePage';
 import RemindersPage from './pages/RemindersPage';
 import InsightsPage from './pages/InsightsPage';
-import AdminPaymentsPage from './pages/AdminPaymentsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import AdminLoginPage from './pages/AdminLoginPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <div className="flex items-center justify-center h-screen"><div className="animate-spin h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full" /></div>;
   return user ? children : <Navigate to="/login" />;
+}
+
+function AdminRoute({ children }) {
+  const { admin, loading } = useAdminAuth();
+  if (loading) return <div className="flex items-center justify-center h-screen bg-gray-950"><div className="animate-spin h-8 w-8 border-4 border-amber-500 border-t-transparent rounded-full" /></div>;
+  return admin ? children : <Navigate to="/admin/login" />;
 }
 
 export default function App() {
@@ -36,6 +44,12 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+          {/* Admin routes — completely separate */}
+          <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
+          <Route path="/admin" element={<AdminAuthProvider><AdminRoute><AdminDashboardPage /></AdminRoute></AdminAuthProvider>} />
+
+          {/* User app */}
           <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<DashboardPage />} />
             <Route path="invoices" element={<InvoicesPage />} />
@@ -48,7 +62,6 @@ export default function App() {
             <Route path="ai-invoice" element={<AIInvoicePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="insights" element={<InsightsPage />} />
-            <Route path="admin/payments" element={<AdminPaymentsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

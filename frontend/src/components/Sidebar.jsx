@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, CreditCard } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3 } from 'lucide-react';
 
 const navItems = [
   { to: '/app', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
@@ -13,10 +13,6 @@ const navItems = [
   { to: '/app/insights', icon: BarChart3, key: 'nav.insights' },
   { to: '/app/reminders', icon: Bell, key: 'nav.reminders' },
   { to: '/app/settings', icon: Settings, key: 'nav.settings' },
-];
-
-const adminItems = [
-  { to: '/app/admin/payments', icon: CreditCard, label: 'Payment Requests' },
 ];
 
 export default function Sidebar({ onClose }) {
@@ -57,27 +53,6 @@ export default function Sidebar({ onClose }) {
           </NavLink>
         ))}
       </nav>
-
-      {user?.email === 'amaradworld@gmail.com' && (
-        <div className="border-t px-2 py-2">
-          <p className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">Admin</p>
-          {adminItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-amber-50 text-amber-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`
-              }
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
-        </div>
-      )}
 
       <div className="border-t px-3 py-3">
         <div className="flex items-center gap-3 px-2 mb-2">
