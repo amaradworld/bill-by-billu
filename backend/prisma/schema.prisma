@@ -53,6 +53,7 @@ model User {
   products      Product[]
   sessions      Session[]
   gstr1s        GSTR1[]
+  paymentRequests PaymentRequest[]
 
   @@index([email])
   @@index([phone])
