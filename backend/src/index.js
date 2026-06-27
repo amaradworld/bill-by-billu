@@ -20,6 +20,8 @@ const swaggerSpec = require('./swagger');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.set('trust proxy', 1);
+
 if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   logger.fatal('JWT_SECRET environment variable is required in production');
   process.exit(1);
@@ -49,10 +51,11 @@ app.use(express.json({ limit: '10mb' }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => req.userId || req.ip,
+  skip: (req) => req.url === '/api/health',
 });
 app.use('/api/', limiter);
 
