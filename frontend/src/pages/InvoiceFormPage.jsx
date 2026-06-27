@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import UpgradePrompt from '../components/UpgradePrompt';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -128,16 +130,27 @@ export default function InvoiceFormPage() {
       });
       if (!res.ok) throw new Error('Failed to download PDF');
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `invoice-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
+      const fileName = `invoice-${id}.pdf`;
+
+      // Capacitor mobile: use Share or Filesystem
+      if (window.Capacitor?.isNativePlatform()) {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(blob);
+        });
+        await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
+        await Share.share({ title: fileName, dialogTitle: 'Save Invoice PDF', files: [] });
+      } else {
+        // Web fallback: blob download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+      }
     } catch (err) {
       toast.error(err.message);
     }

@@ -29,28 +29,38 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    if (window.google && window.google.accounts) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com',
-        callback: async (response) => {
-          try {
-            const data = await api.post('/api/auth/google', { credential: response.credential });
-            await Preferences.set({ key: 'bbToken', value: data.token });
-            window.location.href = '/app';
-          } catch (err) {
-            toast.error(err.message || 'Google login failed');
-          }
-        },
-      });
-      if (googleBtnRef.current) {
-        window.google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: 'outline',
-          size: 'large',
-          width: '100%',
-          text: 'signin_with',
+    let attempts = 0;
+    const maxAttempts = 30;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.google && window.google.accounts) {
+        clearInterval(interval);
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com',
+          callback: async (response) => {
+            try {
+              const data = await api.post('/api/auth/google', { credential: response.credential });
+              await Preferences.set({ key: 'bbToken', value: data.token });
+              window.location.href = '/app';
+            } catch (err) {
+              toast.error(err.message || 'Google login failed');
+            }
+          },
         });
+        if (googleBtnRef.current) {
+          googleBtnRef.current.innerHTML = '';
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: 'outline',
+            size: 'large',
+            width: '100%',
+            text: 'signin_with',
+          });
+        }
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
       }
-    }
+    }, 200);
+    return () => clearInterval(interval);
   }, []);
 
   return (
