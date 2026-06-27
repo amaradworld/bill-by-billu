@@ -30,6 +30,16 @@ async function generateInvoicePDF(invoice, user) {
         qrImage = await QRCode.toBuffer(upiString, { width: 150, margin: 1 });
       }
 
+      // Parse static QR image if available
+      let staticQrImage = null;
+      if (user.qrUrl) {
+        try {
+          staticQrImage = parseDataUri(user.qrUrl);
+        } catch (e) {
+          logger.warn('Failed to parse static QR:', e.message);
+        }
+      }
+
       // Header with logo
       const leftX = 50;
       const rightX = 350;
@@ -151,6 +161,13 @@ async function generateInvoicePDF(invoice, user) {
       if (qrImage) {
         doc.image(qrImage, 50, y + 10, { width: 100 });
         doc.fontSize(8).text('Scan UPI to pay', 50, y + 115);
+        if (staticQrImage) {
+          doc.image(staticQrImage.buffer, 170, y + 10, { width: 100, fit: [100, 100] });
+          doc.fontSize(8).text('Or scan Paytm QR', 170, y + 115);
+        }
+      } else if (staticQrImage) {
+        doc.image(staticQrImage.buffer, 50, y + 10, { width: 100, fit: [100, 100] });
+        doc.fontSize(8).text('Scan to pay', 50, y + 115);
       }
 
       // Notes & Terms

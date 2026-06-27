@@ -24,6 +24,7 @@ model User {
   pincode       String?
   logoUrl       String?
   upiId         String?   // UPI ID for QR code payments (e.g. name@upi)
+  qrUrl         String?   // Static QR code image (base64 data URI)
   role          UserRole  @default(OWNER)
   plan          Plan      @default(FREE)
   planExpiry    DateTime? // Subscription expiry date

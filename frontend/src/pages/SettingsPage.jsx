@@ -32,7 +32,10 @@ export default function SettingsPage() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const [logoLoading, setLogoLoading] = useState(false);
+  const [qrPreview, setQrPreview] = useState(null);
+  const [qrLoading, setQrLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const qrInputRef = useRef(null);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +48,7 @@ export default function SettingsPage() {
         razorpayKeyId: user.razorpayKeyId || '', razorpayKeySecret: '',
       });
       setLogoPreview(user.logoUrl || null);
+      setQrPreview(user.qrUrl || null);
     }
   }, [user]);
 
@@ -103,6 +107,43 @@ export default function SettingsPage() {
       toast.success('Logo removed');
     } catch (err) {
       toast.error(err.message || 'Failed to remove logo');
+    }
+  };
+
+  const handleQrUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) return toast.error('Please select an image file');
+    if (file.size > 2 * 1024 * 1024) return toast.error('QR image must be under 2MB');
+
+    setQrLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result;
+        setQrPreview(base64);
+        await api.put('/api/auth/qr', { qrUrl: base64 });
+        await refreshUser();
+        toast.success('QR code saved');
+        setQrLoading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error(err.message || 'Failed to upload QR');
+      setQrLoading(false);
+    }
+  };
+
+  const handleQrDelete = async () => {
+    try {
+      await api.delete('/api/auth/qr');
+      setQrPreview(null);
+      if (qrInputRef.current) qrInputRef.current.value = '';
+      await refreshUser();
+      toast.success('QR code removed');
+    } catch (err) {
+      toast.error(err.message || 'Failed to remove QR');
     }
   };
 
@@ -214,6 +255,41 @@ export default function SettingsPage() {
             <div>
               <label className="block text-xs text-gray-500 mb-1">Key Secret</label>
               <input type="password" className={input} value={form.razorpayKeySecret} onChange={set('razorpayKeySecret')} placeholder="••••••" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border p-6 space-y-4">
+          <h2 className="font-semibold text-gray-700">Paytm / UPI QR Code</h2>
+          <p className="text-xs text-gray-500">
+            Upload your Paytm merchant QR image. This will appear on invoices as a backup payment option.
+            For dynamic QR with exact amounts, enter your UPI ID above in Invoice Settings.
+          </p>
+          <div className="flex items-center gap-4">
+            {qrPreview ? (
+              <div className="relative">
+                <img src={qrPreview} alt="QR Code" className="w-24 h-24 object-contain border rounded-lg p-1" />
+                <button onClick={handleQrDelete}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
+                {qrLoading ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
+                ) : (
+                  <Image size={24} className="text-gray-300" />
+                )}
+              </div>
+            )}
+            <div>
+              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
+                <Upload size={16} />
+                {qrPreview ? 'Change QR' : 'Upload QR'}
+                <input ref={qrInputRef} type="file" accept="image/*" onChange={handleQrUpload} className="hidden" />
+              </label>
+              <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
             </div>
           </div>
         </div>

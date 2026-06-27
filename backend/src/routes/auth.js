@@ -265,7 +265,7 @@ router.get('/me', authenticate, async (req, res) => {
         id: true, email: true, phone: true, name: true,
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
-        logoUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
+        logoUrl: true, qrUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
         referralCode: true, referralCount: true,
         createdAt: true,
       },
@@ -354,6 +354,48 @@ router.delete('/logo', authenticate, async (req, res) => {
   } catch (err) {
     logger.error('Logo delete error:', err.message);
     res.status(500).json({ error: 'Failed to delete logo' });
+  }
+});
+
+// PUT /api/auth/qr
+router.put('/qr', authenticate, async (req, res) => {
+  try {
+    const { qrUrl } = req.body;
+    if (!qrUrl) return res.status(400).json({ error: 'QR image data is required' });
+
+    if (!qrUrl.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
+
+    const base64Data = qrUrl.split(',')[1];
+    const sizeBytes = Math.ceil((base64Data.length * 3) / 4);
+    if (sizeBytes > 2 * 1024 * 1024) {
+      return res.status(400).json({ error: 'QR image must be under 2MB' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { qrUrl },
+    });
+
+    res.json({ success: true, qrUrl });
+  } catch (err) {
+    logger.error('QR upload error:', err.message);
+    res.status(500).json({ error: 'Failed to save QR image' });
+  }
+});
+
+// DELETE /api/auth/qr
+router.delete('/qr', authenticate, async (req, res) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { qrUrl: null },
+    });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('QR delete error:', err.message);
+    res.status(500).json({ error: 'Failed to delete QR image' });
   }
 });
 
