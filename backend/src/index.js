@@ -43,7 +43,14 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
+  origin: [
+    ...(process.env.CORS_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean) || []),
+    'https://www.billbybillu.in',
+    'https://billbybillu.in',
+    'https://bill-by-billu.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ],
   credentials: true,
 }));
 
