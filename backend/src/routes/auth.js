@@ -22,24 +22,26 @@ function generateReferralCode() {
   return code;
 }
 
+const emptyToUndef = z.preprocess(v => (v === '' || v === null) ? undefined : v, z.any());
+
 const registerSchema = z.object({
   email: z.string().email(),
-  phone: z.string().min(10).max(15).optional(),
+  phone: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().min(10).max(15).optional()),
   password: z.string().min(8),
   name: z.string().min(2),
-  businessName: z.string().optional(),
-  gstNumber: z.string().optional(),
-  panNumber: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  pincode: z.string().optional(),
-  invoicePrefix: z.string().optional(),
-  currency: z.string().optional(),
-  whatsappNumber: z.string().optional(),
-  razorpayKeyId: z.string().optional(),
-  razorpayKeySecret: z.string().optional(),
-  referralCode: z.string().optional(),
+  businessName: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  gstNumber: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  panNumber: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  address: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  city: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  state: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  pincode: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  invoicePrefix: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  currency: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  whatsappNumber: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  razorpayKeyId: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  razorpayKeySecret: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  referralCode: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
 });
 
 const loginSchema = z.object({
@@ -122,7 +124,7 @@ router.post('/register', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Register error:', err);
+    logger.error('Register error:', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -150,7 +152,11 @@ router.post('/login', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Login error:', err);
+    if (err.code === 'P1001' || err.code === 'P1017' || err.message?.includes('connect')) {
+      logger.error('Database connection error during login:', err.message);
+      return res.status(503).json({ error: 'Service temporarily unavailable. Please try again.' });
+    }
+    logger.error('Login error:', { error: err.message, stack: err.stack });
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -204,7 +210,7 @@ router.post('/google', async (req, res) => {
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {
-    console.error('Google auth error:', err);
+    logger.error('Google auth error:', err.message);
     res.status(500).json({ error: 'Google authentication failed' });
   }
 });
@@ -228,7 +234,7 @@ router.post('/referral/validate', authenticate, async (req, res) => {
 
     res.json({ valid: true, referrerName: referrer.name });
   } catch (err) {
-    console.error('Referral validate error:', err);
+    logger.error('Referral validate error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -247,7 +253,7 @@ router.get('/referral/stats', authenticate, async (req, res) => {
       referralLink: `${process.env.FRONTEND_URL || 'https://bill-by-billu.vercel.app'}/register?ref=${user.referralCode}`,
     });
   } catch (err) {
-    console.error('Referral stats error:', err);
+    logger.error('Referral stats error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -271,7 +277,7 @@ router.get('/me', authenticate, async (req, res) => {
     }
     res.json(user);
   } catch (err) {
-    console.error('Get me error:', err);
+    logger.error('Get me error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -306,7 +312,7 @@ router.put('/profile', authenticate, async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Update profile error:', err);
+    logger.error('Update profile error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
