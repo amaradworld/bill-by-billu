@@ -64,6 +64,7 @@ export default function RegisterPage() {
     try {
       let credential;
       if (isNative) {
+        await GoogleAuth.initialize({ clientId: '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com', scopes: ['profile', 'email'], forceCodeForRefreshToken: true });
         const result = await GoogleAuth.signIn();
         credential = result.authentication.idToken;
       } else {
