@@ -59,7 +59,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (window.google && window.google.accounts) {
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com',
         callback: async (response) => {
           try {
             const data = await api.post('/api/auth/google', { credential: response.credential });
