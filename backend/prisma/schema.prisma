@@ -26,6 +26,7 @@ model User {
   upiId         String?   // UPI ID for QR code payments (e.g. name@upi)
   role          UserRole  @default(OWNER)
   plan          Plan      @default(FREE)
+  planExpiry    DateTime? // Subscription expiry date
   invoicePrefix String?   @default("INV") // Custom invoice prefix
   currency      String?   @default("INR") // Default currency
   whatsappNumber String?  // WhatsApp number for sharing

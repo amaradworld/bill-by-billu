@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import UpgradePrompt from '../components/UpgradePrompt';
 import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard, Send, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -32,6 +33,7 @@ export default function InvoiceFormPage() {
   const [whatsappModal, setWhatsappModal] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [whatsappSending, setWhatsappSending] = useState(false);
+  const [planLimit, setPlanLimit] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -194,6 +196,7 @@ export default function InvoiceFormPage() {
     e.preventDefault();
     if (form.items.length === 0 || !form.items[0].name) return toast.error('Add at least one item');
     setLoading(true);
+    setPlanLimit(null);
     try {
       const url = isEdit ? `/api/invoices/${id}` : '/api/invoices';
       const method = isEdit ? api.put : api.post;
@@ -217,7 +220,11 @@ export default function InvoiceFormPage() {
       toast.success(isEdit ? 'Invoice updated' : 'Invoice created');
       navigate('/app/invoices');
     } catch (err) {
-      toast.error(err.message);
+      if (err.message?.includes('limit') || err.message?.includes('Free plan')) {
+        setPlanLimit({ used: 10, limit: 10 });
+      } else {
+        toast.error(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -258,6 +265,8 @@ export default function InvoiceFormPage() {
         <button onClick={() => navigate('/app/invoices')} className="p-2 hover:bg-gray-100 rounded-lg"><ArrowLeft size={18} /></button>
         <h1 className="text-2xl font-bold">{isEdit ? t('invoice.editInvoice') : t('invoice.createNew')}</h1>
       </div>
+
+      {planLimit && <UpgradePrompt used={planLimit.used} limit={planLimit.limit} />}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white rounded-xl border p-4 md:p-6 space-y-4">

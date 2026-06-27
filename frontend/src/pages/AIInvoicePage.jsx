@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { createWorker } from 'tesseract.js';
 import { api } from '../lib/api';
+import UpgradePrompt from '../components/UpgradePrompt';
 import { Bot, Mic, MicOff, Camera, ArrowLeft, Save, Trash2, Loader, Sparkles, Package, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -18,6 +19,7 @@ export default function AIInvoicePage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [ocrProgress, setOcrProgress] = useState(0);
   const [ocrRunning, setOcrRunning] = useState(false);
+  const [planLimit, setPlanLimit] = useState(null);
   const recognitionRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -40,6 +42,7 @@ export default function AIInvoicePage() {
   const handleCreate = async () => {
     if (!parsed) return;
     setCreating(true);
+    setPlanLimit(null);
     try {
       const invoice = await api.post('/api/ai/create-invoice', {
         customerId: parsed.customer?.id,
@@ -49,7 +52,11 @@ export default function AIInvoicePage() {
       toast.success(t('ai.invoiceCreated'));
       navigate('/app/invoices');
     } catch (err) {
-      toast.error(t('ai.failedToCreate'));
+      if (err.message?.includes('limit') || err.message?.includes('Free plan')) {
+        setPlanLimit({ used: 10, limit: 10 });
+      } else {
+        toast.error(t('ai.failedToCreate'));
+      }
     } finally {
       setCreating(false);
     }
@@ -289,6 +296,8 @@ export default function AIInvoicePage() {
               </div>
             </div>
           </div>
+
+          {planLimit && <div className="mb-4"><UpgradePrompt used={planLimit.used} limit={planLimit.limit} /></div>}
 
           <div className="flex justify-end gap-3">
             <button onClick={() => setParsed(null)} className="px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">

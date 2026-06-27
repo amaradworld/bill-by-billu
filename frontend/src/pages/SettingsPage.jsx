@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
+import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CURRENCIES = [
@@ -27,6 +28,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [referralStats, setReferralStats] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [planStatus, setPlanStatus] = useState(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +48,9 @@ export default function SettingsPage() {
     api.get('/api/auth/referral/stats')
       .then(setReferralStats)
       .catch(() => setReferralStats(null));
+    api.get('/api/subscription/status')
+      .then(setPlanStatus)
+      .catch(() => setPlanStatus(null));
   }, []);
 
   const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
@@ -145,11 +151,34 @@ export default function SettingsPage() {
 
       <div className="bg-white rounded-xl border p-6">
         <h2 className="font-semibold text-gray-700 mb-2">{t('settings.plan')}</h2>
-        <div className="flex items-center gap-3">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${user?.plan === 'FREE' ? 'bg-gray-100 text-gray-700' : 'bg-brand-100 text-brand-700'}`}>{user?.plan || 'FREE'}</span>
-          <span className="text-sm text-gray-500">{user?.plan === 'FREE' ? '10 invoices/month' : 'Unlimited invoices'}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${(user?.plan || 'FREE') === 'FREE' ? 'bg-gray-100 text-gray-700' : 'bg-brand-100 text-brand-700'}`}>
+              {user?.plan || 'FREE'}
+            </span>
+            {planStatus?.planExpiry && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                <Clock size={12} /> Expires {new Date(planStatus.planExpiry).toLocaleDateString()}
+              </span>
+            )}
+            <span className="text-sm text-gray-500">
+              {planStatus ? `${planStatus.invoicesUsed} / ${planStatus.invoicesLimit === -1 ? '∞' : planStatus.invoicesLimit} invoices this month` : '10 invoices/month'}
+            </span>
+          </div>
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm"
+          >
+            <ArrowUpRight size={16} /> Upgrade
+          </button>
         </div>
       </div>
+
+      <UpgradeModal
+        open={showUpgrade}
+        onClose={(upgraded) => { setShowUpgrade(false); if (upgraded) window.location.reload(); }}
+        currentPlan={user?.plan || 'FREE'}
+      />
 
       {referralStats && (
         <div className="bg-white rounded-xl border p-6 space-y-4">

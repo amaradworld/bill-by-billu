@@ -15,6 +15,7 @@ const { generateInvoicePDF, router: pdfRoutes } = require('./routes/pdf');
 const { router: paymentRoutes, webhookRouter } = require('./routes/payment');
 const whatsappRoutes = require('./routes/whatsapp');
 const aiRoutes = require('./routes/ai');
+const subscriptionRoutes = require('./routes/subscription');
 const swaggerSpec = require('./swagger');
 
 const app = express();
@@ -95,6 +96,7 @@ app.use('/api/invoices', pdfRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/invoices', whatsappRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Swagger docs
 app.get('/api/docs.json', (req, res) => {

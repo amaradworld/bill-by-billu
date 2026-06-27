@@ -130,8 +130,12 @@ export default function AIAssistant() {
       setMessages(prev => [...prev, { role: 'assistant', text: `Invoice ${invoice.invoiceNumber} created! Total: ₹${Number(invoice.totalAmount).toLocaleString('en-IN')}. Go to Invoices to view and send it.` }]);
       toast.success('Invoice created!');
     } catch (err) {
-      toast.error(err.message || 'Failed to create invoice');
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Failed to create invoice. ' + (err.message || '') }]);
+      if (err.message?.includes('limit') || err.message?.includes('Free plan')) {
+        setMessages(prev => [...prev, { role: 'assistant', text: 'Free plan limit reached (10 invoices/month). Upgrade to Starter for unlimited invoices.', action: { type: 'upgrade' } }]);
+      } else {
+        toast.error(err.message || 'Failed to create invoice');
+        setMessages(prev => [...prev, { role: 'assistant', text: 'Failed to create invoice. ' + (err.message || '') }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -219,6 +223,14 @@ export default function AIAssistant() {
                       className="mt-2 w-full px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg hover:bg-amber-600 disabled:opacity-50"
                     >
                       {loading ? 'Creating...' : 'Create Invoice'}
+                    </button>
+                  )}
+                  {msg.action?.type === 'upgrade' && (
+                    <button
+                      onClick={() => window.location.href = '/app/settings'}
+                      className="mt-2 w-full px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-medium rounded-lg hover:from-amber-600 hover:to-orange-600"
+                    >
+                      Upgrade Plan
                     </button>
                   )}
                 </div>
