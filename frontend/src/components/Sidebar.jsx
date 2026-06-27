@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart } from 'lucide-react';
 
 const navItems = [
   { to: '/app', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/app/customers', icon: Users, key: 'nav.customers' },
   { to: '/app/products', icon: Package, key: 'nav.products' },
   { to: '/app/expenses', icon: Receipt, key: 'nav.expenses' },
+  { to: '/app/gst-reports', icon: FileBarChart, key: 'nav.gstReports' },
   { to: '/app/insights', icon: BarChart3, key: 'nav.insights' },
   { to: '/app/reminders', icon: Bell, key: 'nav.reminders' },
   { to: '/app/settings', icon: Settings, key: 'nav.settings' },
@@ -26,16 +27,21 @@ export default function Sidebar({ onClose }) {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-4 border-b">
-        <div>
-          <h1 className="text-lg font-bold text-brand-600">Bill By Billu</h1>
-          <p className="text-xs text-gray-500 truncate max-w-[180px]">{user?.businessName || user?.name}</p>
+    <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl border-r border-gray-100">
+      <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100/80">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-sm">
+            <span className="text-white font-bold text-sm">BB</span>
+          </div>
+          <div>
+            <h1 className="text-base font-bold text-gray-900 tracking-tight">Bill By Billu</h1>
+            <p className="text-[11px] text-gray-400 truncate max-w-[160px]">{user?.businessName || user?.name}</p>
+          </div>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded lg:hidden"><X size={18} /></button>
+        <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg lg:hidden transition-colors"><X size={16} /></button>
       </div>
 
-      <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, key, end }) => (
           <NavLink
             key={to}
@@ -43,32 +49,36 @@ export default function Sidebar({ onClose }) {
             end={end}
             onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive ? 'bg-brand-50 text-brand-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`
+              `nav-item-premium ${isActive ? 'active' : 'text-gray-500 hover:text-gray-900'}`
             }
           >
-            <Icon size={18} />
-            <span>{t(key)}</span>
+            {({ isActive }) => (
+              <>
+                <div className={`p-1.5 rounded-lg transition-colors ${isActive ? 'bg-brand-100' : 'bg-transparent group-hover:bg-gray-100'}`}>
+                  <Icon size={16} className={isActive ? 'text-brand-600' : 'text-gray-400'} />
+                </div>
+                <span>{t(key)}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="border-t px-3 py-3">
-        <div className="flex items-center gap-3 px-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold">
+      <div className="border-t border-gray-100/80 px-4 py-4">
+        <div className="flex items-center gap-3 px-2 mb-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
             {user?.name?.[0] || 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{user?.name}</p>
-            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+            <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+          className="btn-press flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-500 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all duration-200"
         >
-          <LogOut size={18} />
+          <LogOut size={16} />
           <span>{t('nav.logout')}</span>
         </button>
       </div>

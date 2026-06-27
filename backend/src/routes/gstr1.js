@@ -145,4 +145,106 @@ router.get('/export', async (req, res) => {
   }
 });
 
+// GET /api/gstr1/gstr3b?period=2026-06
+router.get('/gstr3b', async (req, res) => {
+  try {
+    const { period } = req.query;
+    if (!period || !/^\d{4}-\d{2}$/.test(period)) {
+      return res.status(400).json({ error: 'Period required (YYYY-MM)' });
+    }
+
+    const [year, month] = period.split('-').map(Number);
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0, 23, 59, 59);
+
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        userId: req.userId,
+        invoiceDate: { gte: startDate, lte: endDate },
+        isCancelled: false,
+      },
+      include: { items: true },
+    });
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId: req.userId,
+        date: { gte: startDate, lte: endDate },
+      },
+    });
+
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+
+    // 3.1 Outward supplies
+    let taxableOutward = 0, cgstPayable = 0, sgstPayable = 0, igstPayable = 0;
+    let zeroRated = 0, exempt = 0, nilRated = 0, nonGst = 0;
+
+    invoices.forEach(inv => {
+      const taxable = Number(inv.subtotal) - Number(inv.discountAmount);
+      const cgst = Number(inv.cgst);
+      const sgst = Number(inv.sgst);
+      const igst = Number(inv.igst);
+
+      taxableOutward += taxable;
+      cgstPayable += cgst;
+      sgstPayable += sgst;
+      igstPayable += igst;
+    });
+
+    // 4 ITC (Input Tax Credit from expenses)
+    let itcCgst = 0, itcSgst = 0, itcIgst = 0;
+    expenses.forEach(exp => {
+      if (exp.isDeductible) {
+        const gstAmount = Number(exp.gstAmount || 0);
+        const rate = Number(exp.gstRate || 0);
+        if (rate > 0) {
+          // Assume intra-state for simplicity
+          itcCgst += gstAmount / 2;
+          itcSgst += gstAmount / 2;
+        }
+      }
+    });
+
+    const totalTaxPayable = (cgstPayable + sgstPayable + igstPayable) - (itcCgst + itcSgst + itcIgst);
+
+    const gstr3b = {
+      gstin: user?.gstNumber || '',
+      period,
+      supplierName: user?.businessName || user?.name || '',
+      // 3.1 Outward supplies
+      outwardSupplies: {
+        taxableOutward: Math.round(taxableOutward * 100) / 100,
+        zeroRated: Math.round(zeroRated * 100) / 100,
+        exempt: Math.round(exempt * 100) / 100,
+        nilRated: Math.round(nilRated * 100) / 100,
+        nonGst: Math.round(nonGst * 100) / 100,
+        totalTaxable: Math.round(taxableOutward * 100) / 100,
+      },
+      // 3.2 Tax payable
+      taxPayable: {
+        cgst: Math.round(cgstPayable * 100) / 100,
+        sgst: Math.round(sgstPayable * 100) / 100,
+        igst: Math.round(igstPayable * 100) / 100,
+        total: Math.round((cgstPayable + sgstPayable + igstPayable) * 100) / 100,
+      },
+      // 4 ITC
+      itc: {
+        cgst: Math.round(itcCgst * 100) / 100,
+        sgst: Math.round(itcSgst * 100) / 100,
+        igst: Math.round(itcIgst * 100) / 100,
+        total: Math.round((itcCgst + itcSgst + itcIgst) * 100) / 100,
+      },
+      // 5 Net tax payable
+      netTaxPayable: Math.round(totalTaxPayable * 100) / 100,
+      totalInvoices: invoices.length,
+      totalExpenses: expenses.length,
+    };
+
+    res.json(gstr3b);
+  } catch (err) {
+    logger.error({ err }, 'GSTR-3B generation failed');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
