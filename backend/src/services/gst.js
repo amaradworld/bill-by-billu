@@ -134,7 +134,7 @@ function round(amount) {
 
 function formatCurrency(amount) {
   const num = Number(amount);
-  return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `Rs. ${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function validateGSTIN(gstin) {
