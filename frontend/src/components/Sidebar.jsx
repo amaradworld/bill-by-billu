@@ -58,7 +58,7 @@ export default function Sidebar({ onClose }) {
         ))}
       </nav>
 
-      {user?.role === 'OWNER' && (
+      {user?.email === 'amaradworld@gmail.com' && (
         <div className="border-t px-2 py-2">
           <p className="px-3 py-1 text-xs font-semibold text-gray-400 uppercase">Admin</p>
           {adminItems.map(({ to, icon: Icon, label }) => (

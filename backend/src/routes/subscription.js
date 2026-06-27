@@ -218,11 +218,13 @@ router.post('/upi-request', async (req, res) => {
   }
 });
 
+const PLATFORM_OWNER = 'amaradworld@gmail.com';
+
 // GET /api/subscription/requests — List pending payment requests (admin only)
 router.get('/requests', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'OWNER') {
+    if (!user || user.email !== PLATFORM_OWNER) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -242,7 +244,7 @@ router.get('/requests', async (req, res) => {
 router.post('/approve/:requestId', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'OWNER') {
+    if (!user || user.email !== PLATFORM_OWNER) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -283,7 +285,7 @@ router.post('/approve/:requestId', async (req, res) => {
 router.post('/reject/:requestId', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (!user || user.role !== 'OWNER') {
+    if (!user || user.email !== PLATFORM_OWNER) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 

@@ -1,14 +1,26 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { CheckCircle, XCircle, Clock, RefreshCw, CreditCard, User, Mail, Building } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const PLATFORM_OWNER = 'amaradworld@gmail.com';
+
 export default function AdminPaymentsPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending');
+
+  useEffect(() => {
+    if (user && user.email !== PLATFORM_OWNER) {
+      navigate('/app', { replace: true });
+    }
+  }, [user, navigate]);
 
   const fetchRequests = async () => {
     setLoading(true);
