@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
     getToken().then((storedToken) => {
       if (storedToken) {
         setToken(storedToken);
-        api.get('/api/auth/me')
+        api.get('/api/auth/me', { headers: { Authorization: `Bearer ${storedToken}` } })
           .then(setUser)
           .catch(async () => {
             await Preferences.remove({ key: 'bbToken' });
