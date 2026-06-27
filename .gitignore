@@ -35,3 +35,4 @@ android.keystore
 *.aab
 *.apk
 *.keystore
+upload-playstore.mjs

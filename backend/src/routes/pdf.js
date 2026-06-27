@@ -8,6 +8,12 @@ const logger = require('../logger');
 
 const router = express.Router();
 
+function parseDataUri(dataUri) {
+  const match = dataUri.match(/^data:image\/(\w+);base64,(.+)$/);
+  if (!match) return null;
+  return { extension: match[1] === 'jpeg' ? 'jpg' : match[1], buffer: Buffer.from(match[2], 'base64') };
+}
+
 async function generateInvoicePDF(invoice, user) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -24,13 +30,27 @@ async function generateInvoicePDF(invoice, user) {
         qrImage = await QRCode.toBuffer(upiString, { width: 150, margin: 1 });
       }
 
-      // Header
+      // Header with logo
+      const leftX = 50;
+      const rightX = 350;
+      let headerY = 50;
+
+      if (user.logoUrl) {
+        try {
+          const logoData = parseDataUri(user.logoUrl);
+          if (logoData) {
+            doc.image(logoData.buffer, leftX, headerY, { width: 80, height: 80, fit: [80, 80] });
+          }
+        } catch (e) {
+          logger.warn('Failed to render logo in PDF:', e.message);
+        }
+      }
+
       doc.fontSize(20).font('Helvetica-Bold').text('TAX INVOICE', { align: 'center' });
       doc.moveDown(0.5);
 
       // Supplier info (left) + Invoice details (right)
-      const leftX = 50;
-      const rightX = 350;
+      headerY = user.logoUrl ? 50 : doc.y;
 
       doc.fontSize(10).font('Helvetica-Bold');
       doc.text('From:', leftX, doc.y);

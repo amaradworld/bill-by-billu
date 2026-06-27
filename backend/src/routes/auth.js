@@ -302,7 +302,7 @@ router.put('/profile', authenticate, async (req, res) => {
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
         plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
-        razorpayKeyId: true,
+        razorpayKeyId: true, logoUrl: true,
       },
     });
     res.json(user);
@@ -312,6 +312,48 @@ router.put('/profile', authenticate, async (req, res) => {
     }
     logger.error('Update profile error:', err.message);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PUT /api/auth/logo
+router.put('/logo', authenticate, async (req, res) => {
+  try {
+    const { logoUrl } = req.body;
+    if (!logoUrl) return res.status(400).json({ error: 'Logo data is required' });
+
+    if (!logoUrl.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
+
+    const base64Data = logoUrl.split(',')[1];
+    const sizeBytes = Math.ceil((base64Data.length * 3) / 4);
+    if (sizeBytes > 2 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Logo must be under 2MB' });
+    }
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { logoUrl },
+    });
+
+    res.json({ success: true, logoUrl });
+  } catch (err) {
+    logger.error('Logo upload error:', err.message);
+    res.status(500).json({ error: 'Failed to save logo' });
+  }
+});
+
+// DELETE /api/auth/logo
+router.delete('/logo', authenticate, async (req, res) => {
+  try {
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: { logoUrl: null },
+    });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Logo delete error:', err.message);
+    res.status(500).json({ error: 'Failed to delete logo' });
   }
 });
 

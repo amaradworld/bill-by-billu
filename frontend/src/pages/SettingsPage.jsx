@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users, ArrowUpRight, Clock } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CURRENCIES = [
@@ -18,7 +18,7 @@ const CURRENCIES = [
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { user, token, updateProfile } = useAuth();
+  const { user, token, updateProfile, refreshUser } = useAuth();
   const [form, setForm] = useState({
     name: '', businessName: '', phone: '', gstNumber: '', panNumber: '',
     address: '', city: '', state: '', pincode: '',
@@ -30,6 +30,9 @@ export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
   const [planStatus, setPlanStatus] = useState(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoLoading, setLogoLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (user) {
@@ -41,6 +44,7 @@ export default function SettingsPage() {
         whatsappNumber: user.whatsappNumber || '',
         razorpayKeyId: user.razorpayKeyId || '', razorpayKeySecret: '',
       });
+      setLogoPreview(user.logoUrl || null);
     }
   }, [user]);
 
@@ -65,6 +69,43 @@ export default function SettingsPage() {
     finally { setLoading(false); }
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) return toast.error('Please select an image file');
+    if (file.size > 2 * 1024 * 1024) return toast.error('Logo must be under 2MB');
+
+    setLogoLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result;
+        setLogoPreview(base64);
+        await api.put('/api/auth/logo', { logoUrl: base64 });
+        await refreshUser();
+        toast.success('Logo saved');
+        setLogoLoading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error(err.message || 'Failed to upload logo');
+      setLogoLoading(false);
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    try {
+      await api.delete('/api/auth/logo');
+      setLogoPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      await refreshUser();
+      toast.success('Logo removed');
+    } catch (err) {
+      toast.error(err.message || 'Failed to remove logo');
+    }
+  };
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
@@ -82,6 +123,41 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border p-6 space-y-4">
         <h2 className="font-semibold text-gray-700">{t('settings.language')}</h2>
         <LanguageSelector />
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Image size={20} className="text-brand-600" />
+          <h2 className="font-semibold text-gray-700">Business Logo</h2>
+        </div>
+        <p className="text-xs text-gray-500">Upload your business logo to appear on invoices.</p>
+        <div className="flex items-center gap-4">
+          {logoPreview ? (
+            <div className="relative">
+              <img src={logoPreview} alt="Logo" className="w-24 h-24 object-contain border rounded-lg p-1" />
+              <button onClick={handleLogoDelete}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                <X size={12} />
+              </button>
+            </div>
+          ) : (
+            <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
+              {logoLoading ? (
+                <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
+              ) : (
+                <Image size={24} className="text-gray-300" />
+              )}
+            </div>
+          )}
+          <div>
+            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
+              <Upload size={16} />
+              {logoPreview ? 'Change Logo' : 'Upload Logo'}
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+            </label>
+            <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
