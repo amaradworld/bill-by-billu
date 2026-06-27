@@ -16,6 +16,7 @@ import SettingsPage from './pages/SettingsPage';
 import AIInvoicePage from './pages/AIInvoicePage';
 import RemindersPage from './pages/RemindersPage';
 import InsightsPage from './pages/InsightsPage';
+import AdminPaymentsPage from './pages/AdminPaymentsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="ai-invoice" element={<AIInvoicePage />} />
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="insights" element={<InsightsPage />} />
+            <Route path="admin/payments" element={<AdminPaymentsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
