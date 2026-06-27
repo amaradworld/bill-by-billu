@@ -253,7 +253,11 @@ function parseInvoiceCommand(text) {
     let match;
     while ((match = pattern.exec(text)) !== null) {
       const qty = parseInt(match[1]);
-      const name = match[2].trim().replace(/\s+at\s+.*$/i, '').replace(/\s+for\s+.*$/i, '');
+      const rawName = match[2].trim();
+      const name = rawName
+        .replace(/\s+(?:at|@|for|×|x)\s*.*$/i, '')
+        .replace(/\s+(?:at|@|for|×|x)$/i, '')
+        .trim();
       const price = match[3] ? parseFloat(match[3].replace(/,/g, '')) : null;
 
       if (name && qty > 0 && !result.items.find(i => i.name.toLowerCase() === name.toLowerCase())) {
