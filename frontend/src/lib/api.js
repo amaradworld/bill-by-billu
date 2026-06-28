@@ -1,7 +1,7 @@
 const API = import.meta.env.VITE_API_URL || '';
 const REQUEST_TIMEOUT = 30000;
 
-let tokenGetter = () => localStorage.getItem('bbToken');
+let tokenGetter = () => null;
 
 export function setTokenGetter(fn) {
   tokenGetter = fn;

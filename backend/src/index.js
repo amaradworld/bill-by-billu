@@ -50,11 +50,13 @@ app.use(cors({
     'https://www.billbybillu.in',
     'https://billbybillu.in',
     'https://bill-by-billu.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
+    ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5173', 'http://localhost:3000'] : []),
   ],
   credentials: true,
 }));
+
+// Razorpay webhook (must be before JSON parser — uses raw body)
+app.use('/api', webhookRouter);
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -68,9 +70,6 @@ const limiter = rateLimit({
   skip: (req) => req.url === '/api/health',
 });
 app.use('/api/', limiter);
-
-// Razorpay webhook (must be before JSON parser — uses raw body)
-app.use('/api', webhookRouter);
 
 // ─── Health check (before auth routes) ───
 app.get('/api/health', async (req, res) => {

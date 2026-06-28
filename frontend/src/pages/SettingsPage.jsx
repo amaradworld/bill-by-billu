@@ -72,7 +72,9 @@ export default function SettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await updateProfile(form);
+      const payload = { ...form };
+      if (!payload.razorpayKeySecret) delete payload.razorpayKeySecret;
+      await updateProfile(payload);
       toast.success(t('common.success'));
     } catch (err) { toast.error(err.message); }
     finally { setLoading(false); }

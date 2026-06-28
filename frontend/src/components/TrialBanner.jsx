@@ -1,36 +1,31 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import UpgradeModal from './UpgradeModal';
 import { Clock, Zap, X } from 'lucide-react';
 
 export default function TrialBanner() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   const trialEndsAt = user?.trialEndsAt;
-  if (!trialEndsAt || dismissed) return null;
 
   const now = new Date();
-  const endDate = new Date(trialEndsAt);
+  const endDate = trialEndsAt ? new Date(trialEndsAt) : new Date();
   const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
   const isTrialOver = daysLeft <= 0;
 
-  // Auto-show upgrade popup after day 10 (days 11-28 remaining = day 18+ of trial)
   useEffect(() => {
     if (daysLeft > 0 && daysLeft <= 18) {
-      // Trial started 10+ days ago (28 - 18 = 10)
       const timer = setTimeout(() => setShowUpgrade(true), 2000);
       return () => clearTimeout(timer);
     }
   }, [daysLeft]);
 
-  if (isTrialOver) return null; // Backend handles downgrade
+  if (!trialEndsAt || dismissed || isTrialOver) return null;
 
   const isUrgent = daysLeft <= 7;
-  const isWarning = daysLeft <= 18; // 10 days into trial
+  const isWarning = daysLeft <= 18;
 
   return (
     <>
@@ -75,7 +70,7 @@ export default function TrialBanner() {
         </button>
       </div>
 
-      {showUpgrade && <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} currentPlan="FREE" />}
+      {showUpgrade && <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} currentPlan={user?.plan || 'FREE'} />}
     </>
   );
 }

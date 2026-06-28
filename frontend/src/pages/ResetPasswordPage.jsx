@@ -9,7 +9,6 @@ export default function ResetPasswordPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const userId = searchParams.get('userId');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,7 +29,7 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      await api.post('/api/auth/reset-password', { token, userId, newPassword: password });
+      await api.post('/api/auth/reset-password', { token, newPassword: password });
       setSuccess(true);
     } catch (err) {
       toast.error(err.message || t('auth.resetTokenInvalid'));
@@ -39,7 +38,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  if (!token || !userId) {
+  if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white rounded-2xl shadow-sm border p-8 text-center max-w-md">

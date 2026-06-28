@@ -27,9 +27,9 @@ function authenticate(req, res, next) {
 
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     req.userId = decoded.userId;
-    req.userRole = decoded.role || ROLES.OWNER;
+    req.userRole = decoded.role || ROLES.VIEWER;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });
@@ -41,9 +41,9 @@ function optionalAuth(req, res, next) {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
       req.userId = decoded.userId;
-      req.userRole = decoded.role || ROLES.OWNER;
+      req.userRole = decoded.role || ROLES.VIEWER;
     } catch {
       // Ignore invalid token for optional auth
     }

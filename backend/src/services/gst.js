@@ -32,7 +32,7 @@ const HSN_SAC_CODES = {
 };
 
 function isSameState(state1, state2) {
-  if (!state1 || !state2) return false;
+  if (!state1 || !state2) return true;
   return state1.toLowerCase().trim() === state2.toLowerCase().trim();
 }
 
@@ -104,6 +104,7 @@ function calculateInvoiceTotals({ items, supplierState, customerState, discount 
     return {
       ...item,
       taxableAmount,
+      discountAmount: round(lineDiscount),
       cgst: tax.cgst,
       sgst: tax.sgst,
       igst: tax.igst,

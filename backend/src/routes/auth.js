@@ -22,6 +22,10 @@ function generateReferralCode() {
   return code;
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 const registerSchema = z.object({
   email: z.string().email(),
   phone: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().min(10).max(15).optional()),
@@ -175,7 +179,7 @@ router.post('/google', async (req, res) => {
 
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID || '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com',
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
@@ -456,14 +460,14 @@ router.post('/forgot-password', async (req, res) => {
       return res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
     }
 
-    // Generate secure token
+    // Generate secure token (keyed by token, not userId — client can't manipulate target user)
     const token = crypto.randomBytes(32).toString('hex');
     const expires = Date.now() + 60 * 60 * 1000; // 1 hour
 
-    resetTokens.set(user.id, { token, expires });
+    resetTokens.set(token, { userId: user.id, expires });
 
     // Try to send email via nodemailer if configured
-    const resetUrl = `${process.env.FRONTEND_URL || 'https://billbybillu.vercel.app'}/reset-password?token=${token}&userId=${user.id}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'https://billbybillu.vercel.app'}/reset-password?token=${token}`;
 
     try {
       const nodemailer = require('nodemailer');
@@ -482,7 +486,7 @@ router.post('/forgot-password', async (req, res) => {
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
               <h2 style="color: #f59e0b;">Reset Your Password</h2>
-              <p>Hi ${user.name},</p>
+              <p>Hi ${escapeHtml(user.name)},</p>
               <p>Click the button below to reset your password. This link expires in 1 hour.</p>
               <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background: #f59e0b; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
               <p style="margin-top: 20px; color: #666; font-size: 12px;">If you didn't request this, ignore this email.</p>
@@ -507,35 +511,28 @@ router.post('/forgot-password', async (req, res) => {
 // POST /api/auth/reset-password
 router.post('/reset-password', async (req, res) => {
   try {
-    const { token, userId, newPassword } = req.body;
-    if (!token || !userId || !newPassword) {
-      return res.status(400).json({ error: 'Token, userId, and newPassword are required' });
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and newPassword are required' });
     }
 
     if (newPassword.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
-    const stored = resetTokens.get(userId);
+    const stored = resetTokens.get(token);
     if (!stored) {
       return res.status(400).json({ error: 'Invalid or expired reset token' });
     }
 
-    // Timing-safe comparison
-    const tokenBuf = Buffer.from(token, 'hex');
-    const storedBuf = Buffer.from(stored.token, 'hex');
-    if (tokenBuf.length !== storedBuf.length || !crypto.timingSafeEqual(tokenBuf, storedBuf)) {
-      return res.status(400).json({ error: 'Invalid or expired reset token' });
-    }
-
     if (Date.now() > stored.expires) {
-      resetTokens.delete(userId);
+      resetTokens.delete(token);
       return res.status(400).json({ error: 'Reset token has expired' });
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
-    resetTokens.delete(userId);
+    await prisma.user.update({ where: { id: stored.userId }, data: { passwordHash } });
+    resetTokens.delete(token);
 
     res.json({ message: 'Password reset successful' });
   } catch (err) {
