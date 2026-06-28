@@ -28,7 +28,10 @@ async function request(path, options = {}) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      throw new Error(data.error || `Request failed (${res.status})`);
+      const msg = data.details
+        ? data.details.map(d => `${d.path.join('.')}: ${d.message}`).join('; ')
+        : data.error || `Request failed (${res.status})`;
+      throw new Error(msg);
     }
 
     return data;
