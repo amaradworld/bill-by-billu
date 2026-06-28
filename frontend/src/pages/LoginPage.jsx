@@ -64,7 +64,7 @@ export default function LoginPage() {
       if (window.google && window.google.accounts) {
         clearInterval(interval);
         window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com',
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
           callback: async (response) => {
             try {
               const data = await api.post('/api/auth/google', { credential: response.credential });
