@@ -28,6 +28,7 @@ model User {
   role          UserRole  @default(OWNER)
   plan          Plan      @default(FREE)
   planExpiry    DateTime? // Subscription expiry date
+  trialEndsAt   DateTime? // 28-day PRO trial expiry (set on registration)
   invoicePrefix String?   @default("INV") // Custom invoice prefix
   currency      String?   @default("INR") // Default currency
   whatsappNumber String?  // WhatsApp number for sharing

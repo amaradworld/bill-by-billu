@@ -161,7 +161,8 @@ router.post('/', async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (user.plan === 'FREE') {
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+    if (user.plan === 'FREE' && !isTrialActive) {
       const thisMonthCount = await prisma.invoice.count({
         where: { userId: req.userId, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
       });

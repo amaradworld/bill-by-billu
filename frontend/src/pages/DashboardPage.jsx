@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import DashboardCharts from '../components/DashboardCharts';
 import AnimatedCounter from '../components/AnimatedCounter';
+import TrialBanner from '../components/TrialBanner';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { TrendingUp, TrendingDown, FileText, Clock, AlertCircle, Plus, Sparkles, ArrowRight, IndianRupee } from 'lucide-react';
 
@@ -100,6 +101,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Trial Banner */}
+      <TrialBanner />
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">

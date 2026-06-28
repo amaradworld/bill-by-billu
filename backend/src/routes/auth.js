@@ -99,12 +99,13 @@ router.post('/register', async (req, res) => {
         whatsappNumber: data.whatsappNumber || null,
         referralCode: referralCodeGen,
         referredBy: referredById,
+        trialEndsAt: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
       },
       select: {
         id: true, email: true, phone: true, name: true,
         businessName: true, gstNumber: true, plan: true,
         invoicePrefix: true, currency: true, whatsappNumber: true,
-        referralCode: true, createdAt: true,
+        referralCode: true, createdAt: true, trialEndsAt: true,
       },
     });
 
@@ -200,6 +201,7 @@ router.post('/google', async (req, res) => {
           passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12),
           referralCode: referralCodeGen,
           logoUrl: picture || null,
+          trialEndsAt: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
         },
       });
     }
@@ -266,7 +268,7 @@ router.get('/me', authenticate, async (req, res) => {
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
         logoUrl: true, qrUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
-        referralCode: true, referralCount: true,
+        referralCode: true, referralCount: true, trialEndsAt: true,
         createdAt: true,
       },
     });
@@ -318,9 +320,11 @@ router.put('/profile', authenticate, async (req, res) => {
 const PAID_PLANS = ['STARTER', 'PRO'];
 const requirePaidPlan = async (req, res, next) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { plan: true, planExpiry: true } });
-    const isExpired = user.planExpiry && new Date(user.planExpiry) < new Date();
-    if (isExpired || !PAID_PLANS.includes(user.plan)) {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { plan: true, planExpiry: true, trialEndsAt: true } });
+    const now = new Date();
+    const isPaidActive = PAID_PLANS.includes(user.plan) && user.planExpiry && new Date(user.planExpiry) > now;
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > now;
+    if (!isPaidActive && !isTrialActive) {
       return res.status(403).json({ error: 'This feature requires a paid plan', code: 'PLAN_REQUIRED' });
     }
     next();

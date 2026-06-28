@@ -23,7 +23,9 @@ export default function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const userPlan = user?.plan || 'FREE';
-  const isPaid = PLAN_RANK[userPlan] > PLAN_RANK.FREE;
+  const isTrialActive = user?.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+  const isPaid = PLAN_RANK[userPlan] > PLAN_RANK.FREE || isTrialActive;
+  const effectivePlan = isPaid ? (isTrialActive ? 'PRO' : userPlan) : 'FREE';
 
   const handleLogout = async () => {
     await logout();
@@ -52,7 +54,7 @@ export default function Sidebar({ onClose }) {
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ to, icon: Icon, key, end, minPlan }) => {
-          const locked = minPlan && PLAN_RANK[userPlan] < PLAN_RANK[minPlan];
+          const locked = minPlan && PLAN_RANK[effectivePlan] < PLAN_RANK[minPlan];
           return locked ? (
             <button
               key={to}

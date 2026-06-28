@@ -28,39 +28,62 @@ router.get('/status', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: { plan: true, planExpiry: true, createdAt: true },
+      select: { plan: true, planExpiry: true, trialEndsAt: true, createdAt: true },
     });
 
     const thisMonthCount = await prisma.invoice.count({
       where: { userId: req.userId, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
     });
 
-    const planInfo = PLANS[user.plan] || PLANS.FREE;
-    const isExpired = user.planExpiry && new Date(user.planExpiry) < new Date();
-    const activePlan = isExpired ? 'FREE' : user.plan;
+    const now = new Date();
+    const isPaid = PAID_PLANS.includes(user.plan);
+    const isPaidActive = isPaid && user.planExpiry && new Date(user.planExpiry) > now;
+    const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > now;
+
+    // Resolve effective plan: paid active > trial > free
+    let effectivePlan = 'FREE';
+    if (isPaidActive) {
+      effectivePlan = user.plan;
+    } else if (isTrialActive) {
+      effectivePlan = 'PRO'; // trial gives PRO features
+    }
+
+    const trialDaysLeft = isTrialActive
+      ? Math.ceil((new Date(user.trialEndsAt) - now) / (1000 * 60 * 60 * 24))
+      : 0;
+    const trialStarted = isTrialActive || (user.trialEndsAt && new Date(user.trialEndsAt) <= now);
+    const daysSinceSignup = Math.floor((now - new Date(user.createdAt)) / (1000 * 60 * 60 * 24));
+
+    const planInfo = PLANS[effectivePlan] || PLANS.FREE;
 
     const featureFlags = {
-      customLogo: PAID_PLANS.includes(activePlan),
-      qrUpload: PAID_PLANS.includes(activePlan),
-      gstReports: PAID_PLANS.includes(activePlan),
-      creditDebitNotes: PAID_PLANS.includes(activePlan),
-      recurringInvoices: PAID_PLANS.includes(activePlan),
-      aiFeatures: activePlan === 'PRO',
-      multiUser: activePlan === 'PRO',
-      apiAccess: activePlan === 'PRO',
-      insights: activePlan === 'PRO',
-      reminders: PAID_PLANS.includes(activePlan),
+      customLogo: PAID_PLANS.includes(effectivePlan),
+      qrUpload: PAID_PLANS.includes(effectivePlan),
+      gstReports: PAID_PLANS.includes(effectivePlan),
+      creditDebitNotes: PAID_PLANS.includes(effectivePlan),
+      recurringInvoices: PAID_PLANS.includes(effectivePlan),
+      aiFeatures: effectivePlan === 'PRO',
+      multiUser: effectivePlan === 'PRO',
+      apiAccess: effectivePlan === 'PRO',
+      insights: effectivePlan === 'PRO',
+      reminders: PAID_PLANS.includes(effectivePlan),
     };
 
     res.json({
-      plan: activePlan,
+      plan: effectivePlan,
+      rawPlan: user.plan,
       planExpiry: user.planExpiry,
+      trialEndsAt: user.trialEndsAt,
+      isTrialActive,
+      trialDaysLeft,
+      trialStarted,
+      daysSinceSignup,
       invoicesUsed: thisMonthCount,
-      invoicesLimit: planInfo.invoices,
-      invoicesRemaining: planInfo.invoices === -1 ? -1 : Math.max(0, planInfo.invoices - thisMonthCount),
+      invoicesLimit: isTrialActive ? -1 : planInfo.invoices,
+      invoicesRemaining: (isTrialActive || isPaidActive) ? -1 : Math.max(0, planInfo.invoices - thisMonthCount),
       features: planInfo.features,
       featureFlags,
-      isExpired,
+      isExpired: !isPaidActive && !isTrialActive && user.plan !== 'FREE',
     });
   } catch (err) {
     logger.error('Subscription status error:', err.message);

@@ -157,6 +157,8 @@ export default function SettingsPage() {
 
   const input = "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
 
+  const isPaid = user?.plan !== 'FREE' || (user?.trialEndsAt && new Date(user.trialEndsAt) > new Date());
+
   return (
     <div className="max-w-3xl space-y-6">
       <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
@@ -170,14 +172,14 @@ export default function SettingsPage() {
         <div className="flex items-center gap-2">
           <Image size={20} className="text-brand-600" />
           <h2 className="font-semibold text-gray-700">Business Logo</h2>
-          {user?.plan === 'FREE' && (
+          {!isPaid && (
             <span className="ml-auto flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
               <Lock size={12} /> Starter feature
             </span>
           )}
         </div>
         <p className="text-xs text-gray-500">Upload your business logo to appear on invoices.</p>
-        {user?.plan === 'FREE' ? (
+        {!isPaid ? (
           <div className="flex items-center gap-4 opacity-60">
             <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
               <Lock size={24} className="text-gray-300" />
@@ -283,7 +285,7 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border p-6 space-y-4 relative">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-gray-700">Paytm / UPI QR Code</h2>
-            {user?.plan === 'FREE' && (
+            {!isPaid && (
               <span className="ml-auto flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
                 <Lock size={12} /> Starter feature
               </span>
@@ -293,7 +295,7 @@ export default function SettingsPage() {
             Upload your Paytm merchant QR image. This will appear on invoices as a backup payment option.
             For dynamic QR with exact amounts, enter your UPI ID above in Invoice Settings.
           </p>
-          {user?.plan === 'FREE' ? (
+          {!isPaid ? (
             <div className="flex items-center gap-4 opacity-60">
               <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
                 <Lock size={24} className="text-gray-300" />
