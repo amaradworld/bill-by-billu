@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import Logo from './Logo';
 import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock } from 'lucide-react';
 
 const PLAN_RANK = { FREE: 0, STARTER: 1, PRO: 2 };
@@ -41,9 +42,7 @@ export default function Sidebar({ onClose }) {
     <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl border-r border-gray-100">
       <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100/80">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-sm">BB</span>
-          </div>
+          <Logo size={36} />
           <div>
             <h1 className="text-base font-bold text-gray-900 tracking-tight">Bill By Billu</h1>
             <p className="text-[11px] text-gray-400 truncate max-w-[160px]">{user?.businessName || user?.name}</p>

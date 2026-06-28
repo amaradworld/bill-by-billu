@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar, Mail } from 'lucide-react';
 import SubscribeForm from '../components/SubscribeForm';
 import SubscribeModal from '../components/SubscribeModal';
+import Logo from '../components/Logo';
 
 const trackEvent = (eventName, params = {}) => {
   if (typeof window !== 'undefined' && window.gtag) {
@@ -66,9 +67,7 @@ export default function LandingPage() {
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">BB</span>
-              </div>
+              <Logo size={32} />
               <span className="font-bold text-xl text-gray-900">Bill By Billu</span>
             </div>
             <div className="flex items-center gap-3">
@@ -286,9 +285,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">BB</span>
-                  </div>
+                  <Logo size={32} />
                   <span className="font-bold text-white">Bill By Billu</span>
                 </div>
                 <p className="text-sm">AI-Powered Invoice + GST for Indian Freelancers & SMBs</p>

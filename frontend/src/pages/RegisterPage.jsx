@@ -9,6 +9,7 @@ const isNative = Capacitor.isNativePlatform();
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import PasswordStrength from '../components/PasswordStrength';
+import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { api } from '../lib/api';
 
@@ -126,7 +127,10 @@ export default function RegisterPage() {
         <div className="flex justify-end mb-4"><LanguageSelector /></div>
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="text-center mb-6">
-            <Link to="/" className="text-2xl font-bold text-brand-600">Bill By Billu</Link>
+            <Link to="/" className="flex items-center justify-center gap-2">
+              <Logo size={36} />
+              <span className="text-2xl font-bold text-brand-600">Bill By Billu</span>
+            </Link>
             <p className="text-sm text-gray-500 mt-1">{t('auth.createAccount')}</p>
           </div>
 

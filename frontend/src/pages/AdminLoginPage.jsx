@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { Lock, Mail, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Logo from '../components/Logo';
 
 export default function AdminLoginPage() {
   const { login } = useAdminAuth();
@@ -31,8 +32,8 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock size={28} className="text-amber-500" />
+          <div className="mx-auto mb-4">
+            <Logo size={64} />
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Panel</h1>
           <p className="text-gray-400 text-sm mt-1">Bill By Billu — Payment Management</p>

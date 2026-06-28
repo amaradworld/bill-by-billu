@@ -5,6 +5,7 @@ import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
+import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { api } from '../lib/api';
 import { Capacitor } from '@capacitor/core';
@@ -97,8 +98,8 @@ export default function LoginPage() {
         <div className="flex justify-end mb-4"><LanguageSelector /></div>
         <div className="glass-strong rounded-3xl shadow-soft-lg p-8">
           <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-glow">
-              <span className="text-white font-bold text-xl">BB</span>
+            <div className="mx-auto mb-4">
+              <Logo size={56} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Welcome back</h1>
             <p className="text-sm text-gray-500 mt-1">{t('auth.welcomeSub')}</p>
