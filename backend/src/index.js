@@ -17,6 +17,7 @@ const whatsappRoutes = require('./routes/whatsapp');
 const aiRoutes = require('./routes/ai');
 const subscriptionRoutes = require('./routes/subscription');
 const adminRoutes = require('./routes/admin');
+const subscriberRoutes = require('./routes/subscribers');
 const swaggerSpec = require('./swagger');
 
 const app = express();
@@ -105,6 +106,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/invoices', whatsappRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Swagger docs

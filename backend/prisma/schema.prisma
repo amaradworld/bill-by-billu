@@ -319,3 +319,15 @@ model GSTR1 {
   @@unique([userId, period])
   @@index([userId])
 }
+
+// ─── Email Subscribers ───
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  source    String   @default("landing_page") // landing_page, settings, admin
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

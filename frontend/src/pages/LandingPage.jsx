@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar } from 'lucide-react';
+import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar, Mail } from 'lucide-react';
 
 const trackEvent = (eventName, params = {}) => {
   if (typeof window !== 'undefined' && window.gtag) {
@@ -264,6 +264,18 @@ export default function LandingPage() {
               className="inline-flex items-center gap-2 bg-white text-brand-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-brand-50 shadow-lg transition-all hover:scale-105">
               Start Free <ArrowRight size={20} />
             </Link>
+          </div>
+        </section>
+
+        {/* Newsletter Subscribe */}
+        <section className="bg-gray-50 py-12">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <Mail size={24} className="text-brand-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Stay in the loop</h2>
+            <p className="text-gray-500 text-sm mb-6">Get product updates, GST tips, and exclusive offers. No spam, ever.</p>
+            <SubscribeForm />
           </div>
         </section>
 

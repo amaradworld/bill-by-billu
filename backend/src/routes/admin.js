@@ -152,4 +152,57 @@ router.post('/payments/:id/reject', requireAdmin, async (req, res) => {
   }
 });
 
+// ─── Subscribers ───
+
+// GET /api/admin/subscribers — List all subscribers (admin only)
+router.get('/subscribers', requireAdmin, async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 50 } = req.query;
+    const where = {};
+
+    if (status === 'active') where.active = true;
+    else if (status === 'unsubscribed') where.active = false;
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [subscribers, total, activeCount, unsubscribedCount] = await prisma.$transaction([
+      prisma.subscriber.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (parseInt(page) - 1) * parseInt(limit),
+        take: parseInt(limit),
+        select: { id: true, email: true, name: true, source: true, active: true, createdAt: true },
+      }),
+      prisma.subscriber.count({ where }),
+      prisma.subscriber.count({ where: { active: true } }),
+      prisma.subscriber.count({ where: { active: false } }),
+    ]);
+
+    res.json({
+      subscribers,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) },
+      stats: { total, active: activeCount, unsubscribed: unsubscribedCount },
+    });
+  } catch (err) {
+    logger.error('Admin list subscribers error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /api/admin/subscribers/:id — Remove subscriber (admin only)
+router.delete('/subscribers/:id', requireAdmin, async (req, res) => {
+  try {
+    await prisma.subscriber.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('Admin delete subscriber error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

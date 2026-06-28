@@ -83,6 +83,9 @@ export default function AdminDashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-gray-400 text-sm hidden sm:block">{admin?.email}</span>
+            <a href="/admin/subscribers" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
+              <Mail size={16} /> Subscribers
+            </a>
             <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors">
               <LogOut size={16} /> Logout
             </button>
