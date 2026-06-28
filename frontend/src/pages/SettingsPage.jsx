@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock, FileText, Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CURRENCIES = [
@@ -24,6 +24,8 @@ export default function SettingsPage() {
     address: '', city: '', state: '', pincode: '',
     invoicePrefix: 'INV', currency: 'INR', whatsappNumber: '',
     razorpayKeyId: '', razorpayKeySecret: '',
+    invoiceTemplate: 'classic',
+    bankName: '', bankAccount: '', bankIfsc: '', bankBranch: '',
   });
   const [loading, setLoading] = useState(false);
   const [referralStats, setReferralStats] = useState(null);
@@ -46,6 +48,9 @@ export default function SettingsPage() {
         invoicePrefix: user.invoicePrefix || 'INV', currency: user.currency || 'INR',
         whatsappNumber: user.whatsappNumber || '',
         razorpayKeyId: user.razorpayKeyId || '', razorpayKeySecret: '',
+        invoiceTemplate: user.invoiceTemplate || 'classic',
+        bankName: user.bankName || '', bankAccount: user.bankAccount || '',
+        bankIfsc: user.bankIfsc || '', bankBranch: user.bankBranch || '',
       });
       setLogoPreview(user.logoUrl || null);
       setQrPreview(user.qrUrl || null);
@@ -254,6 +259,69 @@ export default function SettingsPage() {
               <select className={input} value={form.currency} onChange={set('currency')}>
                 {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</option>)}
               </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <FileText size={20} className="text-brand-600" />
+            <h2 className="font-semibold text-gray-700">Invoice Template</h2>
+          </div>
+          <p className="text-xs text-gray-500">Choose a template style for your invoices.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { key: 'classic', name: 'Classic', desc: 'Clean & minimal blue theme', color: 'border-blue-500', preview: 'bg-gradient-to-br from-blue-50 to-white' },
+              { key: 'modern', name: 'Modern', desc: 'Purple premium design', color: 'border-purple-500', preview: 'bg-gradient-to-br from-purple-50 to-white' },
+              { key: 'compact', name: 'Compact', desc: 'Space-efficient layout', color: 'border-teal-500', preview: 'bg-gradient-to-br from-teal-50 to-white' },
+            ].map(t => (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, invoiceTemplate: t.key }))}
+                className={`relative p-4 rounded-xl border-2 transition-all text-left ${
+                  form.invoiceTemplate === t.key
+                    ? `${t.color} bg-brand-50 shadow-md`
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                }`}
+              >
+                {form.invoiceTemplate === t.key && (
+                  <div className="absolute top-2 right-2 w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center">
+                    <Check size={12} className="text-white" />
+                  </div>
+                )}
+                <div className={`w-full h-16 rounded-lg mb-3 ${t.preview} border border-gray-100 flex items-center justify-center`}>
+                  <FileText size={24} className={form.invoiceTemplate === t.key ? 'text-brand-600' : 'text-gray-300'} />
+                </div>
+                <p className="text-sm font-semibold text-gray-800">{t.name}</p>
+                <p className="text-xs text-gray-500">{t.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Building2 size={20} className="text-brand-600" />
+            <h2 className="font-semibold text-gray-700">Bank Details</h2>
+          </div>
+          <p className="text-xs text-gray-500">Add your bank details to appear on invoices for payment transfers.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Bank Name</label>
+              <input className={input} value={form.bankName} onChange={set('bankName')} placeholder="HDFC Bank" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Account Number</label>
+              <input className={input} value={form.bankAccount} onChange={set('bankAccount')} placeholder="50100123456789" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">IFSC Code</label>
+              <input className={input} value={form.bankIfsc} onChange={set('bankIfsc')} placeholder="HDFC0001234" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Branch</label>
+              <input className={input} value={form.bankBranch} onChange={set('bankBranch')} placeholder="Sector 14, Gurgaon" />
             </div>
           </div>
         </div>

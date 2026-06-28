@@ -40,6 +40,11 @@ const registerSchema = z.object({
   razorpayKeyId: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
   razorpayKeySecret: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
   referralCode: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  invoiceTemplate: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.enum(['classic', 'modern', 'compact']).optional()),
+  bankName: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  bankAccount: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  bankIfsc: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  bankBranch: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
 });
 
 const loginSchema = z.object({
@@ -269,6 +274,7 @@ router.get('/me', authenticate, async (req, res) => {
         address: true, city: true, state: true, pincode: true,
         logoUrl: true, qrUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
         referralCode: true, referralCount: true, trialEndsAt: true,
+        invoiceTemplate: true, bankName: true, bankAccount: true, bankIfsc: true, bankBranch: true,
         createdAt: true,
       },
     });
@@ -304,7 +310,8 @@ router.put('/profile', authenticate, async (req, res) => {
         businessName: true, gstNumber: true, panNumber: true,
         address: true, city: true, state: true, pincode: true,
         plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
-        razorpayKeyId: true, logoUrl: true,
+        razorpayKeyId: true, logoUrl: true, invoiceTemplate: true,
+        bankName: true, bankAccount: true, bankIfsc: true, bankBranch: true,
       },
     });
     res.json(user);

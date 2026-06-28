@@ -31,7 +31,14 @@ model User {
   trialEndsAt   DateTime? // 28-day PRO trial expiry (set on registration)
   invoicePrefix String?   @default("INV") // Custom invoice prefix
   currency      String?   @default("INR") // Default currency
+  invoiceTemplate String? @default("classic") // Invoice template: classic, modern, compact
   whatsappNumber String?  // WhatsApp number for sharing
+
+  // Bank details for invoices
+  bankName      String?
+  bankAccount   String?
+  bankIfsc      String?
+  bankBranch    String?
 
   // Referral
   referralCode  String?   @unique
