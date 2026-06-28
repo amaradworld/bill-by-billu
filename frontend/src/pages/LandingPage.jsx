@@ -322,7 +322,7 @@ export default function LandingPage() {
           </div>
         </footer>
       </div>
-      <SubscribeModal delay={30000} />
+      <SubscribeModal delay={10000} />
     </>
   );
 }
