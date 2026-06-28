@@ -111,10 +111,8 @@ router.get('/razorpay/status/:invoiceId', async (req, res) => {
 // ─── Razorpay Webhook (unauthenticated) ───
 const webhookRouter = express.Router();
 
-// Razorpay sends raw body — need to capture it for signature verification
-webhookRouter.use(express.raw({ type: 'application/json' }));
-
-webhookRouter.post('/webhook/razorpay', async (req, res) => {
+// Razorpay sends raw body — only parse raw for the webhook route, not all routes
+webhookRouter.post('/webhook/razorpay', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     if (!webhookSecret) {
