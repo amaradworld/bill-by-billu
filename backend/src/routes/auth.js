@@ -315,8 +315,22 @@ router.put('/profile', authenticate, async (req, res) => {
   }
 });
 
+const PAID_PLANS = ['STARTER', 'PRO'];
+const requirePaidPlan = async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { plan: true, planExpiry: true } });
+    const isExpired = user.planExpiry && new Date(user.planExpiry) < new Date();
+    if (isExpired || !PAID_PLANS.includes(user.plan)) {
+      return res.status(403).json({ error: 'This feature requires a paid plan', code: 'PLAN_REQUIRED' });
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 // PUT /api/auth/logo
-router.put('/logo', authenticate, async (req, res) => {
+router.put('/logo', authenticate, requirePaidPlan, async (req, res) => {
   try {
     const { logoUrl } = req.body;
     if (!logoUrl) return res.status(400).json({ error: 'Logo data is required' });
@@ -358,7 +372,7 @@ router.delete('/logo', authenticate, async (req, res) => {
 });
 
 // PUT /api/auth/qr
-router.put('/qr', authenticate, async (req, res) => {
+router.put('/qr', authenticate, requirePaidPlan, async (req, res) => {
   try {
     const { qrUrl } = req.body;
     if (!qrUrl) return res.status(400).json({ error: 'QR image data is required' });

@@ -9,6 +9,8 @@ const logger = require('../logger');
 const router = express.Router();
 router.use(authenticate);
 
+const PAID_PLANS = ['STARTER', 'PRO'];
+
 // Plan pricing
 const PLANS = {
   FREE: { name: 'Free', price: 0, invoices: 10, features: ['10 invoices/month', 'Basic invoicing', 'GST calculation', 'WhatsApp sharing'] },
@@ -35,14 +37,29 @@ router.get('/status', async (req, res) => {
 
     const planInfo = PLANS[user.plan] || PLANS.FREE;
     const isExpired = user.planExpiry && new Date(user.planExpiry) < new Date();
+    const activePlan = isExpired ? 'FREE' : user.plan;
+
+    const featureFlags = {
+      customLogo: PAID_PLANS.includes(activePlan),
+      qrUpload: PAID_PLANS.includes(activePlan),
+      gstReports: PAID_PLANS.includes(activePlan),
+      creditDebitNotes: PAID_PLANS.includes(activePlan),
+      recurringInvoices: PAID_PLANS.includes(activePlan),
+      aiFeatures: activePlan === 'PRO',
+      multiUser: activePlan === 'PRO',
+      apiAccess: activePlan === 'PRO',
+      insights: activePlan === 'PRO',
+      reminders: PAID_PLANS.includes(activePlan),
+    };
 
     res.json({
-      plan: isExpired ? 'FREE' : user.plan,
+      plan: activePlan,
       planExpiry: user.planExpiry,
       invoicesUsed: thisMonthCount,
       invoicesLimit: planInfo.invoices,
       invoicesRemaining: planInfo.invoices === -1 ? -1 : Math.max(0, planInfo.invoices - thisMonthCount),
       features: planInfo.features,
+      featureFlags,
       isExpired,
     });
   } catch (err) {

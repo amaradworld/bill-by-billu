@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CURRENCIES = [
@@ -166,39 +166,60 @@ export default function SettingsPage() {
         <LanguageSelector />
       </div>
 
-      <div className="bg-white rounded-xl border p-6 space-y-4">
+      <div className="bg-white rounded-xl border p-6 space-y-4 relative">
         <div className="flex items-center gap-2">
           <Image size={20} className="text-brand-600" />
           <h2 className="font-semibold text-gray-700">Business Logo</h2>
+          {user?.plan === 'FREE' && (
+            <span className="ml-auto flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+              <Lock size={12} /> Starter feature
+            </span>
+          )}
         </div>
         <p className="text-xs text-gray-500">Upload your business logo to appear on invoices.</p>
-        <div className="flex items-center gap-4">
-          {logoPreview ? (
-            <div className="relative">
-              <img src={logoPreview} alt="Logo" className="w-24 h-24 object-contain border rounded-lg p-1" />
-              <button onClick={handleLogoDelete}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
-                <X size={12} />
-              </button>
-            </div>
-          ) : (
+        {user?.plan === 'FREE' ? (
+          <div className="flex items-center gap-4 opacity-60">
             <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
-              {logoLoading ? (
-                <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
-              ) : (
-                <Image size={24} className="text-gray-300" />
-              )}
+              <Lock size={24} className="text-gray-300" />
             </div>
-          )}
-          <div>
-            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
-              <Upload size={16} />
-              {logoPreview ? 'Change Logo' : 'Upload Logo'}
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            </label>
-            <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
+            <div>
+              <button onClick={() => setShowUpgrade(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors">
+                <ArrowUpRight size={16} />
+                Upgrade to add logo
+              </button>
+              <p className="text-xs text-gray-400 mt-1">Available on Starter & Pro plans</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            {logoPreview ? (
+              <div className="relative">
+                <img src={logoPreview} alt="Logo" className="w-24 h-24 object-contain border rounded-lg p-1" />
+                <button onClick={handleLogoDelete}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
+                {logoLoading ? (
+                  <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
+                ) : (
+                  <Image size={24} className="text-gray-300" />
+                )}
+              </div>
+            )}
+            <div>
+              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
+                <Upload size={16} />
+                {logoPreview ? 'Change Logo' : 'Upload Logo'}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+              </label>
+              <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,39 +280,62 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border p-6 space-y-4">
-          <h2 className="font-semibold text-gray-700">Paytm / UPI QR Code</h2>
+        <div className="bg-white rounded-xl border p-6 space-y-4 relative">
+          <div className="flex items-center gap-2">
+            <h2 className="font-semibold text-gray-700">Paytm / UPI QR Code</h2>
+            {user?.plan === 'FREE' && (
+              <span className="ml-auto flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                <Lock size={12} /> Starter feature
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-500">
             Upload your Paytm merchant QR image. This will appear on invoices as a backup payment option.
             For dynamic QR with exact amounts, enter your UPI ID above in Invoice Settings.
           </p>
-          <div className="flex items-center gap-4">
-            {qrPreview ? (
-              <div className="relative">
-                <img src={qrPreview} alt="QR Code" className="w-24 h-24 object-contain border rounded-lg p-1" />
-                <button onClick={handleQrDelete}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
-                  <X size={12} />
-                </button>
-              </div>
-            ) : (
+          {user?.plan === 'FREE' ? (
+            <div className="flex items-center gap-4 opacity-60">
               <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
-                {qrLoading ? (
-                  <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
-                ) : (
-                  <Image size={24} className="text-gray-300" />
-                )}
+                <Lock size={24} className="text-gray-300" />
               </div>
-            )}
-            <div>
-              <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
-                <Upload size={16} />
-                {qrPreview ? 'Change QR' : 'Upload QR'}
-                <input ref={qrInputRef} type="file" accept="image/*" onChange={handleQrUpload} className="hidden" />
-              </label>
-              <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
+              <div>
+                <button onClick={() => setShowUpgrade(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-lg text-sm font-medium hover:bg-amber-100 transition-colors">
+                  <ArrowUpRight size={16} />
+                  Upgrade to add QR code
+                </button>
+                <p className="text-xs text-gray-400 mt-1">Available on Starter & Pro plans</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              {qrPreview ? (
+                <div className="relative">
+                  <img src={qrPreview} alt="QR Code" className="w-24 h-24 object-contain border rounded-lg p-1" />
+                  <button onClick={handleQrDelete}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50">
+                  {qrLoading ? (
+                    <div className="animate-spin w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full" />
+                  ) : (
+                    <Image size={24} className="text-gray-300" />
+                  )}
+                </div>
+              )}
+              <div>
+                <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100 transition-colors">
+                  <Upload size={16} />
+                  {qrPreview ? 'Change QR' : 'Upload QR'}
+                  <input ref={qrInputRef} type="file" accept="image/*" onChange={handleQrUpload} className="hidden" />
+                </label>
+                <p className="text-xs text-gray-400 mt-1">JPG, PNG. Max 2MB.</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end">
