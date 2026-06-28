@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar, Mail } from 'lucide-react';
+import SubscribeForm from '../components/SubscribeForm';
 
 const trackEvent = (eventName, params = {}) => {
   if (typeof window !== 'undefined' && window.gtag) {
