@@ -15,19 +15,20 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setTokenGetter(() => token);
-  }, [token]);
+  const setTokenSync = (newToken) => {
+    setToken(newToken);
+    setTokenGetter(() => newToken);
+  };
 
   useEffect(() => {
     getToken().then((storedToken) => {
       if (storedToken) {
-        setToken(storedToken);
+        setTokenSync(storedToken);
         api.get('/api/auth/me', { headers: { Authorization: `Bearer ${storedToken}` } })
           .then(setUser)
           .catch(async () => {
             await Preferences.remove({ key: 'bbToken' });
-            setToken(null);
+            setTokenSync(null);
             toast.error('Session expired. Please log in again.');
           })
           .finally(() => setLoading(false));
@@ -40,7 +41,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const data = await api.post('/api/auth/login', { email, password });
     await Preferences.set({ key: 'bbToken', value: data.token });
-    setToken(data.token);
+    setTokenSync(data.token);
     setUser(data.user);
     return data.user;
   };
@@ -48,7 +49,7 @@ export function AuthProvider({ children }) {
   const register = async (formData) => {
     const data = await api.post('/api/auth/register', formData);
     await Preferences.set({ key: 'bbToken', value: data.token });
-    setToken(data.token);
+    setTokenSync(data.token);
     setUser(data.user);
     return data.user;
   };
@@ -61,7 +62,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     await Preferences.remove({ key: 'bbToken' });
-    setToken(null);
+    setTokenSync(null);
     setUser(null);
   };
 

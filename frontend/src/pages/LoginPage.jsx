@@ -31,6 +31,7 @@ export default function LoginPage() {
       }
       const data = await api.post('/api/auth/google', { credential });
       await Preferences.set({ key: 'bbToken', value: data.token });
+      localStorage.setItem('bbToken', data.token);
       window.location.href = '/app';
     } catch (err) {
       if (err.message !== 'User canceled the Google sign-in flow') {
