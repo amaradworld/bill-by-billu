@@ -21,7 +21,6 @@
     "GoogleAuth": {
       "scopes": ["profile", "email"],
       "clientId": "1055595839739-7c99jeuht3ga4vdbv3c6mvjs067googp.apps.googleusercontent.com",
-      "androidClientId": "349451682504-i81hieingnadhq9kg06mu1t6lg97sqpa.apps.googleusercontent.com",
       "forceCodeForRefreshToken": true
     },
     "SplashScreen": {
