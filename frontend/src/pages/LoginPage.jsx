@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       let credential;
       if (isNative) {
-        await GoogleAuth.initialize({ scopes: ['profile', 'email'], grantOfflineAccess: true });
+        await GoogleAuth.initialize({ scopes: ['profile', 'email'] });
         const result = await GoogleAuth.signIn();
         credential = result.authentication.idToken;
       } else {
@@ -71,7 +71,7 @@ export default function LoginPage() {
               await Preferences.set({ key: 'bbToken', value: data.token });
               window.location.href = '/app';
             } catch (err) {
-              toast.error(err.message || 'Google login failed');
+        toast.error(err.code ? `${err.message} (code: ${err.code})` : err.message || 'Google login failed');
             }
           },
         });
