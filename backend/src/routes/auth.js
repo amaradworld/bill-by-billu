@@ -179,7 +179,7 @@ router.post('/google', async (req, res) => {
 
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_CLIENT_ID || '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
     });
 
     const payload = ticket.getPayload();
@@ -220,7 +220,7 @@ router.post('/google', async (req, res) => {
     res.json({ user: safeUser, token });
   } catch (err) {
     logger.error('Google auth error:', err.message);
-    res.status(500).json({ error: 'Google authentication failed' });
+    res.status(500).json({ error: 'Google authentication failed', detail: err.message });
   }
 });
 
