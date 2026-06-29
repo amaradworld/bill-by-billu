@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { api } from '../lib/api';
-import { User, Mail, Building, Calendar, Crown, Zap, RefreshCw, LogOut, Shield, Search } from 'lucide-react';
+import { User, Mail, Building, Calendar, Crown, Zap, RefreshCw, LogOut, Shield, Search, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminUsersPage() {

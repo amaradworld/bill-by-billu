@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { api } from '../lib/api';
-import { Mail, Users, UserX, Search, Download, Trash2, LogOut, Shield, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
+import { Mail, Users, User, UserX, Search, Download, Trash2, LogOut, Shield, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminSubscribersPage() {
