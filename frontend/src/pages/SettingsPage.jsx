@@ -23,7 +23,7 @@ export default function SettingsPage() {
     name: '', businessName: '', phone: '', gstNumber: '', panNumber: '',
     address: '', city: '', state: '', pincode: '',
     invoicePrefix: 'INV', currency: 'INR', whatsappNumber: '',
-    razorpayKeyId: '', razorpayKeySecret: '',
+    upiId: '',
     invoiceTemplate: 'classic',
     bankName: '', bankAccount: '', bankIfsc: '', bankBranch: '',
   });
@@ -47,7 +47,7 @@ export default function SettingsPage() {
         address: user.address || '', city: user.city || '', state: user.state || '', pincode: user.pincode || '',
         invoicePrefix: user.invoicePrefix || 'INV', currency: user.currency || 'INR',
         whatsappNumber: user.whatsappNumber || '',
-        razorpayKeyId: user.razorpayKeyId || '', razorpayKeySecret: '',
+        upiId: user.upiId || '',
         invoiceTemplate: user.invoiceTemplate || 'classic',
         bankName: user.bankName || '', bankAccount: user.bankAccount || '',
         bankIfsc: user.bankIfsc || '', bankBranch: user.bankBranch || '',
@@ -72,9 +72,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = { ...form };
-      if (!payload.razorpayKeySecret) delete payload.razorpayKeySecret;
-      await updateProfile(payload);
+      await updateProfile(form);
       toast.success(t('common.success'));
     } catch (err) { toast.error(err.message); }
     finally { setLoading(false); }
@@ -338,17 +336,12 @@ export default function SettingsPage() {
         </div>
 
         <div className="bg-white rounded-xl border p-6 space-y-4">
-          <h2 className="font-semibold text-gray-700">Razorpay Integration</h2>
-          <p className="text-xs text-gray-500">Add your Razorpay API keys to enable payment links in invoices.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Key ID</label>
-              <input className={input} value={form.razorpayKeyId} onChange={set('razorpayKeyId')} placeholder="rzp_live_..." />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Key Secret</label>
-              <input type="password" className={input} value={form.razorpayKeySecret} onChange={set('razorpayKeySecret')} placeholder="••••••" />
-            </div>
+          <h2 className="font-semibold text-gray-700">UPI Payment</h2>
+          <p className="text-xs text-gray-500">Enter your UPI ID to accept payments from buyers. A payment link with exact amount will be generated on invoices.</p>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">UPI ID</label>
+            <input className={input} value={form.upiId || ''} onChange={set('upiId')} placeholder="yourname@upi" />
+            <p className="text-xs text-gray-400 mt-1">e.g. 9876543210@paytm, yourname@oksbi, merchant@upi</p>
           </div>
         </div>
 
@@ -363,7 +356,7 @@ export default function SettingsPage() {
           </div>
           <p className="text-xs text-gray-500">
             Upload your Paytm merchant QR image. This will appear on invoices as a backup payment option.
-            For dynamic QR with exact amounts, enter your UPI ID above in Invoice Settings.
+            For dynamic QR with exact amounts, enter your UPI ID above.
           </p>
           {!isPaid ? (
             <div className="flex items-center gap-4 opacity-60">

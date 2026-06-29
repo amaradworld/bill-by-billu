@@ -404,7 +404,7 @@ export default function GSTReportsPage() {
           )}
 
           {/* Empty state */}
-          !loading && tab === 'gstr1' && gstr1 && gstr1.summary.totalInvoices === 0 && (
+          {!loading && tab === 'gstr1' && gstr1 && gstr1.summary.totalInvoices === 0 && (
             <div className="text-center py-16 text-gray-400">
               <FileText size={48} className="mx-auto mb-3 opacity-50" />
               <p className="font-medium text-gray-500">No invoices for {period}</p>

@@ -49,6 +49,7 @@ const registerSchema = z.object({
   bankAccount: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
   bankIfsc: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
   bankBranch: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
+  upiId: z.preprocess(v => (v === '' || v === null) ? undefined : v, z.string().optional()),
 });
 
 const loginSchema = z.object({
@@ -279,6 +280,7 @@ router.get('/me', authenticate, async (req, res) => {
         logoUrl: true, qrUrl: true, plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
         referralCode: true, referralCount: true, trialEndsAt: true,
         invoiceTemplate: true, bankName: true, bankAccount: true, bankIfsc: true, bankBranch: true,
+        upiId: true,
         createdAt: true,
       },
     });
@@ -316,6 +318,7 @@ router.put('/profile', authenticate, async (req, res) => {
         plan: true, invoicePrefix: true, currency: true, whatsappNumber: true,
         razorpayKeyId: true, logoUrl: true, invoiceTemplate: true,
         bankName: true, bankAccount: true, bankIfsc: true, bankBranch: true,
+        upiId: true,
       },
     });
     res.json(user);

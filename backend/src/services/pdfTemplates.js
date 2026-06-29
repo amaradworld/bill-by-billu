@@ -108,7 +108,7 @@ async function classicTemplate(doc, invoice, user) {
   doc.fontSize(7).font('Helvetica').fillColor(MUTED);
   if (invoice.supplierGst) { doc.text(`GSTIN: ${invoice.supplierGst}`, leftX + 10, fromY); fromY += 11; }
   if (invoice.supplierAddress) { doc.text(invoice.supplierAddress, leftX + 10, fromY, { width: 220 }); fromY += 11; }
-  if (user.state) { doc.text(user.state, leftX + 10, fromY); }
+  if (user.state && !invoice.supplierAddress?.toLowerCase().includes(user.state.toLowerCase())) { doc.text(user.state, leftX + 10, fromY); }
 
   doc.fontSize(7).font('Helvetica-Bold').fillColor(BLUE).text('INVOICE DETAILS', rightX + 10, y + 8);
   let detY = y + 20;
@@ -167,9 +167,11 @@ async function classicTemplate(doc, invoice, user) {
     doc.rect(leftX, y - 2, pageWidth, ROW_HEIGHT).fill(bgColor);
 
     const taxAmt = Number(item.totalAmount) - (Number(item.unitPrice) * Number(item.quantity));
+    let itemName = item.name + (item.description ? ` (${item.description})` : '');
+    if (itemName.length > 28) itemName = itemName.slice(0, 26) + '..';
     const rowData = [
       String(idx + 1),
-      item.name + (item.description ? ` (${item.description})` : ''),
+      itemName,
       item.hsnCode || '-',
       `${item.quantity} ${item.unit}`,
       formatCurrency(item.unitPrice),
@@ -190,14 +192,14 @@ async function classicTemplate(doc, invoice, user) {
 
   // ─── TOTALS ───
   y += 10;
-  const totalsX = 380;
+  const totalsX = 355;
   const totalsValX = 490;
-  const totalsW = 110;
+  const totalsW = 155;
 
   const addRow = (label, value, bold = false, color = DARK) => {
     doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(8).fillColor(color);
     doc.text(label, totalsX, y, { width: 100, align: 'right' });
-    doc.text(value, totalsValX, y, { width: 55, align: 'right' });
+    doc.text(value, totalsValX, y, { width: 90, align: 'right' });
     y += 13;
   };
 
@@ -212,12 +214,12 @@ async function classicTemplate(doc, invoice, user) {
   doc.moveTo(totalsX, y).lineTo(leftX + pageWidth, y).strokeColor(BLUE).lineWidth(1).stroke();
   y += 6;
 
-  // Grand total in blue card
-  drawRoundedRect(doc, totalsX - 5, y - 4, 170, 22, 4, BLUE);
+  // Grand total in blue card — wider box to prevent overflow
+  drawRoundedRect(doc, totalsX - 5, y - 5, 195, 26, 4, BLUE);
   doc.font('Helvetica-Bold').fontSize(10).fillColor('#ffffff');
   doc.text('Grand Total:', totalsX, y, { width: 100, align: 'right' });
-  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: 55, align: 'right' });
-  y += 24;
+  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: 85, align: 'right' });
+  y += 28;
 
   // Amount in words
   doc.fontSize(7).font('Helvetica').fillColor(MUTED);
@@ -341,7 +343,7 @@ async function modernTemplate(doc, invoice, user) {
   doc.fontSize(7).font('Helvetica').fillColor(MUTED);
   if (invoice.supplierGst) { doc.text(`GSTIN: ${invoice.supplierGst}`, leftX + 14, fromY); fromY += 11; }
   if (invoice.supplierAddress) { doc.text(invoice.supplierAddress, leftX + 14, fromY, { width: 220 }); fromY += 11; }
-  if (user.state) doc.text(user.state, leftX + 14, fromY);
+  if (user.state && !invoice.supplierAddress?.toLowerCase().includes(user.state.toLowerCase())) doc.text(user.state, leftX + 14, fromY);
 
   // Details card
   drawRoundedRect(doc, rightX, y, 260, 85, 8, '#ffffff', BORDER);
@@ -408,9 +410,11 @@ async function modernTemplate(doc, invoice, user) {
     drawRoundedRect(doc, leftX, y - 2, pageWidth, ROW_HEIGHT, 2, bgColor);
 
     const taxAmt = Number(item.totalAmount) - (Number(item.unitPrice) * Number(item.quantity));
+    let itemName = item.name + (item.description ? ` (${item.description})` : '');
+    if (itemName.length > 28) itemName = itemName.slice(0, 26) + '..';
     const rowData = [
       String(idx + 1),
-      item.name + (item.description ? ` (${item.description})` : ''),
+      itemName,
       item.hsnCode || '-',
       `${item.quantity} ${item.unit}`,
       formatCurrency(item.unitPrice),
@@ -631,9 +635,11 @@ async function compactTemplate(doc, invoice, user) {
     }
 
     const taxAmt = Number(item.totalAmount) - (Number(item.unitPrice) * Number(item.quantity));
+    let itemName = item.name + (item.description ? ` (${item.description})` : '');
+    if (itemName.length > 28) itemName = itemName.slice(0, 26) + '..';
     const rowData = [
       String(idx + 1),
-      item.name + (item.description ? ` (${item.description})` : ''),
+      itemName,
       item.hsnCode || '-',
       `${item.quantity} ${item.unit}`,
       formatCurrency(item.unitPrice),
