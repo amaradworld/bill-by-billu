@@ -92,6 +92,9 @@ export default function AdminSubscribersPage() {
             <a href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
               <CreditCard size={16} /> Payments
             </a>
+            <a href="/admin/users" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
+              <User size={16} /> Users
+            </a>
             <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-gray-400 hover:text-red-400 transition-colors">
               <LogOut size={16} /> Logout
             </button>

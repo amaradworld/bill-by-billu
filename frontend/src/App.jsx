@@ -23,6 +23,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminSubscribersPage from './pages/AdminSubscribersPage';
+import AdminUsersPage from './pages/AdminUsersPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
           <Route path="/admin" element={<AdminAuthProvider><AdminRoute><AdminDashboardPage /></AdminRoute></AdminAuthProvider>} />
           <Route path="/admin/subscribers" element={<AdminAuthProvider><AdminRoute><AdminSubscribersPage /></AdminRoute></AdminAuthProvider>} />
+          <Route path="/admin/users" element={<AdminAuthProvider><AdminRoute><AdminUsersPage /></AdminRoute></AdminAuthProvider>} />
 
           {/* User app */}
           <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>

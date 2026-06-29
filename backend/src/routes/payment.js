@@ -148,6 +148,32 @@ webhookRouter.post('/webhook/razorpay', express.raw({ type: 'application/json' }
       const payment = event.payload?.payment?.entity;
       if (!payment) return res.json({ received: true });
 
+      // Check if this is a subscription payment
+      if (payment.notes?.type === 'subscription') {
+        const userId = payment.notes?.userId;
+        const plan = payment.notes?.plan;
+        const period = payment.notes?.period;
+        if (userId && plan) {
+          try {
+            const now = new Date();
+            let expiry;
+            if (period === 'yearly') {
+              expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+            } else {
+              expiry = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+            }
+            await prisma.user.update({
+              where: { id: userId },
+              data: { plan, planExpiry: expiry },
+            });
+            logger.info({ userId, plan, expiry, paymentId: payment.id }, 'Subscription upgraded via webhook');
+          } catch (err) {
+            logger.error({ userId, err: err.message }, 'Webhook subscription upgrade failed');
+          }
+        }
+        return res.json({ received: true });
+      }
+
       const invoiceId = payment.notes?.invoice_id || payment.receipt;
       if (!invoiceId) return res.json({ received: true });
 
