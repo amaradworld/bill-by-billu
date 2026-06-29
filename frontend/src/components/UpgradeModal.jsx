@@ -17,13 +17,13 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
     {
       key: 'STARTER', name: 'Starter', icon: Zap,
       color: 'text-blue-600', bg: 'bg-blue-50',
-      monthly: 199, yearly: 1990,
+      monthly: 199, yearly: 1887,
       features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'],
     },
     {
       key: 'GROWTH', name: 'Growth', icon: Crown,
       color: 'text-amber-600', bg: 'bg-amber-50', popular: true,
-      monthly: 399, yearly: 3990,
+      monthly: 399, yearly: 3783,
       features: ['1,000 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support'],
     },
   ];
@@ -85,7 +85,7 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
           {/* Period toggle */}
           <div className="flex items-center gap-2 mb-6 bg-gray-100 rounded-lg p-1">
             <button onClick={() => setPeriod('monthly')} className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${period === 'monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Monthly</button>
-            <button onClick={() => setPeriod('yearly')} className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${period === 'yearly' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Yearly <span className="text-green-600 text-xs">Save 17%</span></button>
+            <button onClick={() => setPeriod('yearly')} className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${period === 'yearly' ? 'bg-white shadow text-gray-900' : 'text-gray-500'}`}>Yearly <span className="text-green-600 text-xs">Save 21%</span></button>
           </div>
 
           <div className="space-y-4">
