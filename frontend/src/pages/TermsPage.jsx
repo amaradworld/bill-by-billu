@@ -56,9 +56,9 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Subscriptions & Payments</h2>
               <ul className="list-disc pl-5 space-y-2">
-                <li><strong>Free Plan:</strong> Limited to 10 invoices per month with basic features</li>
+                <li><strong>Free Plan:</strong> Limited to 5 invoices per month with basic features</li>
                 <li><strong>Starter Plan:</strong> ₹199/month or ₹1,887/year — 100 invoices/month with GST reports</li>
-                <li><strong>Growth Plan:</strong> ₹399/month or ₹3,783/year — 1,000 invoices/month with AI features</li>
+                <li><strong>Growth Plan:</strong> ₹399/month or ₹3,783/year — 500 invoices/month with AI features</li>
                 <li>Payments are processed securely through Razorpay</li>
                 <li>UPI manual payments are verified by our team within 24 hours</li>
                 <li>Subscriptions auto-renew unless cancelled before the billing cycle ends</li>

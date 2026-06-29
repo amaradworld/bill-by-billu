@@ -30,7 +30,7 @@ const steps = [
 const plans = [
   { name: 'Free', price: '₹0', period: '/month', desc: 'Perfect for trying out', features: ['5 invoices/month', 'Basic GST calculation', 'WhatsApp sharing', '1 user'], cta: 'Start Free', highlight: false },
   { name: 'Starter', price: '₹199', period: '/month', yearly: '₹1,887/yr', desc: 'For growing freelancers', features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Expense tracking', 'Credit/Debit notes', 'Custom branding'], cta: 'Get Starter', highlight: true },
-  { name: 'Growth', price: '₹399', period: '/month', yearly: '₹3,783/yr', desc: 'For teams & agencies', features: ['1,000 invoices/month', 'AI invoice creation', 'Multi-user access', 'AI business insights', 'Priority support'], cta: 'Get Growth', highlight: false },
+  { name: 'Growth', price: '₹399', period: '/month', yearly: '₹3,783/yr', desc: 'For teams & agencies', features: ['500 invoices/month', 'AI invoice creation', 'Multi-user access', 'AI business insights', 'Priority support'], cta: 'Get Growth', highlight: false },
 ];
 
 const testimonials = [
@@ -113,7 +113,7 @@ export default function LandingPage() {
             </div>
             <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 animate-slide-up animation-delay-300">
               <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> No credit card required</span>
-              <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> 10 free invoices/month</span>
+              <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> 5 free invoices/month</span>
               <span className="flex items-center gap-1.5"><Check size={16} className="text-green-500" /> Cancel anytime</span>
             </div>
           </div>
