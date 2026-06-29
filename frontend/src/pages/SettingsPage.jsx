@@ -195,7 +195,7 @@ export default function SettingsPage() {
                 <ArrowUpRight size={16} />
                 Upgrade to add logo
               </button>
-              <p className="text-xs text-gray-400 mt-1">Available on Starter & Pro plans</p>
+              <p className="text-xs text-gray-400 mt-1">Available on Starter & Growth plans</p>
             </div>
           </div>
         ) : (
@@ -369,7 +369,7 @@ export default function SettingsPage() {
                   <ArrowUpRight size={16} />
                   Upgrade to add QR code
                 </button>
-                <p className="text-xs text-gray-400 mt-1">Available on Starter & Pro plans</p>
+                <p className="text-xs text-gray-400 mt-1">Available on Starter & Growth plans</p>
               </div>
             </div>
           ) : (

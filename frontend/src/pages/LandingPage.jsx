@@ -28,9 +28,9 @@ const steps = [
 ];
 
 const plans = [
-  { name: 'Free', price: '₹0', period: '/month', desc: 'Perfect for trying out', features: ['10 invoices/month', 'Basic GST reports', 'WhatsApp sharing', '1 user'], cta: 'Start Free', highlight: false },
-  { name: 'Starter', price: '₹299', period: '/month', desc: 'For growing freelancers', features: ['Unlimited invoices', 'Full GST reports', 'Expense tracking', 'Priority support', 'Custom branding'], cta: 'Get Starter', highlight: true },
-  { name: 'Pro', price: '₹799', period: '/month', desc: 'For teams & agencies', features: ['Everything in Starter', 'Multi-user access', 'API access', 'AI categorization', 'Dedicated support', 'White-label option'], cta: 'Get Pro', highlight: false },
+  { name: 'Free', price: '₹0', period: '/month', desc: 'Perfect for trying out', features: ['5 invoices/month', 'Basic GST calculation', 'WhatsApp sharing', '1 user'], cta: 'Start Free', highlight: false },
+  { name: 'Starter', price: '₹199', period: '/month', yearly: '₹1,887/yr', desc: 'For growing freelancers', features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Expense tracking', 'Credit/Debit notes', 'Custom branding'], cta: 'Get Starter', highlight: true },
+  { name: 'Growth', price: '₹399', period: '/month', yearly: '₹3,783/yr', desc: 'For teams & agencies', features: ['1,000 invoices/month', 'AI invoice creation', 'Multi-user access', 'AI business insights', 'Priority support'], cta: 'Get Growth', highlight: false },
 ];
 
 const testimonials = [
