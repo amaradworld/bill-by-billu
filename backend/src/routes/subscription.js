@@ -127,7 +127,7 @@ router.post('/create-order', async (req, res) => {
       body: JSON.stringify({
         amount: amount * 100, // paise
         currency: 'INR',
-        receipt: `sub_${req.userId.slice(0, 16)}_${plan}_${period}_${Date.now()}`,
+        receipt: `sub_${plan}_${Date.now().toString(36)}`,
         notes: { userId: req.userId, plan, period, type: 'subscription' },
       }),
     });
