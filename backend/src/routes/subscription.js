@@ -159,6 +159,8 @@ router.post('/verify', async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, period } = req.body;
 
+    logger.info({ userId: req.userId, orderId: razorpay_order_id, plan, period }, 'Verify payment attempt');
+
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ error: 'Missing payment verification data' });
     }
@@ -171,6 +173,7 @@ router.post('/verify', async (req, res) => {
     }
 
     if (!razorpayKeySecret) {
+      logger.error({ userId: req.userId }, 'No Razorpay secret available for verification');
       return res.status(500).json({ error: 'Payment verification not configured. Contact support.' });
     }
 
@@ -182,7 +185,10 @@ router.post('/verify', async (req, res) => {
     // Timing-safe comparison
     const sigBuf = Buffer.from(razorpay_signature, 'hex');
     const expectedBuf = Buffer.from(expectedSig, 'hex');
-    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+    const sigValid = sigBuf.length === expectedBuf.length && crypto.timingSafeEqual(sigBuf, expectedBuf);
+
+    if (!sigValid) {
+      logger.error({ userId: req.userId, orderId: razorpay_order_id }, 'Payment signature mismatch');
       return res.status(401).json({ error: 'Invalid payment signature' });
     }
 
@@ -202,7 +208,7 @@ router.post('/verify', async (req, res) => {
       select: { id: true, plan: true, planExpiry: true },
     });
 
-    logger.info({ userId: req.userId, plan, expiry }, 'Plan upgraded');
+    logger.info({ userId: req.userId, plan, expiry }, 'Plan upgraded via verify');
     res.json({ success: true, plan: updated.plan, planExpiry: updated.planExpiry });
   } catch (err) {
     logger.error('Verify subscription error:', err.message);

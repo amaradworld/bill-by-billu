@@ -154,6 +154,93 @@ router.post('/payments/:id/reject', requireAdmin, async (req, res) => {
 
 // ─── Subscribers ───
 
+// POST /api/admin/upgrade — Manually upgrade a user's plan (admin only)
+router.post('/upgrade', requireAdmin, async (req, res) => {
+  try {
+    const { userId, plan, period = 'monthly' } = req.body;
+    if (!userId || !plan || !['STARTER', 'PRO'].includes(plan)) {
+      return res.status(400).json({ error: 'userId and valid plan (STARTER/PRO) required' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const now = new Date();
+    let expiry;
+    if (period === 'yearly') {
+      expiry = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    } else {
+      expiry = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { plan, planExpiry: expiry },
+      select: { id: true, email: true, name: true, plan: true, planExpiry: true },
+    });
+
+    logger.info({ adminId: req.userId, targetUserId: userId, plan, expiry }, 'Admin: manually upgraded user');
+    res.json({ success: true, user: updated });
+  } catch (err) {
+    logger.error('Admin upgrade error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/users — List all users (admin only)
+router.get('/users', requireAdmin, async (req, res) => {
+  try {
+    const { search, page = 1, limit = 50 } = req.query;
+    const where = {};
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [users, total] = await prisma.$transaction([
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (parseInt(page) - 1) * parseInt(limit),
+        take: parseInt(limit),
+        select: { id: true, email: true, name: true, businessName: true, plan: true, planExpiry: true, trialEndsAt: true, createdAt: true },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    res.json({ users, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+  } catch (err) {
+    logger.error('Admin list users error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/razorpay/payments — Check Razorpay payments via API (admin only)
+router.get('/razorpay/payments', requireAdmin, async (req, res) => {
+  try {
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      return res.status(400).json({ error: 'Razorpay not configured' });
+    }
+
+    const auth = Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
+    const params = new URLSearchParams({ count: '20', skip: req.query.skip || '0' });
+    const razorpayRes = await fetch(`https://api.razorpay.com/v1/payments?${params}`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const payments = await razorpayRes.json();
+    res.json(payments);
+  } catch (err) {
+    logger.error('Admin Razorpay payments error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Subscribers ───
+
 // GET /api/admin/subscribers — List all subscribers (admin only)
 router.get('/subscribers', requireAdmin, async (req, res) => {
   try {

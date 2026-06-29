@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import { X, Check, Zap, Crown, Loader, QrCode, CreditCard, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -9,6 +10,7 @@ const UPI_NAME = 'Bill By Billu';
 
 export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
   const { t } = useTranslation();
+  const { refreshUser } = useAuth();
   const [period, setPeriod] = useState('monthly');
   const [processing, setProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -52,6 +54,7 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
               razorpay_signature: response.razorpay_signature,
               plan: plan.key, period,
             });
+            await refreshUser();
             toast.success(`Upgraded to ${plan.name}!`);
             onClose(true);
           } catch (err) {
