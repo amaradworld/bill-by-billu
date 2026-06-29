@@ -49,13 +49,14 @@ export default function TrialBanner() {
           <p className={`text-xs mt-0.5 ${
             isUrgent ? 'text-red-600' : isWarning ? 'text-amber-600' : 'text-brand-600'
           }`}>
-            {isWarning
-              ? 'Upgrade now to keep PRO features after trial ends'
-              : 'Enjoy all PRO features. No credit card required.'
-            }
+            {isWarning ? (
+              <>Upgrade now to keep PRO features after trial ends — <button onClick={() => setShowUpgrade(true)} className="font-semibold underline hover:no-underline">View plans</button></>
+            ) : (
+              <>Enjoy all PRO features. No credit card required. — <button onClick={() => setShowUpgrade(true)} className="font-semibold underline hover:no-underline">View plans</button></>
+            )}
           </p>
         </div>
-        {isWarning && (
+        {isWarning ? (
           <button
             onClick={() => setShowUpgrade(true)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
@@ -63,6 +64,13 @@ export default function TrialBanner() {
             }`}
           >
             Upgrade Now
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors whitespace-nowrap"
+          >
+            See Plans
           </button>
         )}
         <button onClick={() => setDismissed(true)} className="p-1 hover:bg-white/50 rounded-lg transition-colors">

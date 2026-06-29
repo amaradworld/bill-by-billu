@@ -2,7 +2,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
-import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock } from 'lucide-react';
+import UpgradeModal from './UpgradeModal';
+import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock, ArrowUpCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const PLAN_RANK = { FREE: 0, STARTER: 1, PRO: 2 };
 
@@ -23,6 +25,7 @@ export default function Sidebar({ onClose }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const userPlan = user?.plan || 'FREE';
   const isTrialActive = user?.trialEndsAt && new Date(user.trialEndsAt) > new Date();
   const isPaid = PLAN_RANK[userPlan] > PLAN_RANK.FREE || isTrialActive;
@@ -34,12 +37,12 @@ export default function Sidebar({ onClose }) {
   };
 
   const handleUpgrade = () => {
-    navigate('/app/settings');
-    onClose?.();
+    setShowUpgrade(true);
   };
 
   return (
     <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl border-r border-gray-100">
+      {showUpgrade && <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} currentPlan={user?.plan || 'FREE'} />}
       <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100/80">
         <div className="flex items-center gap-3">
           <Logo size={36} />
@@ -88,6 +91,18 @@ export default function Sidebar({ onClose }) {
           );
         })}
       </nav>
+
+      <div className="px-3 pb-3">
+        {user?.plan !== 'PRO' && (
+          <button
+            onClick={handleUpgrade}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 transition-all duration-200 shadow-sm"
+          >
+            <ArrowUpCircle size={18} />
+            <span>Upgrade Plan</span>
+          </button>
+        )}
+      </div>
 
       <div className="border-t border-gray-100/80 px-4 py-4">
         <div className="flex items-center gap-3 px-2 mb-3">
