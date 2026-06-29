@@ -134,8 +134,8 @@ router.post('/create-order', async (req, res) => {
 
     if (!razorpayRes.ok) {
       const err = await razorpayRes.json();
-      logger.error({ err }, 'Razorpay order creation failed');
-      return res.status(500).json({ error: 'Failed to create payment order' });
+      logger.error({ err, status: razorpayRes.status }, 'Razorpay order creation failed');
+      return res.status(500).json({ error: 'Failed to create payment order', detail: err.error?.description || err.message || 'Unknown Razorpay error' });
     }
 
     const order = await razorpayRes.json();
@@ -150,7 +150,7 @@ router.post('/create-order', async (req, res) => {
     });
   } catch (err) {
     logger.error('Create subscription order error:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', detail: err.message });
   }
 });
 
