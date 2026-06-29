@@ -5,6 +5,7 @@ import Logo from './Logo';
 import UpgradeModal from './UpgradeModal';
 import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock, ArrowUpCircle } from 'lucide-react';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const PLAN_RANK = { FREE: 0, STARTER: 1, PRO: 2 };
 
@@ -42,7 +43,10 @@ export default function Sidebar({ onClose }) {
 
   return (
     <div className="flex flex-col h-full bg-white/80 backdrop-blur-xl border-r border-gray-100">
-      {showUpgrade && <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} currentPlan={user?.plan || 'FREE'} />}
+      {showUpgrade && createPortal(
+        <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} currentPlan={user?.plan || 'FREE'} />,
+        document.body
+      )}
       <div className="flex items-center justify-between px-5 py-5 border-b border-gray-100/80">
         <div className="flex items-center gap-3">
           <Logo size={36} />
