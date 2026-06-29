@@ -167,7 +167,7 @@ export default function SettingsPage() {
   const isPaid = user?.plan !== 'FREE' || (user?.trialEndsAt && new Date(user.trialEndsAt) > new Date());
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-6 pb-24">
       <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
 
       <div className="bg-white rounded-xl border p-6 space-y-4">
