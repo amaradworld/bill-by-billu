@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import UpgradePrompt from '../components/UpgradePrompt';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download, MessageCircle, CreditCard, Send, X } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];
@@ -36,6 +36,7 @@ export default function InvoiceFormPage() {
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [whatsappSending, setWhatsappSending] = useState(false);
   const [planLimit, setPlanLimit] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -165,6 +166,22 @@ export default function InvoiceFormPage() {
       `Thank you for your business!`
     );
     window.open(`https://wa.me/?text=${msg}`, '_blank');
+    setShareOpen(false);
+  };
+
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(`Invoice for ${form.customerName || 'Customer'}`);
+    const body = encodeURIComponent(
+      `Hello ${form.customerName || ''},\n\n` +
+      `Please find your invoice details below:\n\n` +
+      `Invoice Date: ${form.invoiceDate}\n` +
+      `Due Date: ${form.dueDate || 'N/A'}\n` +
+      `Amount: ₹${grandTotal.toFixed(2)}\n\n` +
+      `Thank you for your business!\n\n` +
+      ` Regards,\n${form.businessName || form.supplierName || ''}`
+    );
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
+    setShareOpen(false);
   };
 
   const handleSendWhatsAppBusiness = async () => {
@@ -436,6 +453,24 @@ export default function InvoiceFormPage() {
               <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
                 <Download size={16} /> PDF
               </button>
+              <div className="relative">
+                <button type="button" onClick={() => setShareOpen(!shareOpen)} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
+                  <Share2 size={16} /> Share
+                </button>
+                {shareOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
+                    <div className="absolute right-0 bottom-full mb-2 z-50 bg-white border rounded-xl shadow-xl py-1 min-w-[160px]">
+                      <button onClick={handleShareWhatsApp} className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm hover:bg-green-50 text-gray-700">
+                        <MessageCircle size={16} className="text-green-600" /> WhatsApp
+                      </button>
+                      <button onClick={handleShareEmail} className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm hover:bg-blue-50 text-gray-700">
+                        <Mail size={16} className="text-blue-600" /> Email
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
           <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
