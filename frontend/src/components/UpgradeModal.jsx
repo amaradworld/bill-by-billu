@@ -23,7 +23,7 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
     {
       key: 'GROWTH', name: 'Growth', icon: Crown,
       color: 'text-amber-600', bg: 'bg-amber-50', popular: true,
-      monthly: 499, yearly: 4990,
+      monthly: 399, yearly: 3990,
       features: ['1,000 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support'],
     },
   ];
