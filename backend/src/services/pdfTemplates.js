@@ -214,11 +214,12 @@ async function classicTemplate(doc, invoice, user) {
   doc.moveTo(totalsX, y).lineTo(leftX + pageWidth, y).strokeColor(BLUE).lineWidth(1).stroke();
   y += 6;
 
-  // Grand total in blue card — wider box to prevent overflow
-  drawRoundedRect(doc, totalsX - 5, y - 5, 195, 26, 4, BLUE);
+  // Grand total in blue card — extend to right edge of page
+  const grandTotalBoxW = (leftX + pageWidth) - (totalsX - 5);
+  drawRoundedRect(doc, totalsX - 5, y - 5, grandTotalBoxW, 26, 4, BLUE);
   doc.font('Helvetica-Bold').fontSize(10).fillColor('#ffffff');
   doc.text('Grand Total:', totalsX, y, { width: 100, align: 'right' });
-  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: 85, align: 'right' });
+  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: grandTotalBoxW - 105, align: 'right' });
   y += 28;
 
   // Amount in words
@@ -271,6 +272,9 @@ async function classicTemplate(doc, invoice, user) {
   doc.moveTo(leftX, sigY).lineTo(leftX + 200, sigY).strokeColor(GRAY_BORDER).lineWidth(0.5).stroke();
   doc.fontSize(7).font('Helvetica').fillColor(MUTED).text('Authorized Signatory', leftX, sigY + 4);
   doc.fontSize(8).font('Helvetica-Bold').fillColor(DARK).text(user.businessName || user.name, leftX, sigY + 15);
+
+  // ─── INVOICE BORDER ───
+  doc.rect(leftX - 10, 24, pageWidth + 20, pageBottom - 30).lineWidth(1).strokeColor(GRAY_BORDER).stroke();
 
   // ─── FOOTER ───
   doc.rect(0, pageBottom - 20, 595.28, 20).fill(BLUE);
@@ -456,10 +460,11 @@ async function modernTemplate(doc, invoice, user) {
   y += 5;
 
   // Grand total
-  drawRoundedRect(doc, totalsX - 10, y - 4, 190, 24, 8, PURPLE);
+  const modernGrandTotalW = (leftX + pageWidth) - (totalsX - 10);
+  drawRoundedRect(doc, totalsX - 10, y - 4, modernGrandTotalW, 24, 8, PURPLE);
   doc.font('Helvetica-Bold').fontSize(10).fillColor('#ffffff');
   doc.text('Grand Total:', totalsX, y, { width: 100, align: 'right' });
-  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: 60, align: 'right' });
+  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: modernGrandTotalW - 110, align: 'right' });
   y += 28;
 
   // Amount in words
@@ -509,6 +514,9 @@ async function modernTemplate(doc, invoice, user) {
   doc.moveTo(leftX, sigY).lineTo(leftX + 200, sigY).strokeColor(BORDER).lineWidth(0.5).stroke();
   doc.fontSize(7).font('Helvetica').fillColor(MUTED).text('Authorized Signatory', leftX, sigY + 4);
   doc.fontSize(8).font('Helvetica-Bold').fillColor(DARK).text(user.businessName || user.name, leftX, sigY + 15);
+
+  // ─── INVOICE BORDER ───
+  doc.rect(leftX - 10, 24, pageWidth + 20, pageBottom - 28).lineWidth(1).strokeColor(BORDER).stroke();
 
   // ─── FOOTER ───
   doc.rect(0, pageBottom - 18, 595.28, 18).fill(PURPLE);
@@ -679,10 +687,11 @@ async function compactTemplate(doc, invoice, user) {
   doc.moveTo(totalsX, y).lineTo(totalsX + 165, y).strokeColor(TEAL).lineWidth(1).stroke();
   y += 4;
 
-  drawRoundedRect(doc, totalsX - 5, y - 3, 170, 20, 4, TEAL);
+  const compactGrandTotalW = (leftX + pageWidth) - (totalsX - 5);
+  drawRoundedRect(doc, totalsX - 5, y - 3, compactGrandTotalW, 20, 4, TEAL);
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#ffffff');
   doc.text('Grand Total:', totalsX, y, { width: 110, align: 'right' });
-  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: 60, align: 'right' });
+  doc.text(formatCurrency(invoice.totalAmount), totalsValX, y, { width: compactGrandTotalW - 120, align: 'right' });
   y += 22;
 
   doc.fontSize(6.5).font('Helvetica').fillColor(MUTED);
@@ -730,6 +739,9 @@ async function compactTemplate(doc, invoice, user) {
   doc.moveTo(leftX, sigY).lineTo(leftX + 180, sigY).strokeColor(BORDER).lineWidth(0.5).stroke();
   doc.fontSize(6).font('Helvetica').fillColor(MUTED).text('Authorized Signatory', leftX, sigY + 3);
   doc.fontSize(7).font('Helvetica-Bold').fillColor(DARK).text(user.businessName || user.name, leftX, sigY + 12);
+
+  // ─── INVOICE BORDER ───
+  doc.rect(leftX - 10, 24, pageWidth + 20, pageBottom - 22).lineWidth(1).strokeColor(BORDER).stroke();
 
   // ─── FOOTER ───
   doc.rect(0, pageBottom - 14, 595.28, 14).fill(TEAL);

@@ -436,15 +436,6 @@ export default function InvoiceFormPage() {
               <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
                 <Download size={16} /> PDF
               </button>
-              <button type="button" onClick={handleShareWhatsApp} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
-                <MessageCircle size={16} /> WhatsApp
-              </button>
-              <button type="button" onClick={() => setWhatsappModal(true)} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-green-50 text-green-700">
-                <Send size={16} /> Send WhatsApp
-              </button>
-              <button type="button" onClick={handleSendPaymentLink} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-purple-50 text-purple-700">
-                <CreditCard size={16} /> Pay Link
-              </button>
             </>
           )}
           <button type="submit" disabled={loading} className="flex items-center gap-2 px-6 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">

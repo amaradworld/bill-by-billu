@@ -9,13 +9,14 @@ const logger = require('../logger');
 const router = express.Router();
 router.use(authenticate);
 
-const PAID_PLANS = ['STARTER', 'PRO'];
+const PAID_PLANS = ['STARTER', 'GROWTH'];
 
 // Plan pricing
 const PLANS = {
-  FREE: { name: 'Free', price: 0, invoices: 10, features: ['10 invoices/month', 'Basic invoicing', 'GST calculation', 'WhatsApp sharing'] },
-  STARTER: { name: 'Starter', price: 299, monthlyPrice: 299, yearlyPrice: 2990, invoices: -1, features: ['Unlimited invoices', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'] },
-  PRO: { name: 'Pro', price: 799, monthlyPrice: 799, yearlyPrice: 7990, invoices: -1, features: ['Everything in Starter', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'API access', 'Priority support'] },
+  FREE: { name: 'Free', price: 0, invoices: 5, features: ['5 invoices/month', 'Basic invoicing', 'GST calculation', 'WhatsApp sharing'] },
+  STARTER: { name: 'Starter', price: 199, monthlyPrice: 199, yearlyPrice: 1990, invoices: 100, features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'] },
+  GROWTH: { name: 'Growth', price: 499, monthlyPrice: 499, yearlyPrice: 4990, invoices: 1000, features: ['1,000 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support'] },
+  ENTERPRISE: { name: 'Enterprise', price: 0, monthlyPrice: 0, yearlyPrice: 0, invoices: -1, features: ['Unlimited invoices', 'Everything in Growth', 'API access', 'Custom integrations', 'Dedicated support'] },
 };
 
 // GET /api/subscription/plans — List available plans
@@ -45,7 +46,7 @@ router.get('/status', async (req, res) => {
     if (isPaidActive) {
       effectivePlan = user.plan;
     } else if (isTrialActive) {
-      effectivePlan = 'PRO'; // trial gives PRO features
+      effectivePlan = 'GROWTH'; // trial gives GROWTH features
     }
 
     const trialDaysLeft = isTrialActive
@@ -62,10 +63,10 @@ router.get('/status', async (req, res) => {
       gstReports: PAID_PLANS.includes(effectivePlan),
       creditDebitNotes: PAID_PLANS.includes(effectivePlan),
       recurringInvoices: PAID_PLANS.includes(effectivePlan),
-      aiFeatures: effectivePlan === 'PRO',
-      multiUser: effectivePlan === 'PRO',
-      apiAccess: effectivePlan === 'PRO',
-      insights: effectivePlan === 'PRO',
+      aiFeatures: effectivePlan === 'GROWTH',
+      multiUser: effectivePlan === 'GROWTH',
+      apiAccess: effectivePlan === 'GROWTH',
+      insights: effectivePlan === 'GROWTH',
       reminders: PAID_PLANS.includes(effectivePlan),
     };
 
@@ -95,8 +96,8 @@ router.get('/status', async (req, res) => {
 router.post('/create-order', async (req, res) => {
   try {
     const { plan, period } = req.body;
-    if (!plan || !['STARTER', 'PRO'].includes(plan)) {
-      return res.status(400).json({ error: 'Invalid plan. Must be STARTER or PRO.' });
+    if (!plan || !['STARTER', 'GROWTH'].includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan. Must be STARTER or GROWTH.' });
     }
     if (!period || !['monthly', 'yearly'].includes(period)) {
       return res.status(400).json({ error: 'Invalid period. Must be monthly or yearly.' });
@@ -235,7 +236,7 @@ router.post('/cancel', async (req, res) => {
 router.post('/upi-request', async (req, res) => {
   try {
     const { plan, period, utrNumber } = req.body;
-    if (!plan || !['STARTER', 'PRO'].includes(plan)) {
+    if (!plan || !['STARTER', 'GROWTH'].includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan' });
     }
     if (!period || !['monthly', 'yearly'].includes(period)) {

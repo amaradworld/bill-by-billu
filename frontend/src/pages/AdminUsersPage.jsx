@@ -52,7 +52,7 @@ export default function AdminUsersPage() {
   };
 
   const planBadge = (plan, planExpiry) => {
-    if (plan === 'PRO') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700"><Crown size={12} /> PRO</span>;
+    if (plan === 'GROWTH') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700"><Crown size={12} /> GROWTH</span>;
     if (plan === 'STARTER') return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700"><Zap size={12} /> STARTER</span>;
     return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">FREE</span>;
   };
@@ -169,11 +169,11 @@ export default function AdminUsersPage() {
                         {upgrading === u.id ? '...' : '→ Starter'}
                       </button>
                       <button
-                        onClick={() => handleUpgrade(u.id, 'PRO')}
+                        onClick={() => handleUpgrade(u.id, 'GROWTH')}
                         disabled={upgrading === u.id}
                         className="px-3 py-1.5 bg-amber-500 text-black rounded-lg text-xs font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
                       >
-                        {upgrading === u.id ? '...' : '→ Pro'}
+                        {upgrading === u.id ? '...' : '→ Growth'}
                       </button>
                     </div>
                   )}

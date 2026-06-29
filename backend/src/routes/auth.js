@@ -331,7 +331,7 @@ router.put('/profile', authenticate, async (req, res) => {
   }
 });
 
-const PAID_PLANS = ['STARTER', 'PRO'];
+const PAID_PLANS = ['STARTER', 'GROWTH'];
 const requirePaidPlan = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { plan: true, planExpiry: true, trialEndsAt: true } });

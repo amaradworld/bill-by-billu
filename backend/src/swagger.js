@@ -27,7 +27,7 @@ const swaggerSpec = {
           name: { type: 'string' },
           businessName: { type: 'string' },
           gstNumber: { type: 'string' },
-          plan: { type: 'string', enum: ['FREE', 'STARTER', 'PRO'] },
+          plan: { type: 'string', enum: ['FREE', 'STARTER', 'GROWTH'] },
         },
       },
       Invoice: {

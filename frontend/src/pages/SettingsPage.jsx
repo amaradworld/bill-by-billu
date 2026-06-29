@@ -423,7 +423,7 @@ export default function SettingsPage() {
               </span>
             )}
             <span className="text-sm text-gray-500">
-              {planStatus ? `${planStatus.invoicesUsed} / ${planStatus.invoicesLimit === -1 ? '∞' : planStatus.invoicesLimit} invoices this month` : '10 invoices/month'}
+              {planStatus ? `${planStatus.invoicesUsed} / ${planStatus.invoicesLimit === -1 ? '∞' : planStatus.invoicesLimit} invoices this month` : '5 invoices/month'}
             </span>
           </div>
           <button

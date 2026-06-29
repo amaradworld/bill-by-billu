@@ -2,7 +2,7 @@ import { useState } from 'react';
 import UpgradeModal from './UpgradeModal';
 import { ArrowUpRight, AlertTriangle } from 'lucide-react';
 
-export default function UpgradePrompt({ used = 10, limit = 10, onUpgrade }) {
+export default function UpgradePrompt({ used = 5, limit = 5, onUpgrade }) {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -14,7 +14,7 @@ export default function UpgradePrompt({ used = 10, limit = 10, onUpgrade }) {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900">Free plan limit reached</p>
-            <p className="text-xs text-gray-500">{used} / {limit} invoices used this month. Upgrade for unlimited.</p>
+            <p className="text-xs text-gray-500">{used} / {limit} invoices used this month. Upgrade to Starter for 100 invoices.</p>
           </div>
         </div>
         <button

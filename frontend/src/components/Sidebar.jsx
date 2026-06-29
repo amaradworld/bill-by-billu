@@ -7,17 +7,17 @@ import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
-const PLAN_RANK = { FREE: 0, STARTER: 1, PRO: 2 };
+const PLAN_RANK = { FREE: 0, STARTER: 1, GROWTH: 2 };
 
 const navItems = [
   { to: '/app', icon: LayoutDashboard, key: 'nav.dashboard', end: true },
   { to: '/app/invoices', icon: FileText, key: 'nav.invoices' },
-  { to: '/app/ai-invoice', icon: Sparkles, key: 'nav.aiInvoice', minPlan: 'PRO' },
+  { to: '/app/ai-invoice', icon: Sparkles, key: 'nav.aiInvoice', minPlan: 'GROWTH' },
   { to: '/app/customers', icon: Users, key: 'nav.customers' },
   { to: '/app/products', icon: Package, key: 'nav.products' },
   { to: '/app/expenses', icon: Receipt, key: 'nav.expenses' },
   { to: '/app/gst-reports', icon: FileBarChart, key: 'nav.gstReports', minPlan: 'STARTER' },
-  { to: '/app/insights', icon: BarChart3, key: 'nav.insights', minPlan: 'PRO' },
+  { to: '/app/insights', icon: BarChart3, key: 'nav.insights', minPlan: 'GROWTH' },
   { to: '/app/reminders', icon: Bell, key: 'nav.reminders', minPlan: 'STARTER' },
   { to: '/app/settings', icon: Settings, key: 'nav.settings' },
 ];
@@ -97,7 +97,7 @@ export default function Sidebar({ onClose }) {
       </nav>
 
       <div className="px-3 pb-3">
-        {user?.plan !== 'PRO' && (
+        {user?.plan !== 'GROWTH' && (
           <button
             onClick={handleUpgrade}
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 transition-all duration-200 shadow-sm"

@@ -167,7 +167,7 @@ router.post('/', async (req, res) => {
         where: { userId: req.userId, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
       });
       if (thisMonthCount >= 10) {
-        return res.status(403).json({ error: 'Free plan limit reached (10 invoices/month).', code: 'PLAN_LIMIT', limit: 10, used: thisMonthCount });
+        return res.status(403).json({ error: 'Free plan limit reached (5 invoices/month).', code: 'PLAN_LIMIT', limit: 5, used: thisMonthCount });
       }
     }
 

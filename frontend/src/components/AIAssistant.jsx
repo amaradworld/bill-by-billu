@@ -131,7 +131,7 @@ export default function AIAssistant() {
       toast.success('Invoice created!');
     } catch (err) {
       if (err.message?.includes('limit') || err.message?.includes('Free plan')) {
-        setMessages(prev => [...prev, { role: 'assistant', text: 'Free plan limit reached (10 invoices/month). Upgrade to Starter for unlimited invoices.', action: { type: 'upgrade' } }]);
+        setMessages(prev => [...prev, { role: 'assistant', text: 'Free plan limit reached (5 invoices/month). Upgrade to Starter for 100 invoices.', action: { type: 'upgrade' } }]);
       } else {
         toast.error(err.message || 'Failed to create invoice');
         setMessages(prev => [...prev, { role: 'assistant', text: 'Failed to create invoice. ' + (err.message || '') }]);

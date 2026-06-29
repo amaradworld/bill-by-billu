@@ -17,14 +17,14 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
     {
       key: 'STARTER', name: 'Starter', icon: Zap,
       color: 'text-blue-600', bg: 'bg-blue-50',
-      monthly: 299, yearly: 2990,
-      features: ['Unlimited invoices', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'],
+      monthly: 199, yearly: 1990,
+      features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'],
     },
     {
-      key: 'PRO', name: 'Pro', icon: Crown,
+      key: 'GROWTH', name: 'Growth', icon: Crown,
       color: 'text-amber-600', bg: 'bg-amber-50', popular: true,
-      monthly: 799, yearly: 7990,
-      features: ['Everything in Starter', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'API access', 'Priority support'],
+      monthly: 499, yearly: 4990,
+      features: ['1,000 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support'],
     },
   ];
 
@@ -56,7 +56,7 @@ export default function UpgradeModal({ open, onClose, currentPlan = 'FREE' }) {
           }
         },
         prefill: { name: '', email: '', contact: '' },
-        theme: { color: plan.key === 'PRO' ? '#F59E0B' : '#3B82F6' },
+        theme: { color: plan.key === 'GROWTH' ? '#F59E0B' : '#3B82F6' },
         modal: { ondismiss: () => setProcessing(false) },
       };
       const razorpay = new window.Razorpay(options);

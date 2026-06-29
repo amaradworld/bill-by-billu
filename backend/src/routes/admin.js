@@ -158,8 +158,8 @@ router.post('/payments/:id/reject', requireAdmin, async (req, res) => {
 router.post('/upgrade', requireAdmin, async (req, res) => {
   try {
     const { userId, plan, period = 'monthly' } = req.body;
-    if (!userId || !plan || !['STARTER', 'PRO'].includes(plan)) {
-      return res.status(400).json({ error: 'userId and valid plan (STARTER/PRO) required' });
+    if (!userId || !plan || !['STARTER', 'GROWTH'].includes(plan)) {
+      return res.status(400).json({ error: 'userId and valid plan (STARTER/GROWTH) required' });
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
