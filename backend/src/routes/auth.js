@@ -133,7 +133,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
     logger.error('Register error:', { error: err.message, stack: err.stack });
-    res.status(500).json({ error: 'Internal server error', detail: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
