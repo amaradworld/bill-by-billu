@@ -50,6 +50,8 @@ app.use(cors({
     'https://www.billbybillu.in',
     'https://billbybillu.in',
     'https://bill-by-billu.vercel.app',
+    'capacitor://localhost',
+    'https://localhost',
     ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5173', 'http://localhost:3000'] : []),
   ],
   credentials: true,

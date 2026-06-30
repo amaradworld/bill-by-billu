@@ -30,7 +30,11 @@ export default function LoginPage() {
           grantOfflineAccess: false,
         });
         const result = await GoogleAuth.signIn();
-        credential = result.authentication.idToken;
+        credential = result.authentication?.idToken;
+        if (!credential) {
+          toast.error('Google sign-in failed: No ID token received. Try again.');
+          return;
+        }
       } else {
         return;
       }

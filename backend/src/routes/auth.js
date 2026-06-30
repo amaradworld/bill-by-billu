@@ -178,12 +178,29 @@ router.post('/google', async (req, res) => {
       return res.status(400).json({ error: 'Google credential is required' });
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID || '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
-    });
+    // Accept tokens from both Web and Android client IDs
+    const audiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
+      '349451682504-i81hieingnadhq9kg06mu1t6lg97sqpa.apps.googleusercontent.com',
+    ].filter(Boolean);
 
-    const payload = ticket.getPayload();
+    let payload;
+    for (const aud of audiences) {
+      try {
+        const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: aud });
+        payload = ticket.getPayload();
+        break;
+      } catch (e) {
+        continue;
+      }
+    }
+
+    if (!payload) {
+      logger.error('Google token verification failed for all audiences');
+      return res.status(401).json({ error: 'Google authentication failed', detail: 'Invalid token' });
+    }
+
     const { sub: googleId, email, name, picture } = payload;
 
     let user = await prisma.user.findFirst({
