@@ -92,9 +92,10 @@ enum UserRole {
 }
 
 enum Plan {
-  FREE        // 10 invoices/mo, basic features
-  STARTER     // ₹299/mo — unlimited invoices, GST reports
-  PRO         // ₹799/mo — AI features, multi-user, API access
+  FREE        // 5 invoices/mo, basic features
+  STARTER     // ₹199/mo — 100 invoices, GST reports
+  GROWTH      // ₹399/mo — 500 invoices, AI features, multi-user
+  ENTERPRISE  // Unlimited
 }
 
 model Session {
