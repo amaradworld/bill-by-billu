@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
 
     res.json({ products, total, page: safePage, limit: safeLimit });
   } catch (err) {
-    console.error('List products error:', err);
+    logger.error('List products error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Create product error:', err);
+    logger.error('Create product error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -85,7 +85,7 @@ router.get('/:id', async (req, res) => {
     if (!product) return res.status(404).json({ error: 'Product not found' });
     res.json(product);
   } catch (err) {
-    console.error('Get product error:', err);
+    logger.error('Get product error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

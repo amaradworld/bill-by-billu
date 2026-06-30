@@ -116,28 +116,27 @@ webhookRouter.post('/webhook/razorpay', express.raw({ type: 'application/json' }
   try {
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      logger.warn('RAZORPAY_WEBHOOK_SECRET not set — skipping signature verification');
+      logger.error('RAZORPAY_WEBHOOK_SECRET not set — rejecting webhook');
+      return res.status(500).json({ error: 'Webhook not configured' });
     }
 
-    // Verify signature if secret is configured
-    if (webhookSecret) {
-      const signature = req.headers['x-razorpay-signature'];
-      if (!signature) {
-        return res.status(400).json({ error: 'Missing signature' });
-      }
+    // Verify signature
+    const signature = req.headers['x-razorpay-signature'];
+    if (!signature) {
+      return res.status(400).json({ error: 'Missing signature' });
+    }
 
-      const expectedSig = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(req.body)
-        .digest('hex');
+    const expectedSig = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.body)
+      .digest('hex');
 
-      // Timing-safe comparison
-      const sigBuf = Buffer.from(signature, 'hex');
-      const expectedBuf = Buffer.from(expectedSig, 'hex');
-      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
-        logger.warn('Invalid Razorpay webhook signature');
-        return res.status(401).json({ error: 'Invalid signature' });
-      }
+    // Timing-safe comparison
+    const sigBuf = Buffer.from(signature, 'hex');
+    const expectedBuf = Buffer.from(expectedSig, 'hex');
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      logger.warn('Invalid Razorpay webhook signature');
+      return res.status(401).json({ error: 'Invalid signature' });
     }
 
     const event = JSON.parse(req.body.toString());

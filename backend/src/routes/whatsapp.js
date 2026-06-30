@@ -105,7 +105,7 @@ router.post('/:id/whatsapp-send', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('WhatsApp send error:', err);
+    logger.error('WhatsApp send error:', err);
     res.status(500).json({ error: 'Failed to send via WhatsApp' });
   }
 });

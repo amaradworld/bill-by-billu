@@ -44,7 +44,7 @@ router.get('/', async (req, res) => {
 
     res.json({ expenses, total, page: safePage, limit: safeLimit });
   } catch (err) {
-    console.error('List expenses error:', err);
+    logger.error('List expenses error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -57,7 +57,7 @@ router.get('/suggest-category', async (req, res) => {
     const suggestions = suggestCategories(q);
     res.json({ suggestions });
   } catch (err) {
-    console.error('Suggest category error:', err);
+    logger.error('Suggest category error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Create expense error:', err);
+    logger.error('Create expense error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -126,7 +126,7 @@ router.get('/stats', async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Expense stats error:', err);
+    logger.error('Expense stats error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -2,7 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
-const { calculateInvoiceTotals, formatCurrency } = require('../services/gst');
+const { calculateInvoiceTotals } = require('../services/gst');
 const logger = require('../logger');
 
 const router = express.Router();

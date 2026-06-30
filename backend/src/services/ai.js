@@ -791,14 +791,6 @@ function suggestCategories(description) {
 }
 
 // ============================================================
-// 10. INVOICE NUMBER PARSE
-// ============================================================
-function parseInvoiceNumber(text) {
-  const match = text.match(/(?:inv(?:oice)?|bill)\s*[-#]?\s*(\d+)/i);
-  return match ? match[1] : null;
-}
-
-// ============================================================
 // EXPORTS
 // ============================================================
 module.exports = {
@@ -812,7 +804,6 @@ module.exports = {
   classifyProduct,
   categorizeExpense,
   suggestCategories,
-  parseInvoiceNumber,
   HSN_DATABASE,
   SUGGESTION_TEMPLATES,
 };

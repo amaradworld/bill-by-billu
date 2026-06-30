@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
 
     res.json({ customers, total, page: safePage, limit: safeLimit });
   } catch (err) {
-    console.error('List customers error:', err);
+    logger.error('List customers error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -93,7 +93,7 @@ router.post('/', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: err.errors });
     }
-    console.error('Create customer error:', err);
+    logger.error('Create customer error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -111,7 +111,7 @@ router.get('/:id', async (req, res) => {
     if (!customer) return res.status(404).json({ error: 'Customer not found' });
     res.json(customer);
   } catch (err) {
-    console.error('Get customer error:', err);
+    logger.error('Get customer error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
