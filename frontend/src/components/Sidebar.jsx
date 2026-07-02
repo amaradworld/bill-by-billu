@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 import UpgradeModal from './UpgradeModal';
-import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock, ArrowUpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, Package, Receipt, Settings, LogOut, X, Sparkles, Bell, BarChart3, FileBarChart, Lock, ArrowUpCircle, MessageSquare, Upload } from 'lucide-react';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -20,6 +20,8 @@ const navItems = [
   { to: '/app/gst-reports', icon: FileBarChart, key: 'nav.gstReports', minPlan: 'STARTER' },
   { to: '/app/insights', icon: BarChart3, key: 'nav.insights', minPlan: 'GROWTH' },
   { to: '/app/reminders', icon: Bell, key: 'nav.reminders', minPlan: 'STARTER' },
+  { to: '/app/whatsapp-bot', icon: MessageSquare, key: 'nav.whatsappBot' },
+  { to: '/app/import', icon: Upload, key: 'nav.import', minPlan: 'STARTER' },
   { to: '/app/settings', icon: Settings, key: 'nav.settings' },
 ];
 

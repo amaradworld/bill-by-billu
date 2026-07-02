@@ -19,6 +19,7 @@ import AIInvoicePage from './pages/AIInvoicePage';
 import RemindersPage from './pages/RemindersPage';
 import InsightsPage from './pages/InsightsPage';
 import GSTReportsPage from './pages/GSTReportsPage';
+import ImportPage from './pages/ImportPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminLoginPage from './pages/AdminLoginPage';
@@ -28,6 +29,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import BlogPage from './pages/BlogPage';
+import WhatsAppBotPage from './pages/WhatsAppBotPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -76,6 +78,8 @@ export default function App() {
             <Route path="reminders" element={<RemindersPage />} />
             <Route path="gst-reports" element={<GSTReportsPage />} />
             <Route path="insights" element={<InsightsPage />} />
+            <Route path="whatsapp-bot" element={<WhatsAppBotPage />} />
+            <Route path="import" element={<ImportPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -17,7 +17,9 @@
     "gstReports": "GST Reports",
     "reports": "Reports",
     "gstReturns": "GST Returns",
+    "whatsappBot": "WhatsApp Bot",
     "settings": "Settings",
+    "import": "Data Import",
     "logout": "Logout"
   },
   "auth": {

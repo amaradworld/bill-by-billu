@@ -21,6 +21,8 @@ const subscriberRoutes = require('./routes/subscribers');
 const inventoryRoutes = require('./routes/inventory');
 const notificationRoutes = require('./routes/notifications');
 const blogRoutes = require('./routes/blog');
+const whatsappBotRoutes = require('./routes/whatsappBot');
+const importRoutes = require('./routes/import');
 const swaggerSpec = require('./swagger');
 
 const app = express();
@@ -115,6 +117,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api/whatsapp-bot', whatsappBotRoutes);
+app.use('/api/import', importRoutes);
 
 // Swagger docs
 app.get('/api/docs.json', (req, res) => {
