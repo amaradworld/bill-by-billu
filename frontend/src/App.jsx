@@ -13,6 +13,7 @@ import InvoiceFormPage from './pages/InvoiceFormPage';
 import CustomersPage from './pages/CustomersPage';
 import ProductsPage from './pages/ProductsPage';
 import ExpensesPage from './pages/ExpensesPage';
+import InventoryPage from './pages/InventoryPage';
 import SettingsPage from './pages/SettingsPage';
 import AIInvoicePage from './pages/AIInvoicePage';
 import RemindersPage from './pages/RemindersPage';
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="products" element={<ProductsPage />} />
+            <Route path="inventory" element={<InventoryPage />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="ai-invoice" element={<AIInvoicePage />} />

@@ -15,6 +15,7 @@ const navItems = [
   { to: '/app/ai-invoice', icon: Sparkles, key: 'nav.aiInvoice', minPlan: 'GROWTH' },
   { to: '/app/customers', icon: Users, key: 'nav.customers' },
   { to: '/app/products', icon: Package, key: 'nav.products' },
+  { to: '/app/inventory', icon: Package, key: 'nav.inventory', minPlan: 'STARTER' },
   { to: '/app/expenses', icon: Receipt, key: 'nav.expenses' },
   { to: '/app/gst-reports', icon: FileBarChart, key: 'nav.gstReports', minPlan: 'STARTER' },
   { to: '/app/insights', icon: BarChart3, key: 'nav.insights', minPlan: 'GROWTH' },

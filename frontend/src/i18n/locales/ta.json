@@ -13,7 +13,8 @@
     "reports": "அறிக்கைகள்",
     "gstReturns": "GST ரிட்டர்ன்கள்",
     "settings": "அமைப்புகள்",
-    "logout": "வெளியேறு"
+    "logout": "வெளியேறு",
+    "inventory": "Inventory"
   },
   "auth": {
     "login": "உள்நுழை",

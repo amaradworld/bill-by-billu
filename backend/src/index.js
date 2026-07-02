@@ -18,6 +18,9 @@ const aiRoutes = require('./routes/ai');
 const subscriptionRoutes = require('./routes/subscription');
 const adminRoutes = require('./routes/admin');
 const subscriberRoutes = require('./routes/subscribers');
+const inventoryRoutes = require('./routes/inventory');
+const notificationRoutes = require('./routes/notifications');
+const blogRoutes = require('./routes/blog');
 const swaggerSpec = require('./swagger');
 
 const app = express();
@@ -109,6 +112,9 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/blog', blogRoutes);
 
 // Swagger docs
 app.get('/api/docs.json', (req, res) => {
@@ -145,9 +151,88 @@ app.use((err, req, res, _next) => {
 });
 
 // ─── Start ───
+const { sendPaymentReminder, sendGSTDeadline } = require('./routes/notifications');
+
 app.listen(PORT, () => {
   logger.info(`[Bill By Billu] Server running on port ${PORT}`);
   logger.info(`[Bill By Billu] Health: http://localhost:${PORT}/api/health`);
+
+  // ─── Scheduled notification jobs ───
+  // Payment reminders: daily at 9 AM IST
+  setInterval(async () => {
+    try {
+      const now = new Date();
+      const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      if (ist.getHours() !== 9 || ist.getMinutes() !== 0) return;
+
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const unpaidInvoices = await prisma.invoice.findMany({
+        where: { paymentStatus: 'UNPAID', invoiceDate: { lt: sevenDaysAgo } },
+        include: { user: true, customer: true },
+      });
+
+      for (const inv of unpaidInvoices) {
+        await sendPaymentReminder(
+          inv.userId,
+          inv.customer?.name || 'Customer',
+          inv.grandTotal,
+          inv.id
+        );
+      }
+    } catch (err) {
+      logger.error({ err }, 'Payment reminder job failed');
+    }
+  }, 60 * 1000);
+
+  // GST deadline reminders: check daily at 9 AM IST
+  setInterval(async () => {
+    try {
+      const now = new Date();
+      const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      if (ist.getHours() !== 9 || ist.getMinutes() !== 0) return;
+
+      const day = ist.getDate();
+      let deadline = null;
+      let daysLeft = 0;
+
+      if (day === 28) { deadline = 'GSTR-1 (11th of next month)'; daysLeft = 13; }
+      else if (day === 8) { deadline = 'GSTR-1 (11th)'; daysLeft = 3; }
+      else if (day === 17) { deadline = 'GSTR-3B (20th)'; daysLeft = 3; }
+      else if (day === 19) { deadline = 'GSTR-3B (20th tomorrow!)'; daysLeft = 1; }
+
+      if (!deadline) return;
+
+      const users = await prisma.user.findMany({ where: { plan: { not: 'FREE' } } });
+      for (const user of users) {
+        await sendGSTDeadline(user.id, deadline, daysLeft);
+      }
+    } catch (err) {
+      logger.error({ err }, 'GST deadline job failed');
+    }
+  }, 60 * 1000);
+
+  // ─── GST Blog Bot: every 8 hours ───
+  const { processArticles: runBlogBot } = require('./services/blogBot');
+  const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+
+  // Run once on startup (after 30s delay to let server stabilize)
+  setTimeout(async () => {
+    try {
+      const posted = await runBlogBot();
+      logger.info({ posted }, 'GST Blog Bot: initial run complete');
+    } catch (err) {
+      logger.error({ err }, 'GST Blog Bot: initial run failed');
+    }
+  }, 30000);
+
+  // Then every 8 hours
+  setInterval(async () => {
+    try {
+      await runBlogBot();
+    } catch (err) {
+      logger.error({ err }, 'GST Blog Bot: scheduled run failed');
+    }
+  }, EIGHT_HOURS);
 });
 
 module.exports = app;

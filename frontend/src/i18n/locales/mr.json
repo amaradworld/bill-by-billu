@@ -13,7 +13,8 @@
     "reports": "अहवाल",
     "gstReturns": "GST मागणी",
     "settings": "सेटिंग्ज",
-    "logout": "लॉगआउट"
+    "logout": "लॉगआउट",
+    "inventory": "Inventory"
   },
   "auth": {
     "login": "लॉगिन",

@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock, FileText, Building2 } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock, FileText, Building2, Bell, BellOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { isPushSupported, subscribeToPush, unsubscribeFromPush, isSubscribed, sendTestNotification, getNotificationPrefs, updateNotificationPrefs } from '../lib/notifications';
 
 const CURRENCIES = [
   { code: 'INR', symbol: '₹', name: 'Indian Rupee' },

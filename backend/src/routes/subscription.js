@@ -14,8 +14,8 @@ const PAID_PLANS = ['STARTER', 'GROWTH'];
 // Plan pricing
 const PLANS = {
   FREE: { name: 'Free', price: 0, invoices: 5, features: ['5 invoices/month', 'Basic invoicing', 'GST calculation', 'WhatsApp sharing'] },
-  STARTER: { name: 'Starter', price: 199, monthlyPrice: 199, yearlyPrice: 1887, invoices: 100, features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog'] },
-  GROWTH: { name: 'Growth', price: 399, monthlyPrice: 399, yearlyPrice: 3783, invoices: 500, features: ['500 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support'] },
+  STARTER: { name: 'Starter', price: 199, monthlyPrice: 199, yearlyPrice: 1887, invoices: 100, features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Credit/Debit notes', 'Recurring invoices', 'Customer management', 'Product catalog', 'Inventory management'] },
+  GROWTH: { name: 'Growth', price: 399, monthlyPrice: 399, yearlyPrice: 3783, invoices: 500, features: ['500 invoices/month', 'AI invoice creation', 'AI business insights', 'Payment reminders', 'Multi-user access', 'Priority support', 'Inventory management'] },
   ENTERPRISE: { name: 'Enterprise', price: 0, monthlyPrice: 0, yearlyPrice: 0, invoices: -1, features: ['Unlimited invoices', 'Everything in Growth', 'API access', 'Custom integrations', 'Dedicated support'] },
 };
 
@@ -68,6 +68,7 @@ router.get('/status', async (req, res) => {
       apiAccess: effectivePlan === 'GROWTH',
       insights: effectivePlan === 'GROWTH',
       reminders: PAID_PLANS.includes(effectivePlan),
+      inventory: PAID_PLANS.includes(effectivePlan),
     };
 
     res.json({

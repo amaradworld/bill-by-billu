@@ -13,7 +13,8 @@
     "reports": "నివేదికలు",
     "gstReturns": "GST రిటర్న్‌లు",
     "settings": "సెట్టింగ్‌లు",
-    "logout": "లాగ్ అవుట్"
+    "logout": "లాగ్ అవుట్",
+    "inventory": "Inventory"
   },
   "auth": {
     "login": "లాగిన్",
