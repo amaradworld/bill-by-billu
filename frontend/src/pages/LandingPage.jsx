@@ -53,14 +53,60 @@ export default function LandingPage() {
   return (
     <>
       <Helmet>
-        <title>Bill By Billu — AI-Powered Billing Software for Indian Businesses</title>
-        <meta name="description" content="AI-powered billing software for retailers, restaurants & small businesses. Generate invoices, manage inventory, send WhatsApp bills, and get AI-powered insights." />
-        <meta name="keywords" content="billing software India, invoice generator, GST invoice, WhatsApp billing, UPI payment, inventory management, restaurant billing, retail POS, Indian SMB tools" />
-        <meta property="og:title" content="Bill By Billu — AI-Powered Billing Software" />
-        <meta property="og:description" content="Generate invoices, manage inventory, send WhatsApp bills, and get AI-powered business insights." />
+        <title>Bill By Billu — AI-Powered GST Invoicing Software for Indian Businesses</title>
+        <meta name="description" content="Free AI-powered billing & GST software for Indian freelancers, retailers & SMBs. Create invoices, generate GSTR-1/GSTR-3B reports, share via WhatsApp, accept UPI payments. Start free trial." />
+        <meta name="keywords" content="billing software India, invoice generator, GST invoice software, WhatsApp billing, UPI payment QR, GSTR-1 report, GSTR-3B, inventory management, restaurant billing, retail POS, Indian SMB tools, free billing app, AI invoice creator, tally alternative, vyapar alternative" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.billbybillu.in/" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.billbybillu.in" />
-        <link rel="canonical" href="https://www.billbybillu.in" />
+        <meta property="og:url" content="https://www.billbybillu.in/" />
+        <meta property="og:title" content="Bill By Billu — AI-Powered GST Invoicing for Indian Businesses" />
+        <meta property="og:description" content="Free AI-powered billing & GST software. Create invoices, generate GSTR-1/GSTR-3B, share via WhatsApp, accept UPI payments." />
+        <meta property="og:image" content="https://www.billbybillu.in/feature-graphic-1024x500.png" />
+        <meta property="og:site_name" content="Bill By Billu" />
+        <meta property="og:locale" content="en_IN" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Bill By Billu — AI-Powered GST Invoicing for Indian Businesses" />
+        <meta name="twitter:description" content="Free AI-powered billing & GST software. Create invoices, generate GSTR-1/GSTR-3B, share via WhatsApp, accept UPI payments." />
+        <meta name="twitter:image" content="https://www.billbybillu.in/feature-graphic-1024x500.png" />
+
+        {/* Product JSON-LD */}
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": "Bill By Billu",
+            "description": "AI-powered billing and GST software for Indian freelancers, retailers and SMBs",
+            "brand": { "@type": "Brand", "name": "Bill By Billu" },
+            "url": "https://www.billbybillu.in",
+            "image": "https://www.billbybillu.in/feature-graphic-1024x500.png",
+            "offers": {
+              "@type": "AggregateOffer",
+              "lowPrice": "0",
+              "highPrice": "399",
+              "priceCurrency": "INR",
+              "offerCount": "4",
+              "availability": "https://schema.org/InStock"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "ratingCount": "150",
+              "bestRating": "5"
+            }
+          }
+        `}</script>
+
+        {/* BreadcrumbList JSON-LD */}
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.billbybillu.in" }
+            ]
+          }
+        `}</script>
       </Helmet>
 
       <div className="min-h-screen bg-white">

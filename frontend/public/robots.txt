@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://www.billbybillu.in/sitemap.xml
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /app/
+Disallow: /admin/
+Disallow: /api/
+
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /app/
+Disallow: /admin/

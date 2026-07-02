@@ -1,0 +1,63 @@
+{
+  "name": "Bill By Billu — AI-Powered GST Invoicing",
+  "short_name": "Bill By Billu",
+  "description": "AI-powered billing & GST software for Indian freelancers, retailers & SMBs. Create invoices, generate GSTR-1/GSTR-3B, share via WhatsApp, accept UPI payments.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/logo/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard"
+    },
+    {
+      "src": "/screenshot-2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "AI Invoice Creator"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Invoice",
+      "url": "/app/invoices/new",
+      "description": "Create a new GST invoice"
+    },
+    {
+      "name": "AI Invoice",
+      "url": "/app/ai-invoice",
+      "description": "Create invoice with AI"
+    },
+    {
+      "name": "GST Reports",
+      "url": "/app/gst-reports",
+      "description": "View GSTR-1 & GSTR-3B"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.BillbBillu",
+      "id": "com.BillbBillu"
+    }
+  ],
+  "prefer_related_applications": false
+}

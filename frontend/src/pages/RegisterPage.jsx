@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Capacitor } from '@capacitor/core';
@@ -129,6 +130,13 @@ export default function RegisterPage() {
   const input = "w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm";
 
   return (
+    <>
+      <Helmet>
+        <title>Create Free Account — Bill By Billu | AI-Powered GST Invoicing</title>
+        <meta name="description" content="Sign up for free on Bill By Billu — AI-powered billing & GST software for Indian businesses. Start creating invoices in seconds. 28-day free trial." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.billbybillu.in/register" />
+      </Helmet>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-white px-4 py-8">
       <div className="w-full max-w-lg">
         <div className="flex justify-end mb-4"><LanguageSelector /></div>
@@ -229,5 +237,6 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

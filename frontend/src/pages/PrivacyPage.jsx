@@ -6,8 +6,13 @@ export default function PrivacyPage() {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy — Bill By Billu</title>
-        <meta name="description" content="Privacy Policy for Bill By Billu — AI-Powered Invoice + GST for Indian Freelancers & SMBs." />
+        <title>Privacy Policy — Bill By Billu | GST Invoicing Software</title>
+        <meta name="description" content="Privacy Policy for Bill By Billu — AI-powered GST invoicing software for Indian businesses. We respect your privacy and protect your data." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.billbybillu.in/privacy" />
+        <meta property="og:title" content="Privacy Policy — Bill By Billu" />
+        <meta property="og:description" content="Privacy Policy for Bill By Billu — AI-powered GST invoicing software for Indian businesses." />
+        <meta property="og:url" content="https://www.billbybillu.in/privacy" />
       </Helmet>
       <div className="min-h-screen bg-white">
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { useAuth } from '../context/AuthContext';
@@ -100,6 +101,13 @@ export default function LoginPage() {
   }, []);
 
   return (
+    <>
+      <Helmet>
+        <title>Login — Bill By Billu | AI-Powered GST Invoicing</title>
+        <meta name="description" content="Login to Bill By Billu — AI-powered billing & GST software for Indian businesses. Manage invoices, GST reports, and payments." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://www.billbybillu.in/login" />
+      </Helmet>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 via-white to-indigo-50 px-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="flex justify-end mb-4"><LanguageSelector /></div>
@@ -154,5 +162,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

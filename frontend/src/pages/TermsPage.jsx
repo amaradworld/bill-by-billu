@@ -6,8 +6,13 @@ export default function TermsPage() {
   return (
     <>
       <Helmet>
-        <title>Terms of Service — Bill By Billu</title>
-        <meta name="description" content="Terms of Service for Bill By Billu — AI-Powered Invoice + GST for Indian Freelancers & SMBs." />
+        <title>Terms of Service — Bill By Billu | GST Invoicing Software</title>
+        <meta name="description" content="Terms of Service for Bill By Billu — AI-powered GST invoicing software for Indian businesses. Read our terms and conditions." />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://www.billbybillu.in/terms" />
+        <meta property="og:title" content="Terms of Service — Bill By Billu" />
+        <meta property="og:description" content="Terms of Service for Bill By Billu — AI-powered GST invoicing software for Indian businesses." />
+        <meta property="og:url" content="https://www.billbybillu.in/terms" />
       </Helmet>
       <div className="min-h-screen bg-white">
         <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
