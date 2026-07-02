@@ -84,8 +84,17 @@ export default function RegisterPage() {
       await Preferences.set({ key: 'bbToken', value: data.token });
       window.location.href = '/app';
     } catch (err) {
-      if (err.message !== 'User canceled the Google sign-in flow') {
-        toast.error(err.message || 'Google sign-up failed');
+      const msg = err.message || '';
+      const code = err.code || '';
+      console.error('Google signup error:', msg, 'code:', code);
+      if (msg.includes('canceled') || msg.includes('cancelled')) {
+        // User cancelled — silent
+      } else if (msg.includes('12500')) {
+        toast.error('Google sign-up failed: SHA-1 fingerprint mismatch. Check GCP Console.');
+      } else if (msg.includes('12501')) {
+        // User cancelled — silent
+      } else {
+        toast.error(`Google signup failed (${code || 'unknown'}). Check GCP Console settings.`);
       }
     }
   };

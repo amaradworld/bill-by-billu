@@ -43,8 +43,17 @@ export default function LoginPage() {
       await Preferences.set({ key: 'bbToken', value: data.token });
       window.location.href = '/app';
     } catch (err) {
-      if (err.message !== 'User canceled the Google sign-in flow') {
-        toast.error(err.message || 'Google login failed');
+      const msg = err.message || '';
+      const code = err.code || '';
+      console.error('Google login error:', msg, 'code:', code);
+      if (msg.includes('canceled') || msg.includes('cancelled')) {
+        // User cancelled — silent
+      } else if (msg.includes('12500')) {
+        toast.error('Google sign-in failed: SHA-1 fingerprint mismatch. Check GCP Console.');
+      } else if (msg.includes('12501')) {
+        // User cancelled — silent
+      } else {
+        toast.error(`Google login failed (${code || 'unknown'}). Check GCP Console settings.`);
       }
     }
   };
