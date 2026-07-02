@@ -1,5 +1,5 @@
 -- CreateSchema
-CREATE TABLE "BlogPost" (
+CREATE TABLE IF NOT EXISTS "BlogPost" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -16,22 +16,22 @@ CREATE TABLE "BlogPost" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogPost_slug_key" ON "BlogPost"("slug");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogPost_slug_key" ON "BlogPost"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "BlogPost_sourceUrl_key" ON "BlogPost"("sourceUrl");
+CREATE UNIQUE INDEX IF NOT EXISTS "BlogPost_sourceUrl_key" ON "BlogPost"("sourceUrl");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_slug_idx" ON "BlogPost"("slug");
+CREATE INDEX IF NOT EXISTS "BlogPost_slug_idx" ON "BlogPost"("slug");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_status_idx" ON "BlogPost"("status");
+CREATE INDEX IF NOT EXISTS "BlogPost_status_idx" ON "BlogPost"("status");
 
 -- CreateIndex
-CREATE INDEX "BlogPost_publishedAt_idx" ON "BlogPost"("publishedAt");
+CREATE INDEX IF NOT EXISTS "BlogPost_publishedAt_idx" ON "BlogPost"("publishedAt");
 
 -- CreateTable
-CREATE TABLE "PushSubscription" (
+CREATE TABLE IF NOT EXISTS "PushSubscription" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "endpoint" TEXT NOT NULL,
@@ -43,13 +43,7 @@ CREATE TABLE "PushSubscription" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PushSubscription_userId_endpoint_key" ON "PushSubscription"("userId", "endpoint");
+CREATE UNIQUE INDEX IF NOT EXISTS "PushSubscription_userId_endpoint_key" ON "PushSubscription"("userId", "endpoint");
 
 -- CreateIndex
-CREATE INDEX "PushSubscription_userId_idx" ON "PushSubscription"("userId");
-
--- CreateIndex
-CREATE INDEX "User_notificationPrefs_idx" ON "User"("notificationPrefs");
-
--- AddForeignKey
-ALTER TABLE "PushSubscription" ADD CONSTRAINT "PushSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+CREATE INDEX IF NOT EXISTS "PushSubscription_userId_idx" ON "PushSubscription"("userId");
