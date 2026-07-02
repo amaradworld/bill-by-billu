@@ -27,6 +27,57 @@ const steps = [
   { num: '3', title: 'Get Paid', desc: 'Accept UPI payments, track status, and file GST returns automatically.' },
 ];
 
+const demoSteps = [
+  {
+    tab: 'Create Invoice',
+    icon: FileText,
+    title: 'Create invoices in seconds',
+    desc: 'Just fill in the details — customer, items, quantities, and GST rates. Everything calculates automatically.',
+    bullets: [
+      'Auto-calculates CGST + SGST or IGST',
+      'Supports HSN/SAC codes for all items',
+      'Custom invoice prefix and numbering',
+      'Multiple templates: Classic, Modern, Compact',
+    ],
+  },
+  {
+    tab: 'GST Reports',
+    icon: BarChart3,
+    title: 'GSTR-1 ready to file',
+    desc: 'All your invoice data is automatically organized into GST return formats. Export and upload to the GST portal.',
+    bullets: [
+      'GSTR-1 auto-generated from invoices',
+      'GSTR-3B summary with tax breakup',
+      'Filter by period, customer, or HSN',
+      'CSV and JSON export for portal upload',
+    ],
+  },
+  {
+    tab: 'Share & Get Paid',
+    icon: MessageCircle,
+    title: 'Share via WhatsApp instantly',
+    desc: 'Send professional PDF invoices directly to your customers on WhatsApp. Include a UPI payment link for instant collection.',
+    bullets: [
+      'One-tap WhatsApp sharing',
+      'PDF invoice with your branding',
+      'UPI payment link embedded',
+      'Payment status tracking',
+    ],
+  },
+  {
+    tab: 'AI Assistant',
+    icon: Zap,
+    title: 'AI-powered invoice creation',
+    desc: 'Just speak or type naturally — our AI understands and creates the invoice for you. No manual data entry needed.',
+    bullets: [
+      'Voice-to-invoice: "Bill to Priya, 5 kurtas at 800"',
+      'Photo OCR: snap a handwritten bill',
+      'Smart customer creation',
+      'Automatic GST rate detection',
+    ],
+  },
+];
+
 const plans = [
   { name: 'Free', price: '₹0', period: '/month', desc: 'Perfect for trying out', features: ['5 invoices/month', 'Basic GST calculation', 'WhatsApp sharing', '1 user'], cta: 'Start Free', highlight: false },
   { name: 'Starter', price: '₹199', period: '/month', yearly: '₹1,887/yr', desc: 'For growing freelancers', features: ['100 invoices/month', 'GST reports (GSTR-1)', 'Expense tracking', 'Credit/Debit notes', 'Custom branding'], cta: 'Get Starter', highlight: true },
@@ -51,6 +102,7 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [activeDemo, setActiveDemo] = useState(0);
 
   // Exit intent popup
   const handleMouseLeave = useCallback((e) => {
@@ -240,42 +292,151 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Demo Video Section */}
+        {/* Interactive Demo Section */}
         <section className="py-20 bg-gray-50">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">See it in action</h2>
-              <p className="mt-4 text-lg text-gray-600">Watch how Bill By Billu makes invoicing effortless</p>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-brand-100/80 text-brand-700 text-sm font-medium px-4 py-1.5 rounded-full mb-4">
+                <Play size={14} /> Live Demo
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">See Bill By Billu in action</h2>
+              <p className="mt-4 text-lg text-gray-600">Explore how easy invoicing can be</p>
             </div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group" onClick={() => setShowVideoModal(true)}>
-              <div className="aspect-video bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <Play size={36} className="text-white ml-1" fill="white" />
+
+            {/* Demo Tabs */}
+            <div className="flex justify-center gap-2 mb-8 flex-wrap">
+              {demoSteps.map((step, i) => (
+                <button key={i} onClick={() => setActiveDemo(i)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeDemo === i ? 'bg-brand-600 text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-gray-100 border'}`}>
+                  {step.tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Demo Content */}
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                {/* Left: Description */}
+                <div className="p-8 lg:p-12 flex flex-col justify-center">
+                  <div className="w-12 h-12 bg-brand-100 rounded-2xl flex items-center justify-center mb-6">
+                    {(() => { const Icon = demoSteps[activeDemo].icon; return <Icon size={24} className="text-brand-600" />; })()}
                   </div>
-                  <p className="text-white/80 text-lg font-medium">Watch 60-second demo</p>
-                  <p className="text-white/60 text-sm mt-1">See AI invoice creation in action</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{demoSteps[activeDemo].title}</h3>
+                  <p className="text-gray-600 leading-relaxed mb-6">{demoSteps[activeDemo].desc}</p>
+                  <ul className="space-y-3">
+                    {demoSteps[activeDemo].bullets.map((b, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <Check size={18} className="text-green-500 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-700">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Right: Mock UI */}
+                <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 lg:p-12 flex items-center justify-center min-h-[400px]">
+                  <div className="w-full max-w-sm">
+                    {/* Phone Frame */}
+                    <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-gray-700">
+                      {/* Status Bar */}
+                      <div className="bg-brand-600 px-4 py-2 flex items-center justify-between">
+                        <span className="text-white text-xs font-medium">Bill By Billu</span>
+                        <span className="text-white/70 text-xs">9:41</span>
+                      </div>
+
+                      {/* Content based on active step */}
+                      {activeDemo === 0 && (
+                        <div className="p-4 space-y-3">
+                          <div className="text-xs font-semibold text-gray-500 uppercase">New Invoice</div>
+                          <div className="border rounded-lg p-3 space-y-2">
+                            <div className="flex justify-between text-sm"><span className="text-gray-500">Customer</span><span className="font-medium">Rahul Sharma</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-gray-500">Item</span><span className="font-medium">Website Design</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-gray-500">Amount</span><span className="font-medium">₹15,000</span></div>
+                            <div className="flex justify-between text-sm"><span className="text-gray-500">GST (18%)</span><span className="font-medium">₹2,700</span></div>
+                            <div className="border-t pt-2 flex justify-between text-sm font-bold"><span>Total</span><span className="text-brand-600">₹17,700</span></div>
+                          </div>
+                          <div className="flex gap-2">
+                            <div className="flex-1 bg-brand-600 text-white text-center py-2 rounded-lg text-sm font-medium">Save Invoice</div>
+                            <div className="bg-green-500 text-white px-3 py-2 rounded-lg text-sm">WhatsApp</div>
+                          </div>
+                        </div>
+                      )}
+                      {activeDemo === 1 && (
+                        <div className="p-4 space-y-3">
+                          <div className="text-xs font-semibold text-gray-500 uppercase">GSTR-1 Summary</div>
+                          <div className="space-y-2">
+                            {[
+                              { label: 'B2B Invoices', count: 24, amount: '₹3,45,000' },
+                              { label: 'B2C Invoices', count: 156, amount: '₹1,89,500' },
+                              { label: 'Credit Notes', count: 3, amount: '₹12,000' },
+                            ].map((r, i) => (
+                              <div key={i} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
+                                <div><div className="text-sm font-medium">{r.label}</div><div className="text-xs text-gray-500">{r.count} invoices</div></div>
+                                <div className="text-sm font-bold">{r.amount}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                            <div className="text-xs text-green-600 font-medium">Total Taxable</div>
+                            <div className="text-xl font-bold text-green-700">₹5,46,500</div>
+                          </div>
+                        </div>
+                      )}
+                      {activeDemo === 2 && (
+                        <div className="p-4 space-y-3">
+                          <div className="text-xs font-semibold text-gray-500 uppercase">Share Invoice</div>
+                          <div className="bg-green-50 rounded-xl p-4">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center"><MessageCircle size={20} className="text-white" /></div>
+                              <div><div className="text-sm font-bold">WhatsApp</div><div className="text-xs text-gray-500">Send instantly</div></div>
+                            </div>
+                            <div className="bg-white rounded-lg p-3 text-sm text-gray-700 border">
+                              Dear Rahul, your invoice #INV-024 for ₹17,700 is attached. Pay now: upi://pay?pa=...
+                            </div>
+                          </div>
+                          <div className="bg-blue-50 rounded-xl p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center"><Mail size={20} className="text-white" /></div>
+                              <div><div className="text-sm font-bold">Email</div><div className="text-xs text-gray-500">PDF attached</div></div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {activeDemo === 3 && (
+                        <div className="p-4 space-y-3">
+                          <div className="text-xs font-semibold text-gray-500 uppercase">AI Invoice</div>
+                          <div className="bg-brand-50 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 bg-brand-600 rounded-full flex items-center justify-center"><Zap size={16} className="text-white" /></div>
+                              <span className="text-sm font-bold text-brand-700">AI Assistant</span>
+                            </div>
+                            <div className="bg-white rounded-lg p-3 text-sm border space-y-1">
+                              <div className="text-gray-500">User: "Create invoice for Priya for 5 kurtas at 800 each"</div>
+                              <div className="text-brand-600 font-medium mt-2">AI: Creating invoice...</div>
+                            </div>
+                          </div>
+                          <div className="border rounded-lg p-3 space-y-2 text-sm">
+                            <div className="flex justify-between"><span className="text-gray-500">Customer</span><span className="font-medium">Priya (auto-created)</span></div>
+                            <div className="flex justify-between"><span className="text-gray-500">Items</span><span className="font-medium">5 × Kurtas @ ₹800</span></div>
+                            <div className="flex justify-between font-bold"><span>Total</span><span className="text-brand-600">₹4,720</span></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Demo Navigation Dots */}
+            <div className="flex justify-center gap-2 mt-6">
+              {demoSteps.map((_, i) => (
+                <button key={i} onClick={() => setActiveDemo(i)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${activeDemo === i ? 'bg-brand-600 w-8' : 'bg-gray-300 hover:bg-gray-400'}`} />
+              ))}
             </div>
           </div>
         </section>
-
-        {/* Video Modal */}
-        {showVideoModal && (
-          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowVideoModal(false)}>
-            <div className="relative w-full max-w-4xl" onClick={e => e.stopPropagation()}>
-              <button onClick={() => setShowVideoModal(false)} className="absolute -top-12 right-0 text-white hover:text-gray-300"><X size={32} /></button>
-              <div className="aspect-video bg-gray-900 rounded-xl flex items-center justify-center">
-                <div className="text-center text-white">
-                  <Play size={48} className="mx-auto mb-4 text-brand-400" />
-                  <p className="text-lg">Demo video coming soon</p>
-                  <p className="text-sm text-gray-400 mt-2">Record screen at billbybillu.in/app</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         <section className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
