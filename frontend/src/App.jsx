@@ -26,6 +26,7 @@ import AdminSubscribersPage from './pages/AdminSubscribersPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import BlogPage from './pages/BlogPage';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/blog" element={<BlogPage />} />
 
           {/* Admin routes — completely separate */}
           <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />

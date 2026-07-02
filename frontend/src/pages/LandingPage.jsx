@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar, Mail } from 'lucide-react';
+import { FileText, BarChart3, MessageCircle, CreditCard, Receipt, Globe, ChevronDown, ChevronUp, ArrowRight, Check, Star, Play, Calendar, Mail, X, Shield, Zap, Users, Clock, TrendingUp } from 'lucide-react';
 import SubscribeForm from '../components/SubscribeForm';
 import SubscribeModal from '../components/SubscribeModal';
 import Logo from '../components/Logo';
@@ -49,6 +49,25 @@ const faqs = [
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState(null);
+  const [showExitPopup, setShowExitPopup] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+
+  // Exit intent popup
+  const handleMouseLeave = useCallback((e) => {
+    if (e.clientY <= 0 && !showExitPopup && !localStorage.getItem('bb_exit_dismissed')) {
+      setShowExitPopup(true);
+    }
+  }, [showExitPopup]);
+
+  useEffect(() => {
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, [handleMouseLeave]);
+
+  const dismissExitPopup = () => {
+    setShowExitPopup(false);
+    localStorage.setItem('bb_exit_dismissed', '1');
+  };
 
   return (
     <>
@@ -167,7 +186,7 @@ export default function LandingPage() {
 
         <section className="bg-gray-900 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-white">10,000+</div>
                 <div className="text-gray-400 text-sm mt-1">Invoices Created</div>
@@ -180,6 +199,23 @@ export default function LandingPage() {
                 <div className="text-3xl font-bold text-white">9</div>
                 <div className="text-gray-400 text-sm mt-1">Languages Supported</div>
               </div>
+              <div>
+                <div className="text-3xl font-bold text-white">4.8★</div>
+                <div className="text-gray-400 text-sm mt-1">User Rating</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust Badges */}
+        <section className="py-6 bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
+              <span className="flex items-center gap-2"><Shield size={18} className="text-green-500" /> Bank-Grade Security</span>
+              <span className="flex items-center gap-2"><Zap size={18} className="text-amber-500" /> GST Compliant</span>
+              <span className="flex items-center gap-2"><Users size={18} className="text-blue-500" /> 500+ Businesses</span>
+              <span className="flex items-center gap-2"><Clock size={18} className="text-purple-500" /> 24/7 Access</span>
+              <span className="flex items-center gap-2"><TrendingUp size={18} className="text-emerald-500" /> 99.9% Uptime</span>
             </div>
           </div>
         </section>
@@ -203,6 +239,43 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Demo Video Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">See it in action</h2>
+              <p className="mt-4 text-lg text-gray-600">Watch how Bill By Billu makes invoicing effortless</p>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl cursor-pointer group" onClick={() => setShowVideoModal(true)}>
+              <div className="aspect-video bg-gradient-to-br from-brand-600 to-indigo-700 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <Play size={36} className="text-white ml-1" fill="white" />
+                  </div>
+                  <p className="text-white/80 text-lg font-medium">Watch 60-second demo</p>
+                  <p className="text-white/60 text-sm mt-1">See AI invoice creation in action</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Video Modal */}
+        {showVideoModal && (
+          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowVideoModal(false)}>
+            <div className="relative w-full max-w-4xl" onClick={e => e.stopPropagation()}>
+              <button onClick={() => setShowVideoModal(false)} className="absolute -top-12 right-0 text-white hover:text-gray-300"><X size={32} /></button>
+              <div className="aspect-video bg-gray-900 rounded-xl flex items-center justify-center">
+                <div className="text-center text-white">
+                  <Play size={48} className="mx-auto mb-4 text-brand-400" />
+                  <p className="text-lg">Demo video coming soon</p>
+                  <p className="text-sm text-gray-400 mt-2">Record screen at billbybillu.in/app</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <section className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -341,6 +414,7 @@ export default function LandingPage() {
                 <ul className="space-y-2 text-sm">
                   <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                   <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                  <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
                   <li><Link to="/login" className="hover:text-white transition-colors">Login</Link></li>
                 </ul>
               </div>
@@ -366,6 +440,27 @@ export default function LandingPage() {
         </footer>
       </div>
       <SubscribeModal delay={10000} />
+
+      {/* Exit Intent Popup */}
+      {showExitPopup && (
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={dismissExitPopup}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-slide-up" onClick={e => e.stopPropagation()}>
+            <button onClick={dismissExitPopup} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🎁</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Wait! Here's a special offer</h3>
+              <p className="text-gray-600 mb-6">Get <strong>3 months of Starter plan FREE</strong> when you sign up today. No credit card required.</p>
+              <Link to="/register" onClick={() => { dismissExitPopup(); trackEvent('cta_click', { location: 'exit_popup' }); }}
+                className="block w-full bg-brand-600 text-white py-3 rounded-xl font-semibold hover:bg-brand-700 transition-colors mb-3">
+                Claim Free 3 Months
+              </Link>
+              <button onClick={dismissExitPopup} className="text-sm text-gray-500 hover:text-gray-700">No thanks, I'll pay later</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
