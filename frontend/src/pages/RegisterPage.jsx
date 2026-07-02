@@ -71,7 +71,7 @@ export default function RegisterPage() {
           grantOfflineAccess: false,
         });
         const result = await GoogleAuth.signIn();
-        credential = result.authentication?.idToken;
+        credential = result.idToken || result.authentication?.idToken;
         if (!credential) {
           toast.error('Google sign-up failed: No ID token received. Try again.');
           return;
