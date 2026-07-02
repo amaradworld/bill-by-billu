@@ -29,6 +29,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
 import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 import WhatsAppBotPage from './pages/WhatsAppBotPage';
 
 function PrivateRoute({ children }) {
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
 
           {/* Admin routes — completely separate */}
           <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />

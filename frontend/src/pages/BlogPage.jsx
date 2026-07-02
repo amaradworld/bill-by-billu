@@ -212,7 +212,7 @@ export default function BlogPage() {
                       <p className="text-gray-600 text-sm leading-relaxed mb-4">{post.excerpt}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-400 flex items-center gap-1"><Calendar size={12} /> {formatDate(post.publishedAt)}</span>
-                        <span className="text-sm font-semibold text-brand-600 flex items-center gap-1 group-hover:gap-2 transition-all">Read more <ArrowRight size={14} /></span>
+                        <Link to={`/blog/${post.slug}`} className="text-sm font-semibold text-brand-600 flex items-center gap-1 group-hover:gap-2 transition-all">Read more <ArrowRight size={14} /></Link>
                       </div>
                     </div>
                   </article>
@@ -251,11 +251,11 @@ export default function BlogPage() {
                     <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">{post.excerpt}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400">{formatDate(post.publishedAt)}</span>
-                      {post.sourceUrl ? (
+                      {post.sourceUrl && post.isDynamic ? (
                         <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer"
-                          className="text-sm font-semibold text-brand-600 flex items-center gap-1">Source <ArrowRight size={14} /></a>
+                          className="text-sm font-semibold text-brand-600 flex items-center gap-1 hover:underline">Read <ArrowRight size={14} /></a>
                       ) : (
-                        <span className="text-sm font-semibold text-brand-600 flex items-center gap-1">Read <ArrowRight size={14} /></span>
+                        <Link to={`/blog/${post.slug}`} className="text-sm font-semibold text-brand-600 flex items-center gap-1 group-hover:gap-2 transition-all">Read <ArrowRight size={14} /></Link>
                       )}
                     </div>
                   </article>

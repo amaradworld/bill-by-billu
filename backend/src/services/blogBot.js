@@ -41,7 +41,27 @@ async function extractArticleContent(url) {
   const dom = new JSDOM(html, { url });
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
-  return article ? article.textContent : null;
+
+  if (!article) return { text: null, images: [] };
+
+  // Extract images from the parsed HTML
+  const images = [];
+  const imgElements = dom.window.document.querySelectorAll('img');
+  for (const img of imgElements) {
+    const src = img.getAttribute('src');
+    if (src && src.startsWith('http') && !src.includes('logo') && !src.includes('icon') && !src.includes('avatar') && !src.includes('1x1')) {
+      const width = parseInt(img.getAttribute('width') || '0');
+      const height = parseInt(img.getAttribute('height') || '0');
+      if (width > 100 || height > 100 || (!width && !height)) {
+        images.push(src);
+      }
+    }
+  }
+
+  return {
+    text: article.textContent,
+    images: images.slice(0, 3), // top 3 images
+  };
 }
 
 async function summarize(text, title) {
@@ -112,13 +132,16 @@ async function processArticles() {
 
       logger.info({ title: article.title }, 'Processing article');
 
-      let body;
+      let extracted;
       try {
-        body = await extractArticleContent(article.link);
+        extracted = await extractArticleContent(article.link);
       } catch (err) {
         logger.warn({ err: err.message, url: article.link }, 'Failed to extract content');
         continue;
       }
+
+      const body = extracted.text;
+      const images = extracted.images || [];
 
       if (!body || body.length < 100) {
         logger.warn({ title: article.title }, 'Skipping (too short)');
@@ -128,12 +151,19 @@ async function processArticles() {
       const summary = await summarize(body, article.title);
       const slug = slugify(article.title);
 
+      // Build content with images embedded
+      let content = summary;
+      if (images.length > 0) {
+        const imageSection = '\n\n' + images.map((img, i) => `![Image ${i + 1}](${img})`).join('\n\n');
+        content = summary + imageSection;
+      }
+
       try {
         await prisma.blogPost.create({
           data: {
             title: article.title,
             slug,
-            content: summary,
+            content: content,
             excerpt: summary.slice(0, 200) + '...',
             sourceUrl: article.link,
             category: 'GST',
