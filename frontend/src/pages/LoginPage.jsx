@@ -89,8 +89,13 @@ export default function LoginPage() {
               await Preferences.set({ key: 'bbToken', value: data.token });
               window.location.href = '/app';
             } catch (err) {
-        toast.error(err.code ? `${err.message} (code: ${err.code})` : err.message || 'Google login failed');
+              const detail = err.detail || err.message || 'Google login failed';
+              toast.error(`Google login failed: ${detail}`);
             }
+          },
+          error_callback: (err) => {
+            console.error('Google GIS error:', err);
+            toast.error(`Google Sign-In error: ${err.type || 'unknown'}`);
           },
         });
         if (googleBtnRef.current) {

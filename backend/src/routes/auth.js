@@ -178,6 +178,8 @@ router.post('/google', async (req, res) => {
       return res.status(400).json({ error: 'Google credential is required' });
     }
 
+    logger.info({ credentialLength: credential.length }, 'Google auth: received credential');
+
     // Accept tokens from both Web and Android client IDs
     const audiences = [
       process.env.GOOGLE_CLIENT_ID,
@@ -188,10 +190,13 @@ router.post('/google', async (req, res) => {
     let payload;
     for (const aud of audiences) {
       try {
+        logger.info({ audience: aud }, 'Google auth: trying audience');
         const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: aud });
         payload = ticket.getPayload();
+        logger.info({ email: payload?.email }, 'Google auth: token verified');
         break;
       } catch (e) {
+        logger.warn({ audience: aud, error: e.message }, 'Google auth: audience failed');
         continue;
       }
     }
@@ -203,9 +208,15 @@ router.post('/google', async (req, res) => {
 
     const { sub: googleId, email, name, picture } = payload;
 
-    let user = await prisma.user.findFirst({
-      where: { OR: [{ googleId }, { email }] },
-    });
+    let user;
+    try {
+      user = await prisma.user.findFirst({
+        where: { OR: [{ googleId }, { email }] },
+      });
+    } catch (dbErr) {
+      logger.error({ error: dbErr.message, stack: dbErr.stack }, 'Google auth: DB find failed');
+      return res.status(500).json({ error: 'Database error', detail: dbErr.message });
+    }
 
     if (user) {
       if (!user.googleId) {
@@ -231,13 +242,14 @@ router.post('/google', async (req, res) => {
           trialEndsAt: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
         },
       });
+      logger.info({ email, userId: user.id }, 'Google auth: new user created');
     }
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {
-    logger.error('Google auth error:', err.message);
+    logger.error({ error: err.message, stack: err.stack }, 'Google auth error');
     res.status(500).json({ error: 'Google authentication failed', detail: err.message });
   }
 });
