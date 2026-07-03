@@ -30,7 +30,16 @@ jobs:
         run: cd frontend && npm run build
 
       - name: Add Android platform
-        run: cd frontend && npx cap add android || true
+        run: |
+          cd frontend
+          # The repo only tracks a customized android/app/build.gradle (signing
+          # config + version). Because the android/ dir exists, `cap add android`
+          # refuses to scaffold and never generates gradlew, so we preserve the
+          # custom build.gradle, regenerate the full native project, then restore it.
+          cp android/app/build.gradle /tmp/app-build.gradle
+          rm -rf android
+          npx cap add android
+          cp /tmp/app-build.gradle android/app/build.gradle
 
       - name: Sync Capacitor
         run: cd frontend && npx cap sync android
