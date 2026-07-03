@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import { api, setTokenGetter } from '../lib/api';
+import { api, setTokenGetter, setUnauthorizedHandler } from '../lib/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -21,6 +21,14 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    // Handle 401s from anywhere in the app: clear the session so route guards
+    // send the user back to /login.
+    setUnauthorizedHandler(async () => {
+      await Preferences.remove({ key: 'bbToken' });
+      setTokenSync(null);
+      setUser(null);
+    });
+
     getToken().then((storedToken) => {
       if (storedToken) {
         setTokenSync(storedToken);
@@ -54,6 +62,15 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
+  // Establish a session from an already-issued token (e.g. Google Sign-In).
+  const loginWithToken = async (newToken) => {
+    await Preferences.set({ key: 'bbToken', value: newToken });
+    setTokenSync(newToken);
+    const me = await api.get('/api/auth/me', { headers: { Authorization: `Bearer ${newToken}` } });
+    setUser(me);
+    return me;
+  };
+
   const updateProfile = async (formData) => {
     const updated = await api.put('/api/auth/profile', formData);
     setUser(prev => ({ ...prev, ...updated }));
@@ -77,7 +94,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, updateProfile, refreshUser, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, loginWithToken, updateProfile, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
@@ -18,11 +17,31 @@ const GOOGLE_CLIENT_ID =
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, loginWithToken, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const googleBtnRef = useRef(null);
+
+  // Already authenticated? Skip the login screen.
+  useEffect(() => {
+    if (user) navigate('/app', { replace: true });
+  }, [user, navigate]);
+
+  // Exchange a Google credential for a session and enter the app.
+  const completeGoogleAuth = async (credential) => {
+    if (!credential) {
+      toast.error('Google sign-in failed: No credential received.');
+      return;
+    }
+    const data = await api.post('/api/auth/google', { credential });
+    if (!data?.token) {
+      toast.error('Google sign-in failed. Please try again.');
+      return;
+    }
+    await loginWithToken(data.token);
+    navigate('/app', { replace: true });
+  };
 
   const handleGoogleLogin = async () => {
     // Native (Android/iOS) uses the native Google Sign-In SDK via the
@@ -38,13 +57,7 @@ export default function LoginPage() {
       });
       const result = await GoogleAuth.signIn();
       const credential = result?.authentication?.idToken || result?.idToken;
-      if (!credential) {
-        toast.error('Google sign-in failed: No ID token received.');
-        return;
-      }
-      const data = await api.post('/api/auth/google', { credential });
-      await Preferences.set({ key: 'bbToken', value: data.token });
-      window.location.href = '/app';
+      await completeGoogleAuth(credential);
     } catch (err) {
       const msg = err?.message || '';
       console.error('Google login error:', msg, err?.code);
@@ -84,9 +97,7 @@ export default function LoginPage() {
           client_id: GOOGLE_CLIENT_ID,
           callback: async (response) => {
             try {
-              const data = await api.post('/api/auth/google', { credential: response.credential });
-              await Preferences.set({ key: 'bbToken', value: data.token });
-              window.location.href = '/app';
+              await completeGoogleAuth(response.credential);
             } catch (err) {
               const detail = err.detail || err.message || 'Google login failed';
               toast.error(`Google login failed: ${detail}`);

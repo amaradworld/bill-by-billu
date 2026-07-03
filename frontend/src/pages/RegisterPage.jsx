@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
-import { Preferences } from '@capacitor/preferences';
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Capacitor } from '@capacitor/core';
 
@@ -28,11 +27,29 @@ const INDIAN_STATES = [
 
 export default function RegisterPage() {
   const { t } = useTranslation();
-  const { register } = useAuth();
+  const { register, loginWithToken, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref') || '';
   const googleBtnRef = useRef(null);
+
+  useEffect(() => {
+    if (user) navigate('/app', { replace: true });
+  }, [user, navigate]);
+
+  const completeGoogleAuth = async (credential) => {
+    if (!credential) {
+      toast.error('Google sign-up failed: No credential received.');
+      return;
+    }
+    const data = await api.post('/api/auth/google', { credential });
+    if (!data?.token) {
+      toast.error('Google sign-up failed. Please try again.');
+      return;
+    }
+    await loginWithToken(data.token);
+    navigate('/app', { replace: true });
+  };
 
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '',
@@ -79,13 +96,7 @@ export default function RegisterPage() {
       });
       const result = await GoogleAuth.signIn();
       const credential = result?.authentication?.idToken || result?.idToken;
-      if (!credential) {
-        toast.error('Google sign-up failed: No ID token received.');
-        return;
-      }
-      const data = await api.post('/api/auth/google', { credential });
-      await Preferences.set({ key: 'bbToken', value: data.token });
-      window.location.href = '/app';
+      await completeGoogleAuth(credential);
     } catch (err) {
       const msg = err?.message || '';
       console.error('Google signup error:', msg, err?.code);
@@ -112,12 +123,14 @@ export default function RegisterPage() {
           client_id: GOOGLE_CLIENT_ID,
           callback: async (response) => {
             try {
-              const data = await api.post('/api/auth/google', { credential: response.credential });
-              await Preferences.set({ key: 'bbToken', value: data.token });
-              window.location.href = '/app';
+              await completeGoogleAuth(response.credential);
             } catch (err) {
-        toast.error(err.code ? `${err.message} (code: ${err.code})` : err.message || 'Google sign-up failed');
+              toast.error(err.code ? `${err.message} (code: ${err.code})` : err.message || 'Google sign-up failed');
             }
+          },
+          error_callback: (err) => {
+            console.error('Google GIS error:', err);
+            toast.error(`Google Sign-In error: ${err.type || 'unknown'}`);
           },
         });
         if (googleBtnRef.current) {

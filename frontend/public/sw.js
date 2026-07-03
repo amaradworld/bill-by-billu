@@ -7,7 +7,7 @@ self.addEventListener('push', (event) => {
     icon: '/logo/favicon.svg',
     badge: '/logo/favicon.svg',
     vibrate: [200, 100, 200],
-    data: { url: data.url || '/app/dashboard' },
+    data: { url: data.url || '/app' },
     actions: [
       { action: 'open', title: 'Open' },
       { action: 'dismiss', title: 'Dismiss' },
@@ -22,7 +22,7 @@ self.addEventListener('notificationclick', (event) => {
 
   if (event.action === 'dismiss') return;
 
-  const url = event.notification.data?.url || '/app/dashboard';
+  const url = event.notification.data?.url || '/app';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
