@@ -412,16 +412,20 @@ router.post('/webhook', async (req, res) => {
         },
       });
 
-      // Try to find a matching user by the recipient phone number
+      // Match the tenant strictly by the recipient (business) phone number.
+      // Do NOT fall back to an arbitrary user — that would let one tenant's
+      // inbound messages create invoices under another tenant's account.
       const recipientPhone = value.metadata?.display_phone_number;
-      const user = users.find(u => {
-        const userPhone = u.whatsappNumber?.replace(/[^0-9]/g, '');
-        const recipient = recipientPhone?.replace(/[^0-9]/g, '');
-        return userPhone && recipient && userPhone.endsWith(recipient.slice(-10));
-      }) || users[0];
+      const recipient = recipientPhone?.replace(/[^0-9]/g, '');
+      const user = recipient
+        ? users.find(u => {
+            const userPhone = u.whatsappNumber?.replace(/[^0-9]/g, '');
+            return userPhone && userPhone.endsWith(recipient.slice(-10));
+          })
+        : null;
 
       if (!user) {
-        logger.warn('No user found for WhatsApp bot message');
+        logger.warn({ recipientPhone }, 'No matching user for WhatsApp bot message — ignoring');
         return res.sendStatus(200);
       }
 
@@ -582,7 +586,7 @@ router.get('/config', authenticate, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     res.json({
       webhookUrl: `${process.env.BACKEND_URL || 'https://bill-by-billu.onrender.com'}/api/whatsapp-bot/webhook`,
-      verifyToken: process.env.WHATSAPP_VERIFY_TOKEN || 'Not configured',
+      verifyTokenConfigured: !!process.env.WHATSAPP_VERIFY_TOKEN,
       apiConfigured: !!(process.env.WHATSAPP_API_TOKEN || process.env.WHATSAPP_API_KEY),
       phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || 'Not configured',
       businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || 'Not configured',

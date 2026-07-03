@@ -7,6 +7,12 @@ export function setTokenGetter(fn) {
   tokenGetter = fn;
 }
 
+// Called when an authenticated request comes back 401 (expired/invalid session).
+let unauthorizedHandler = null;
+export function setUnauthorizedHandler(fn) {
+  unauthorizedHandler = fn;
+}
+
 async function request(path, options = {}) {
   const token = tokenGetter();
   const headers = {
@@ -28,6 +34,12 @@ async function request(path, options = {}) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      // Global session-expiry handling: a 401 on any non-auth endpoint means the
+      // token is no longer valid. Auth endpoints (login/register/google) return
+      // 401 for bad credentials, so they must not trigger a global logout.
+      if (res.status === 401 && unauthorizedHandler && !path.startsWith('/api/auth/')) {
+        unauthorizedHandler();
+      }
       const msg = data.details
         ? data.details.map(d => `${d.path.join('.')}: ${d.message}`).join('; ')
         : data.error || `Request failed (${res.status})`;

@@ -17,7 +17,7 @@ function generateReferralCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
   for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(crypto.randomInt(0, chars.length));
   }
   return code;
 }
@@ -180,8 +180,11 @@ router.post('/google', async (req, res) => {
 
     logger.info({ credentialLength: credential.length }, 'Google auth: received credential');
 
-    // Accept tokens from both Web and Android client IDs
+    // Accept tokens from configured Web and Android client IDs. Prefer env
+    // (GOOGLE_CLIENT_IDS, comma-separated), with the known public client IDs as
+    // fallback so existing deployments keep working.
     const audiences = [
+      ...(process.env.GOOGLE_CLIENT_IDS?.split(',').map(s => s.trim()) || []),
       process.env.GOOGLE_CLIENT_ID,
       '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
       '349451682504-i81hieingnadhq9kg06mu1t6lg97sqpa.apps.googleusercontent.com',
@@ -203,7 +206,15 @@ router.post('/google', async (req, res) => {
 
     if (!payload) {
       logger.error('Google token verification failed for all audiences');
-      return res.status(401).json({ error: 'Google authentication failed', detail: 'Invalid token' });
+      return res.status(401).json({ error: 'Google authentication failed' });
+    }
+
+    // Only trust Google identities whose email Google has verified. Without this
+    // an attacker could mint a token for an unverified address and take over an
+    // existing account via the email-based auto-link below.
+    if (payload.email_verified !== true) {
+      logger.warn({ email: payload.email }, 'Google auth: email not verified');
+      return res.status(401).json({ error: 'Google account email is not verified' });
     }
 
     const { sub: googleId, email, name, picture } = payload;
@@ -215,7 +226,7 @@ router.post('/google', async (req, res) => {
       });
     } catch (dbErr) {
       logger.error({ error: dbErr.message, stack: dbErr.stack }, 'Google auth: DB find failed');
-      return res.status(500).json({ error: 'Database error', detail: dbErr.message });
+      return res.status(500).json({ error: 'Database error' });
     }
 
     if (user) {
@@ -250,7 +261,7 @@ router.post('/google', async (req, res) => {
     res.json({ user: safeUser, token });
   } catch (err) {
     logger.error({ error: err.message, stack: err.stack }, 'Google auth error');
-    res.status(500).json({ error: 'Google authentication failed', detail: err.message });
+    res.status(500).json({ error: 'Google authentication failed' });
   }
 });
 
@@ -327,6 +338,11 @@ router.get('/me', authenticate, async (req, res) => {
 router.put('/profile', authenticate, async (req, res) => {
   try {
     const data = registerSchema.partial().parse(req.body);
+
+    // Never allow identity/security fields to be changed via the profile update.
+    delete data.email;
+    delete data.password;
+    delete data.referralCode;
 
     if (data.gstNumber && !validateGSTIN(data.gstNumber)) {
       return res.status(400).json({ error: 'Invalid GSTIN format' });
