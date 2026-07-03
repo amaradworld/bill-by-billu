@@ -12,7 +12,9 @@ router.use(authenticate);
 
 const razorpaySchema = z.object({
   invoiceId: z.string(),
-  amount: z.number().positive(),
+  // amount is intentionally ignored — the charge is always derived from the
+  // invoice total on the server to prevent client-side amount tampering.
+  amount: z.number().positive().optional(),
   currency: z.string().default('INR'),
   customerName: z.string().optional(),
   customerEmail: z.string().optional(),
@@ -38,6 +40,13 @@ router.post('/razorpay/link', async (req, res) => {
     // Decrypt Razorpay credentials
     const auth = Buffer.from(`${user.razorpayKeyId}:${decrypt(user.razorpayKeySecret)}`).toString('base64');
 
+    // Charge the invoice total from the server record — never trust a
+    // client-supplied amount for the payment link.
+    const chargeAmount = Math.round(Number(invoice.totalAmount) * 100); // paise
+    if (!Number.isFinite(chargeAmount) || chargeAmount <= 0) {
+      return res.status(400).json({ error: 'Invoice has no payable amount' });
+    }
+
     const razorpayRes = await fetch('https://api.razorpay.com/v1/payment_links', {
       method: 'POST',
       headers: {
@@ -45,7 +54,7 @@ router.post('/razorpay/link', async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: Math.round(data.amount * 100), // paise
+        amount: chargeAmount, // paise
         currency: data.currency,
         accept_partial: false,
         description: `Payment for Invoice ${data.invoiceId}`,
@@ -180,6 +189,15 @@ webhookRouter.post('/webhook/razorpay', express.raw({ type: 'application/json' }
       const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
       if (!invoice) {
         logger.warn({ invoiceId }, 'Invoice not found for webhook payment');
+        return res.json({ received: true });
+      }
+
+      // Only mark PAID if the captured amount covers the invoice total.
+      // Prevents a tiny payment referencing a large invoice from clearing it.
+      const expectedPaise = Math.round(Number(invoice.totalAmount) * 100);
+      const paidPaise = Number(payment.amount);
+      if (Number.isFinite(expectedPaise) && Number.isFinite(paidPaise) && paidPaise < expectedPaise) {
+        logger.warn({ invoiceId, paidPaise, expectedPaise, paymentId: payment.id }, 'Webhook payment amount below invoice total — not marking paid');
         return res.json({ received: true });
       }
 

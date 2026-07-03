@@ -138,7 +138,7 @@ router.post('/create-order', async (req, res) => {
     if (!razorpayRes.ok) {
       const err = await razorpayRes.json();
       logger.error({ err, status: razorpayRes.status }, 'Razorpay order creation failed');
-      return res.status(500).json({ error: 'Failed to create payment order', detail: err.error?.description || err.message || 'Unknown Razorpay error' });
+      return res.status(502).json({ error: 'Failed to create payment order. Please try again.' });
     }
 
     const order = await razorpayRes.json();
@@ -153,30 +153,32 @@ router.post('/create-order', async (req, res) => {
     });
   } catch (err) {
     logger.error('Create subscription order error:', err.message);
-    res.status(500).json({ error: 'Internal server error', detail: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 // POST /api/subscription/verify — Verify Razorpay payment and activate plan
 router.post('/verify', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, period } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-    logger.info({ userId: req.userId, orderId: razorpay_order_id, plan, period }, 'Verify payment attempt');
+    logger.info({ userId: req.userId, orderId: razorpay_order_id }, 'Verify payment attempt');
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ error: 'Missing payment verification data' });
     }
 
-    // Verify signature
+    // Resolve Razorpay credentials (platform keys preferred, else user keys)
+    let razorpayKeyId = process.env.RAZORPAY_KEY_ID;
     let razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!razorpayKeySecret && user.razorpayKeySecret) {
+      razorpayKeyId = user.razorpayKeyId;
       razorpayKeySecret = decrypt(user.razorpayKeySecret);
     }
 
-    if (!razorpayKeySecret) {
-      logger.error({ userId: req.userId }, 'No Razorpay secret available for verification');
+    if (!razorpayKeyId || !razorpayKeySecret) {
+      logger.error({ userId: req.userId }, 'No Razorpay credentials available for verification');
       return res.status(500).json({ error: 'Payment verification not configured. Contact support.' });
     }
 
@@ -193,6 +195,40 @@ router.post('/verify', async (req, res) => {
     if (!sigValid) {
       logger.error({ userId: req.userId, orderId: razorpay_order_id }, 'Payment signature mismatch');
       return res.status(401).json({ error: 'Invalid payment signature' });
+    }
+
+    // SECURITY: never trust plan/period/amount from the client. Fetch the order
+    // that we created server-side and derive the plan from its notes, and confirm
+    // the amount actually paid matches the plan's price. Otherwise a user could
+    // pay for STARTER and claim GROWTH, or tamper with the amount.
+    const auth = Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
+    const orderRes = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(razorpay_order_id)}`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+    if (!orderRes.ok) {
+      logger.error({ userId: req.userId, orderId: razorpay_order_id, status: orderRes.status }, 'Failed to fetch Razorpay order for verification');
+      return res.status(400).json({ error: 'Could not verify payment order' });
+    }
+    const order = await orderRes.json();
+
+    // Order must belong to this user and be a subscription order we created
+    if (String(order.notes?.userId) !== String(req.userId) || order.notes?.type !== 'subscription') {
+      logger.warn({ userId: req.userId, orderId: razorpay_order_id, notes: order.notes }, 'Order ownership/type mismatch on verify');
+      return res.status(403).json({ error: 'Payment order does not belong to this account' });
+    }
+
+    const plan = order.notes?.plan;
+    const period = order.notes?.period;
+    if (!PAID_PLANS.includes(plan) || !['monthly', 'yearly'].includes(period)) {
+      return res.status(400).json({ error: 'Invalid plan on payment order' });
+    }
+
+    // Confirm the amount paid matches the plan price and the order is paid
+    const planInfo = PLANS[plan];
+    const expectedAmount = (period === 'yearly' ? planInfo.yearlyPrice : planInfo.monthlyPrice) * 100;
+    if (Number(order.amount_paid) < expectedAmount || Number(order.amount) !== expectedAmount) {
+      logger.warn({ userId: req.userId, orderId: razorpay_order_id, orderAmount: order.amount, amountPaid: order.amount_paid, expectedAmount }, 'Order amount mismatch on verify');
+      return res.status(400).json({ error: 'Payment amount does not match the selected plan' });
     }
 
     // Calculate expiry

@@ -78,6 +78,41 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Stricter limiter for credential/auth endpoints to slow brute-force and
+// credential-stuffing attacks. Keyed by IP (auth runs before req.userId is set).
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip,
+  message: { error: 'Too many attempts. Please try again in a few minutes.' },
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/google', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/admin/login', authLimiter);
+
+// ─── Request logging (must run before route handlers to capture all API traffic) ───
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.url !== '/api/health') {
+      logger.info({
+        method: req.method,
+        url: req.url,
+        status: res.statusCode,
+        duration: `${duration}ms`,
+        userId: req.userId || '-',
+      });
+    }
+  });
+  next();
+});
+
 // ─── Health check (before auth routes) ───
 app.get('/api/health', async (req, res) => {
   try {
@@ -123,24 +158,6 @@ app.use('/api/import', importRoutes);
 // Swagger docs
 app.get('/api/docs.json', (req, res) => {
   res.json(swaggerSpec);
-});
-
-// ─── Request logging ───
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    if (req.url !== '/api/health') {
-      logger.info({
-        method: req.method,
-        url: req.url,
-        status: res.statusCode,
-        duration: `${duration}ms`,
-        userId: req.userId || '-',
-      });
-    }
-  });
-  next();
 });
 
 // ─── 404 handler ───

@@ -6,6 +6,22 @@ const { processArticles } = require('../services/blogBot');
 
 const router = express.Router();
 
+const PLATFORM_OWNER = (process.env.PLATFORM_OWNER_EMAIL || 'amaradworld@gmail.com').toLowerCase();
+
+// Only the platform owner may manage blog content
+async function requirePlatformOwner(req, res, next) {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true } });
+    if (!user || user.email.toLowerCase() !== PLATFORM_OWNER) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+  } catch (err) {
+    logger.error({ err }, 'Blog admin check failed');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 // ─── Public: list published posts ───
 router.get('/', async (req, res) => {
   try {
@@ -70,7 +86,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // ─── Admin: trigger bot manually ───
-router.post('/sync', authenticate, async (req, res) => {
+router.post('/sync', authenticate, requirePlatformOwner, async (req, res) => {
   try {
     const posted = await processArticles();
     res.json({ ok: true, posted });
@@ -81,7 +97,7 @@ router.post('/sync', authenticate, async (req, res) => {
 });
 
 // ─── Admin: list all posts (including drafts) ───
-router.get('/admin/all', authenticate, async (req, res) => {
+router.get('/admin/all', authenticate, requirePlatformOwner, async (req, res) => {
   try {
     const posts = await prisma.blogPost.findMany({
       orderBy: { publishedAt: 'desc' },
@@ -97,7 +113,7 @@ router.get('/admin/all', authenticate, async (req, res) => {
 });
 
 // ─── Admin: delete post ───
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, requirePlatformOwner, async (req, res) => {
   try {
     await prisma.blogPost.delete({ where: { id: req.params.id } });
     res.json({ ok: true });

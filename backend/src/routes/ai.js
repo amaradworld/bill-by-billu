@@ -150,9 +150,11 @@ router.post('/create-invoice', async (req, res) => {
     let custState = customerState || null;
     let custAddress = customerAddress || null;
 
+    let resolvedCustomerId = null;
     if (customerId) {
-      const cust = await prisma.customer.findUnique({ where: { id: customerId } });
+      const cust = await prisma.customer.findFirst({ where: { id: customerId, userId: req.userId } });
       if (cust) {
+        resolvedCustomerId = cust.id;
         custName = cust.name;
         custGst = cust.gstNumber;
         custState = cust.state;
@@ -171,7 +173,7 @@ router.post('/create-invoice', async (req, res) => {
     const invoice = await prisma.invoice.create({
       data: {
         userId: req.userId,
-        customerId: customerId || null,
+        customerId: resolvedCustomerId,
         invoiceNumber,
         invoiceDate: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
