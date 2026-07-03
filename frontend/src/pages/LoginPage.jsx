@@ -25,13 +25,24 @@ export default function LoginPage() {
     try {
       let credential;
       if (isNative) {
-        // Use web-based Google Sign-In on native too (native plugin has SHA-1 issues)
+        // Dynamically load Google GIS script on native
+        if (!window.google || !window.google.accounts) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+            document.head.appendChild(script);
+          });
+          // Wait for script to initialize
+          await new Promise(r => setTimeout(r, 500));
+        }
+
         const google = window.google;
         if (!google || !google.accounts) {
-          toast.error('Google Sign-In not loaded. Check your connection.');
+          toast.error('Google Sign-In not available. Check your connection.');
           return;
         }
-        // Use popup mode for native
         credential = await new Promise((resolve, reject) => {
           google.accounts.id.initialize({
             client_id: '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
@@ -40,23 +51,15 @@ export default function LoginPage() {
           });
           google.accounts.id.prompt((notification) => {
             if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              // Fallback: render button and click it
               const container = document.createElement('div');
-              container.style.position = 'fixed';
-              container.style.top = '50%';
-              container.style.left = '50%';
-              container.style.transform = 'translate(-50%, -50%)';
-              container.style.zIndex = '9999';
-              container.style.background = 'white';
-              container.style.padding = '20px';
-              container.style.borderRadius = '12px';
-              container.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
+              container.id = 'google-signin-container';
+              container.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:white;padding:24px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);min-width:300px;text-align:center;';
+              container.innerHTML = '<p style="margin:0 0 16px;font-family:system-ui;font-size:14px;color:#333;">Tap below to sign in with Google</p>';
               document.body.appendChild(container);
               google.accounts.id.renderButton(container, {
                 theme: 'outline', size: 'large', text: 'signin_with',
               });
-              // Auto-remove after 30s
-              setTimeout(() => container.remove(), 30000);
+              setTimeout(() => container.remove(), 60000);
             }
           });
         });
@@ -74,7 +77,7 @@ export default function LoginPage() {
       const msg = err.message || '';
       console.error('Google login error:', msg);
       if (msg.includes('canceled') || msg.includes('cancelled') || msg.includes('prompt_not_displayed')) {
-        // User cancelled or prompt not shown — silent
+        // silent
       } else {
         toast.error(`Google login failed: ${msg}`);
       }

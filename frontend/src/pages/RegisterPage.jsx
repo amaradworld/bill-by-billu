@@ -66,9 +66,21 @@ export default function RegisterPage() {
     try {
       let credential;
       if (isNative) {
+        // Dynamically load Google GIS script on native
+        if (!window.google || !window.google.accounts) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = resolve;
+            script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+            document.head.appendChild(script);
+          });
+          await new Promise(r => setTimeout(r, 500));
+        }
+
         const google = window.google;
         if (!google || !google.accounts) {
-          toast.error('Google Sign-In not loaded. Check your connection.');
+          toast.error('Google Sign-In not available. Check your connection.');
           return;
         }
         credential = await new Promise((resolve, reject) => {
@@ -80,20 +92,14 @@ export default function RegisterPage() {
           google.accounts.id.prompt((notification) => {
             if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
               const container = document.createElement('div');
-              container.style.position = 'fixed';
-              container.style.top = '50%';
-              container.style.left = '50%';
-              container.style.transform = 'translate(-50%, -50%)';
-              container.style.zIndex = '9999';
-              container.style.background = 'white';
-              container.style.padding = '20px';
-              container.style.borderRadius = '12px';
-              container.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
+              container.id = 'google-signin-container';
+              container.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:white;padding:24px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);min-width:300px;text-align:center;';
+              container.innerHTML = '<p style="margin:0 0 16px;font-family:system-ui;font-size:14px;color:#333;">Tap below to sign up with Google</p>';
               document.body.appendChild(container);
               google.accounts.id.renderButton(container, {
                 theme: 'outline', size: 'large', text: 'signup_with',
               });
-              setTimeout(() => container.remove(), 30000);
+              setTimeout(() => container.remove(), 60000);
             }
           });
         });

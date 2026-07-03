@@ -5,7 +5,7 @@
   "server": {
     "url": "https://bill-by-billu.vercel.app",
     "cleartext": false,
-    "allowNavigation": ["*.vercel.app", "*.onrender.com", "accounts.google.com", "*.google.com"]
+    "allowNavigation": ["*.vercel.app", "*.onrender.com", "accounts.google.com", "*.google.com", "*.googleusercontent.com"]
   },
   "android": {
     "allowMixedContent": false,
