@@ -7,6 +7,9 @@ import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { Capacitor } from '@capacitor/core';
 
 const isNative = Capacitor.isNativePlatform();
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import PasswordStrength from '../components/PasswordStrength';
@@ -63,68 +66,42 @@ export default function RegisterPage() {
   };
 
   const handleGoogleSignup = async () => {
+    // Native (Android/iOS) uses the native Google Sign-In SDK via the
+    // Capacitor plugin. The GIS web library / One Tap does not work inside a
+    // Capacitor WebView (Google blocks OAuth in embedded webviews), which is
+    // why the previous script-injection approach failed on Android while the
+    // web portal kept working.
+    if (!isNative) return;
     try {
-      let credential;
-      if (isNative) {
-        // Dynamically load Google GIS script on native
-        if (!window.google || !window.google.accounts) {
-          await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://accounts.google.com/gsi/client';
-            script.onload = resolve;
-            script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
-            document.head.appendChild(script);
-          });
-          await new Promise(r => setTimeout(r, 500));
-        }
-
-        const google = window.google;
-        if (!google || !google.accounts) {
-          toast.error('Google Sign-In not available. Check your connection.');
-          return;
-        }
-        credential = await new Promise((resolve, reject) => {
-          google.accounts.id.initialize({
-            client_id: '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
-            callback: (response) => resolve(response.credential),
-            error_callback: (err) => reject(new Error(err.type || 'Google sign-in failed')),
-          });
-          google.accounts.id.prompt((notification) => {
-            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-              const container = document.createElement('div');
-              container.id = 'google-signin-container';
-              container.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:white;padding:24px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3);min-width:300px;text-align:center;';
-              container.innerHTML = '<p style="margin:0 0 16px;font-family:system-ui;font-size:14px;color:#333;">Tap below to sign up with Google</p>';
-              document.body.appendChild(container);
-              google.accounts.id.renderButton(container, {
-                theme: 'outline', size: 'large', text: 'signup_with',
-              });
-              setTimeout(() => container.remove(), 60000);
-            }
-          });
-        });
-      } else {
-        return;
-      }
+      await GoogleAuth.initialize({
+        clientId: GOOGLE_CLIENT_ID,
+        scopes: ['profile', 'email'],
+      });
+      const result = await GoogleAuth.signIn();
+      const credential = result?.authentication?.idToken || result?.idToken;
       if (!credential) {
-        toast.error('Google sign-up failed: No credential received.');
+        toast.error('Google sign-up failed: No ID token received.');
         return;
       }
       const data = await api.post('/api/auth/google', { credential });
       await Preferences.set({ key: 'bbToken', value: data.token });
       window.location.href = '/app';
     } catch (err) {
-      const msg = err.message || '';
-      console.error('Google signup error:', msg);
-      if (msg.includes('canceled') || msg.includes('cancelled') || msg.includes('prompt_not_displayed')) {
+      const msg = err?.message || '';
+      console.error('Google signup error:', msg, err?.code);
+      // 12501 = user canceled the native sign-in flow
+      if (err?.code === '12501' || /cancel/i.test(msg)) {
         // silent
       } else {
-        toast.error(`Google signup failed: ${msg}`);
+        toast.error(`Google signup failed: ${msg || 'Unknown error'}`);
       }
     }
   };
 
+  // Initialize the Google GIS button on web only. Native platforms use the
+  // native Google Sign-In plugin in handleGoogleSignup instead.
   useEffect(() => {
+    if (isNative) return;
     let attempts = 0;
     const maxAttempts = 30;
     const interval = setInterval(() => {
@@ -132,7 +109,7 @@ export default function RegisterPage() {
       if (window.google && window.google.accounts) {
         clearInterval(interval);
         window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
+          client_id: GOOGLE_CLIENT_ID,
           callback: async (response) => {
             try {
               const data = await api.post('/api/auth/google', { credential: response.credential });
