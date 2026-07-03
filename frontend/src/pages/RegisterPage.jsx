@@ -66,18 +66,42 @@ export default function RegisterPage() {
     try {
       let credential;
       if (isNative) {
-        await GoogleAuth.initialize({
-          clientId: '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
-          scopes: ['profile', 'email'],
-          grantOfflineAccess: false,
-        });
-        const result = await GoogleAuth.signIn();
-        credential = result.idToken || result.authentication?.idToken;
-        if (!credential) {
-          toast.error('Google sign-up failed: No ID token received. Try again.');
+        const google = window.google;
+        if (!google || !google.accounts) {
+          toast.error('Google Sign-In not loaded. Check your connection.');
           return;
         }
+        credential = await new Promise((resolve, reject) => {
+          google.accounts.id.initialize({
+            client_id: '349451682504-9d27bma42irec3chj4uimf1klir4oa9g.apps.googleusercontent.com',
+            callback: (response) => resolve(response.credential),
+            error_callback: (err) => reject(new Error(err.type || 'Google sign-in failed')),
+          });
+          google.accounts.id.prompt((notification) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              const container = document.createElement('div');
+              container.style.position = 'fixed';
+              container.style.top = '50%';
+              container.style.left = '50%';
+              container.style.transform = 'translate(-50%, -50%)';
+              container.style.zIndex = '9999';
+              container.style.background = 'white';
+              container.style.padding = '20px';
+              container.style.borderRadius = '12px';
+              container.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
+              document.body.appendChild(container);
+              google.accounts.id.renderButton(container, {
+                theme: 'outline', size: 'large', text: 'signup_with',
+              });
+              setTimeout(() => container.remove(), 30000);
+            }
+          });
+        });
       } else {
+        return;
+      }
+      if (!credential) {
+        toast.error('Google sign-up failed: No credential received.');
         return;
       }
       const data = await api.post('/api/auth/google', { credential });
@@ -85,23 +109,16 @@ export default function RegisterPage() {
       window.location.href = '/app';
     } catch (err) {
       const msg = err.message || '';
-      const code = err.code || '';
-      console.error('Google signup error:', msg, 'code:', code);
-      if (msg.includes('canceled') || msg.includes('cancelled')) {
-        // User cancelled — silent
-      } else if (msg.includes('12500')) {
-        toast.error('Google sign-up failed: SHA-1 fingerprint mismatch. Check GCP Console.');
-      } else if (msg.includes('12501')) {
-        // User cancelled — silent
+      console.error('Google signup error:', msg);
+      if (msg.includes('canceled') || msg.includes('cancelled') || msg.includes('prompt_not_displayed')) {
+        // silent
       } else {
-        toast.error(`Google signup failed (${code || 'unknown'}). Check GCP Console settings.`);
+        toast.error(`Google signup failed: ${msg}`);
       }
     }
   };
 
   useEffect(() => {
-    if (isNative) return;
-
     let attempts = 0;
     const maxAttempts = 30;
     const interval = setInterval(() => {
