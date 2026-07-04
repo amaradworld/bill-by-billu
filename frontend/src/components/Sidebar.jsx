@@ -106,7 +106,7 @@ export default function Sidebar({ onClose }) {
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 transition-all duration-200 shadow-sm"
           >
             <ArrowUpCircle size={18} />
-            <span>Upgrade Plan</span>
+            <span>{t('nav.upgradePlan')}</span>
           </button>
         )}
       </div>

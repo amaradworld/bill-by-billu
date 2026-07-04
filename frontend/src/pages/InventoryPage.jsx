@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { GST_RATES } from '../lib/constants';
 import { Package, Plus, X, Trash2, Edit2, AlertTriangle, Download, Search, ArrowUpDown } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const GST_RATES = [0, 5, 12, 18, 28];
 
 export default function InventoryPage() {
   const [items, setItems] = useState([]);

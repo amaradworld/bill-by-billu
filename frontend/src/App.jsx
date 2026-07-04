@@ -44,6 +44,10 @@ function AdminRoute({ children }) {
   return admin ? children : <Navigate to="/admin/login" />;
 }
 
+function RouteErrorBoundary({ children }) {
+  return <ErrorBoundary>{children}</ErrorBoundary>;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -61,27 +65,27 @@ export default function App() {
 
           {/* Admin routes — completely separate */}
           <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
-          <Route path="/admin" element={<AdminAuthProvider><AdminRoute><AdminDashboardPage /></AdminRoute></AdminAuthProvider>} />
-          <Route path="/admin/subscribers" element={<AdminAuthProvider><AdminRoute><AdminSubscribersPage /></AdminRoute></AdminAuthProvider>} />
-          <Route path="/admin/users" element={<AdminAuthProvider><AdminRoute><AdminUsersPage /></AdminRoute></AdminAuthProvider>} />
+          <Route path="/admin" element={<AdminAuthProvider><AdminRoute><RouteErrorBoundary><AdminDashboardPage /></RouteErrorBoundary></AdminRoute></AdminAuthProvider>} />
+          <Route path="/admin/subscribers" element={<AdminAuthProvider><AdminRoute><RouteErrorBoundary><AdminSubscribersPage /></RouteErrorBoundary></AdminRoute></AdminAuthProvider>} />
+          <Route path="/admin/users" element={<AdminAuthProvider><AdminRoute><RouteErrorBoundary><AdminUsersPage /></RouteErrorBoundary></AdminRoute></AdminAuthProvider>} />
 
           {/* User app */}
           <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
-            <Route index element={<DashboardPage />} />
-            <Route path="invoices" element={<InvoicesPage />} />
-            <Route path="invoices/new" element={<InvoiceFormPage />} />
-            <Route path="invoices/:id/edit" element={<InvoiceFormPage />} />
-            <Route path="customers" element={<CustomersPage />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
-            <Route path="expenses" element={<ExpensesPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="ai-invoice" element={<AIInvoicePage />} />
-            <Route path="reminders" element={<RemindersPage />} />
-            <Route path="gst-reports" element={<GSTReportsPage />} />
-            <Route path="insights" element={<InsightsPage />} />
-            <Route path="whatsapp-bot" element={<WhatsAppBotPage />} />
-            <Route path="import" element={<ImportPage />} />
+            <Route index element={<RouteErrorBoundary><DashboardPage /></RouteErrorBoundary>} />
+            <Route path="invoices" element={<RouteErrorBoundary><InvoicesPage /></RouteErrorBoundary>} />
+            <Route path="invoices/new" element={<RouteErrorBoundary><InvoiceFormPage /></RouteErrorBoundary>} />
+            <Route path="invoices/:id/edit" element={<RouteErrorBoundary><InvoiceFormPage /></RouteErrorBoundary>} />
+            <Route path="customers" element={<RouteErrorBoundary><CustomersPage /></RouteErrorBoundary>} />
+            <Route path="products" element={<RouteErrorBoundary><ProductsPage /></RouteErrorBoundary>} />
+            <Route path="inventory" element={<RouteErrorBoundary><InventoryPage /></RouteErrorBoundary>} />
+            <Route path="expenses" element={<RouteErrorBoundary><ExpensesPage /></RouteErrorBoundary>} />
+            <Route path="settings" element={<RouteErrorBoundary><SettingsPage /></RouteErrorBoundary>} />
+            <Route path="ai-invoice" element={<RouteErrorBoundary><AIInvoicePage /></RouteErrorBoundary>} />
+            <Route path="reminders" element={<RouteErrorBoundary><RemindersPage /></RouteErrorBoundary>} />
+            <Route path="gst-reports" element={<RouteErrorBoundary><GSTReportsPage /></RouteErrorBoundary>} />
+            <Route path="insights" element={<RouteErrorBoundary><InsightsPage /></RouteErrorBoundary>} />
+            <Route path="whatsapp-bot" element={<RouteErrorBoundary><WhatsAppBotPage /></RouteErrorBoundary>} />
+            <Route path="import" element={<RouteErrorBoundary><ImportPage /></RouteErrorBoundary>} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

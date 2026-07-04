@@ -20,7 +20,8 @@
     "whatsappBot": "WhatsApp Bot",
     "settings": "Settings",
     "import": "Data Import",
-    "logout": "Logout"
+    "logout": "Logout",
+    "upgradePlan": "Upgrade Plan"
   },
   "auth": {
     "login": "Login",
@@ -249,7 +250,13 @@
     "referralsMade": "Referrals Made",
     "friendsReferred": "friends referred",
     "shareReferralLink": "Share Referral Link",
-    "copyLink": "Copy Link"
+    "copyLink": "Copy Link",
+    "bankDetails": "Bank Details",
+    "bankDetailsDesc": "Add your bank details to appear on invoices for payment transfers.",
+    "bankName": "Bank Name",
+    "accountNumber": "Account Number",
+    "ifscCode": "IFSC Code",
+    "branch": "Branch"
   },
   "common": {
     "save": "Save",

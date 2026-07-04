@@ -304,31 +304,31 @@ export default function SettingsPage() {
         <div className="bg-white rounded-xl border p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Building2 size={20} className="text-brand-600" />
-            <h2 className="font-semibold text-gray-700">Bank Details</h2>
+            <h2 className="font-semibold text-gray-700">{t('settings.bankDetails')}</h2>
           </div>
-          <p className="text-xs text-gray-500">Add your bank details to appear on invoices for payment transfers.</p>
+          <p className="text-xs text-gray-500">{t('settings.bankDetailsDesc')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Bank Name</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('settings.bankName')}</label>
               <input className={input} value={form.bankName} onChange={set('bankName')} placeholder="HDFC Bank" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Account Number</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('settings.accountNumber')}</label>
               <input className={input} value={form.bankAccount} onChange={set('bankAccount')} placeholder="50100123456789" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">IFSC Code</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('settings.ifscCode')}</label>
               <input className={input} value={form.bankIfsc} onChange={set('bankIfsc')} placeholder="HDFC0001234" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Branch</label>
+              <label className="block text-xs text-gray-500 mb-1">{t('settings.branch')}</label>
               <input className={input} value={form.bankBranch} onChange={set('bankBranch')} placeholder="Sector 14, Gurgaon" />
             </div>
           </div>
         </div>
 
         <div className="bg-white rounded-xl border p-6 space-y-4">
-          <h2 className="font-semibold text-gray-700">WhatsApp Sharing</h2>
+          <h2 className="font-semibold text-gray-700">{t('settings.whatsappSharing')}</h2>
           <div>
             <label className="block text-xs text-gray-500 mb-1">{t('settings.whatsappNumber')}</label>
             <input className={input} value={form.whatsappNumber} onChange={set('whatsappNumber')} placeholder="919876543210" />

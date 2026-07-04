@@ -16,15 +16,7 @@ import PasswordStrength from '../components/PasswordStrength';
 import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { api } from '../lib/api';
-
-const INDIAN_STATES = [
-  'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat',
-  'Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh',
-  'Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab',
-  'Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh',
-  'Uttarakhand','West Bengal','Delhi','Jammu and Kashmir','Ladakh',
-  'Chandigarh','Dadra and Nagar Haveli','Lakshadweep','Puducherry','Andaman and Nicobar Islands',
-];
+import { INDIAN_STATES } from '../lib/constants';
 
 export default function RegisterPage() {
   const { t } = useTranslation();

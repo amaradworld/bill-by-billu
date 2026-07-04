@@ -139,61 +139,100 @@ export default function InvoicesPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('invoice.invoiceNumber')}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('customer.title')}</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('invoice.invoiceDate')}</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">{t('invoice.amount')}</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.status')}</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.paymentStatus')}</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.action')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filtered.map(inv => (
-                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/app/invoices/${inv.id}/edit`)}>
-                    <td className="px-4 py-3 font-medium">{inv.invoiceNumber}</td>
-                    <td className="px-4 py-3 text-gray-600">{inv.customerName || inv.customer?.name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-600">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
-                    <td className="px-4 py-3 text-right font-semibold">{fmt(inv.totalAmount)}</td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
-                        inv.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                        inv.status === 'OVERDUE' ? 'bg-red-100 text-red-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>{t(`invoice.status ${inv.status?.toLowerCase()}`)}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
-                        inv.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' :
-                        inv.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>{t(`invoice.payment ${inv.paymentStatus?.toLowerCase()}`)}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {inv.paymentStatus !== 'PAID' && (
-                          <button onClick={(e) => handleMarkPaid(e, inv.id)} className="text-green-500 hover:text-green-700" title={t('invoice.markAsPaid')}>
-                            <CheckCircle size={16} />
-                          </button>
-                        )}
-                        {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
-                          <button onClick={(e) => handleDelete(e, inv.id)} className="text-red-400 hover:text-red-600" title="Cancel invoice">
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">{t('invoice.invoiceNumber')}</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">{t('customer.title')}</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-600">{t('invoice.invoiceDate')}</th>
+                    <th className="text-right px-4 py-3 font-medium text-gray-600">{t('invoice.amount')}</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.status')}</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">{t('invoice.paymentStatus')}</th>
+                    <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.action')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y">
+                  {filtered.map(inv => (
+                    <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/app/invoices/${inv.id}/edit`)}>
+                      <td className="px-4 py-3 font-medium">{inv.invoiceNumber}</td>
+                      <td className="px-4 py-3 text-gray-600">{inv.customerName || inv.customer?.name || '-'}</td>
+                      <td className="px-4 py-3 text-gray-600">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</td>
+                      <td className="px-4 py-3 text-right font-semibold">{fmt(inv.totalAmount)}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
+                          inv.status === 'PAID' ? 'bg-green-100 text-green-700' :
+                          inv.status === 'OVERDUE' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>{t(`invoice.status ${inv.status?.toLowerCase()}`)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
+                          inv.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' :
+                          inv.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>{t(`invoice.payment ${inv.paymentStatus?.toLowerCase()}`)}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {inv.paymentStatus !== 'PAID' && (
+                            <button onClick={(e) => handleMarkPaid(e, inv.id)} className="text-green-500 hover:text-green-700" title={t('invoice.markAsPaid')}>
+                              <CheckCircle size={16} />
+                            </button>
+                          )}
+                          {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
+                            <button onClick={(e) => handleDelete(e, inv.id)} className="text-red-400 hover:text-red-600" title="Cancel invoice">
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filtered.map(inv => (
+              <div key={inv.id} className="bg-white rounded-xl border p-4 cursor-pointer" onClick={() => navigate(`/app/invoices/${inv.id}/edit`)}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{inv.invoiceNumber}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{inv.customerName || inv.customer?.name || '-'}</p>
+                  </div>
+                  <p className="font-semibold ml-2 whitespace-nowrap">{fmt(inv.totalAmount)}</p>
+                </div>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
+                    inv.status === 'PAID' ? 'bg-green-100 text-green-700' :
+                    inv.status === 'OVERDUE' ? 'bg-red-100 text-red-700' :
+                    'bg-gray-100 text-gray-700'
+                  }`}>{t(`invoice.status ${inv.status?.toLowerCase()}`)}</span>
+                  <span className={`inline-block px-2 py-0.5 text-xs rounded-full capitalize ${
+                    inv.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' :
+                    inv.paymentStatus === 'PARTIAL' ? 'bg-amber-100 text-amber-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>{t(`invoice.payment ${inv.paymentStatus?.toLowerCase()}`)}</span>
+                  <span className="text-xs text-gray-500">{new Date(inv.invoiceDate).toLocaleDateString('en-IN')}</span>
+                </div>
+                <div className="flex items-center gap-1 mt-3 pt-3 border-t">
+                  {inv.paymentStatus !== 'PAID' && (
+                    <button onClick={(e) => handleMarkPaid(e, inv.id)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100"><CheckCircle size={12} /> {t('invoice.markAsPaid')}</button>
+                  )}
+                  {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
+                    <button onClick={(e) => handleDelete(e, inv.id)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100"><Trash2 size={12} /> Cancel</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

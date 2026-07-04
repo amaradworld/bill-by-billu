@@ -122,34 +122,60 @@ export default function ExpensesPage() {
           <p>{t('expense.noExpenses')}</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.date')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.description')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.category')}</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">{t('expense.amount')}</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">{t('expense.gstAmount')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.edit')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.delete')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {expenses.map(e => (
-                <tr key={e.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">{new Date(e.date).toLocaleDateString('en-IN')}</td>
-                  <td className="px-4 py-3">{e.description}</td>
-                  <td className="px-4 py-3 text-gray-500">{e.category || '-'}</td>
-                  <td className="px-4 py-3 text-right font-semibold">{fmt(Number(e.amount))}</td>
-                  <td className="px-4 py-3 text-right text-gray-500">{fmt(Number(e.gstAmount))}</td>
-                  <td className="px-4 py-3 text-center"><button onClick={() => openEdit(e)} className="text-brand-500 hover:text-brand-700"><Edit2 size={14} /></button></td>
-                  <td className="px-4 py-3 text-center"><button onClick={() => handleDelete(e.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button></td>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.date')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.description')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('expense.category')}</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">{t('expense.amount')}</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">{t('expense.gstAmount')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.edit')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.delete')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y">
+                {expenses.map(e => (
+                  <tr key={e.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">{new Date(e.date).toLocaleDateString('en-IN')}</td>
+                    <td className="px-4 py-3">{e.description}</td>
+                    <td className="px-4 py-3 text-gray-500">{e.category || '-'}</td>
+                    <td className="px-4 py-3 text-right font-semibold">{fmt(Number(e.amount))}</td>
+                    <td className="px-4 py-3 text-right text-gray-500">{fmt(Number(e.gstAmount))}</td>
+                    <td className="px-4 py-3 text-center"><button onClick={() => openEdit(e)} className="text-brand-500 hover:text-brand-700"><Edit2 size={14} /></button></td>
+                    <td className="px-4 py-3 text-center"><button onClick={() => handleDelete(e.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {expenses.map(e => (
+              <div key={e.id} className="bg-white rounded-xl border p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{e.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{new Date(e.date).toLocaleDateString('en-IN')}{e.category && ` | ${e.category}`}</p>
+                  </div>
+                  {e.isDeductible && <span className="text-xs text-green-600 font-medium whitespace-nowrap ml-2">Deductible</span>}
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
+                  <div><p className="text-xs text-gray-500">{t('expense.amount')}</p><p className="font-medium">{fmt(Number(e.amount))}</p></div>
+                  <div><p className="text-xs text-gray-500">{t('expense.gstAmount')}</p><p className="font-medium text-gray-500">{fmt(Number(e.gstAmount))}</p></div>
+                </div>
+                <div className="flex items-center gap-1 mt-3 pt-3 border-t">
+                  <button onClick={() => openEdit(e)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100"><Edit2 size={12} /> {t('common.edit')}</button>
+                  <button onClick={() => handleDelete(e.id)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100"><Trash2 size={12} /> {t('common.delete')}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

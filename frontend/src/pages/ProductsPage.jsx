@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { GST_RATES } from '../lib/constants';
 import { Package, Plus, X, Trash2, Edit2, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const GST_RATES = [0, 5, 12, 18, 28];
 
 export default function ProductsPage() {
   const { t } = useTranslation();
@@ -145,32 +144,58 @@ export default function ProductsPage() {
           <p>{t('product.noProducts')}</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.name')}</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.hsnCode')}</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">{t('product.unitPrice')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('product.gstRate')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.edit')}</th>
-                <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.delete')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {products.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3"><p className="font-medium">{p.name}</p>{p.description && <p className="text-xs text-gray-500 truncate max-w-[200px]">{p.description}</p>}</td>
-                  <td className="px-4 py-3 text-gray-500">{p.hsnCode || '-'}</td>
-                  <td className="px-4 py-3 text-right">₹{Number(p.unitPrice).toLocaleString('en-IN')}</td>
-                  <td className="px-4 py-3 text-center">{p.gstRate}%</td>
-                  <td className="px-4 py-3 text-center"><button onClick={() => openEdit(p)} className="text-brand-500 hover:text-brand-700"><Edit2 size={14} /></button></td>
-                  <td className="px-4 py-3 text-center"><button onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button></td>
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.name')}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t('product.hsnCode')}</th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">{t('product.unitPrice')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('product.gstRate')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.edit')}</th>
+                  <th className="text-center px-4 py-3 font-medium text-gray-600">{t('common.delete')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y">
+                {products.map(p => (
+                  <tr key={p.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3"><p className="font-medium">{p.name}</p>{p.description && <p className="text-xs text-gray-500 truncate max-w-[200px]">{p.description}</p>}</td>
+                    <td className="px-4 py-3 text-gray-500">{p.hsnCode || '-'}</td>
+                    <td className="px-4 py-3 text-right">₹{Number(p.unitPrice).toLocaleString('en-IN')}</td>
+                    <td className="px-4 py-3 text-center">{p.gstRate}%</td>
+                    <td className="px-4 py-3 text-center"><button onClick={() => openEdit(p)} className="text-brand-500 hover:text-brand-700"><Edit2 size={14} /></button></td>
+                    <td className="px-4 py-3 text-center"><button onClick={() => handleDelete(p.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {products.map(p => (
+              <div key={p.id} className="bg-white rounded-xl border p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{p.name}</p>
+                    {p.description && <p className="text-xs text-gray-500 truncate mt-0.5">{p.description}</p>}
+                    <p className="text-xs text-gray-500 mt-0.5">{p.hsnCode && `HSN: ${p.hsnCode}`}{p.category && ` | ${p.category}`}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-3 text-sm">
+                  <div><p className="text-xs text-gray-500">{t('product.unitPrice')}</p><p className="font-medium">₹{Number(p.unitPrice).toLocaleString('en-IN')}</p></div>
+                  <div><p className="text-xs text-gray-500">{t('product.gstRate')}</p><p className="font-medium">{p.gstRate}%</p></div>
+                </div>
+                <div className="flex items-center gap-1 mt-3 pt-3 border-t">
+                  <button onClick={() => openEdit(p)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-brand-600 bg-brand-50 rounded-lg hover:bg-brand-100"><Edit2 size={12} /> {t('common.edit')}</button>
+                  <button onClick={() => handleDelete(p.id)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-red-500 bg-red-50 rounded-lg hover:bg-red-100"><Trash2 size={12} /> {t('common.delete')}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

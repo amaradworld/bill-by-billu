@@ -3,13 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { GST_RATES } from '../lib/constants';
 import UpgradePrompt from '../components/UpgradePrompt';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const GST_RATES = [0, 5, 12, 18, 28];
 const UNITS = ['NOS', 'KG', 'MTR', 'LTR', 'BOX', 'PCS', 'SET', 'HRS', 'DAY', 'MON'];
 
 const emptyItem = { productId: '', name: '', description: '', hsnCode: '', unit: 'NOS', quantity: 1, unitPrice: 0, discount: 0, gstRate: 18 };

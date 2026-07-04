@@ -139,14 +139,15 @@ function ImportResults({ result }) {
 
 export default function ImportPage() {
   const { t } = useTranslation();
-  const { token } = useAuth();
+  const { user } = useAuth();
+  const historyKey = `import_history_${user?.id || 'anon'}`;
   const [activeTab, setActiveTab] = useState('customers');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState({ headers: [], rows: [] });
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('import_history') || '[]'); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { return []; }
   });
 
   const handleFile = (f) => {
@@ -212,7 +213,7 @@ export default function ImportPage() {
       const entry = { type: activeTab, file: file.name, date: new Date().toLocaleString(), ...data };
       const newHistory = [entry, ...history].slice(0, 10);
       setHistory(newHistory);
-      localStorage.setItem('import_history', JSON.stringify(newHistory));
+      localStorage.setItem(historyKey, JSON.stringify(newHistory));
       toast.success(`Imported ${data.imported} items`);
     } catch (err) { toast.error(err.message); }
     finally { setImporting(false); }

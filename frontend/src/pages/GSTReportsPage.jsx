@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../lib/api';
+import { GST_RATES } from '../lib/constants';
 import { Download, FileText, BarChart3, ChevronDown, RefreshCw, Building, Users, Receipt, ArrowDown, ArrowUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const GST_RATES = [0, 5, 12, 18, 28];
 
 function PeriodSelector({ value, onChange }) {
   const now = new Date();
