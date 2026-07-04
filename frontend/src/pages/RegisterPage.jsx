@@ -16,7 +16,6 @@ import PasswordStrength from '../components/PasswordStrength';
 import Logo from '../components/Logo';
 import toast from 'react-hot-toast';
 import { api } from '../lib/api';
-import { INDIAN_STATES } from '../lib/constants';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -28,8 +27,6 @@ export default function RegisterPage() {
 
   const [form, setForm] = useState({
     name: '', email: '', password: '', confirmPassword: '',
-    businessName: '', gstNumber: '', panNumber: '',
-    phone: '', address: '', city: '', state: '', pincode: '',
     referralCode: refCode,
   });
   const [loading, setLoading] = useState(false);
@@ -168,67 +165,37 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.name')} *</label>
-                <input className={input} required value={form.name} onChange={set('name')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.email')} *</label>
-                <input type="email" className={input} required value={form.email} onChange={set('email')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.password')} *</label>
-                <input type="password" className={input} required minLength={8} value={form.password} onChange={set('password')} />
-                <PasswordStrength password={form.password} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.confirmPassword')} *</label>
-                <input type="password" className={input} required value={form.confirmPassword} onChange={set('confirmPassword')} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Referral Code (optional)</label>
-                <input className={input} value={form.referralCode} onChange={set('referralCode')} placeholder="e.g. ABC12345" />
-                {form.referralCode && <p className="text-xs text-green-600 mt-1">Both you and your referrer earn rewards!</p>}
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.businessName')}</label>
-                <input className={input} value={form.businessName} onChange={set('businessName')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.phone')}</label>
-                <input className={input} value={form.phone} onChange={set('phone')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.gstNumber')}</label>
-                <input className={input} value={form.gstNumber} onChange={set('gstNumber')} placeholder="22AAAAA0000A1Z5" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.panNumber')}</label>
-                <input className={input} value={form.panNumber} onChange={set('panNumber')} placeholder="ABCDE1234F" />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('customer.address')}</label>
-                <input className={input} value={form.address} onChange={set('address')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('customer.city')}</label>
-                <input className={input} value={form.city} onChange={set('city')} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('customer.state')}</label>
-                <select className={input} value={form.state} onChange={set('state')}>
-                  <option value="">Select state</option>
-                  {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">{t('customer.pincode')}</label>
-                <input className={input} value={form.pincode} onChange={set('pincode')} />
-              </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.name')} *</label>
+              <input className={input} required value={form.name} onChange={set('name')} placeholder="Your full name" />
             </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.email')} *</label>
+              <input type="email" className={input} required value={form.email} onChange={set('email')} placeholder="you@example.com" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.password')} *</label>
+              <input type="password" className={input} required minLength={8} value={form.password} onChange={set('password')} placeholder="Min 8 characters" />
+              <PasswordStrength password={form.password} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.confirmPassword')} *</label>
+              <input type="password" className={input} required value={form.confirmPassword} onChange={set('confirmPassword')} placeholder="Re-enter password" />
+            </div>
+            {refCode ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-700 font-medium">Referral code applied: {refCode}</p>
+                <p className="text-xs text-green-600">Both you and your referrer earn rewards!</p>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t('auth.referralCode')}</label>
+                <input className={input} value={form.referralCode} onChange={set('referralCode')} placeholder="Optional" />
+              </div>
+            )}
+            <p className="text-xs text-gray-400">Complete your business details later in Settings.</p>
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors mt-2">
+              className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors">
               {loading ? t('common.loading') : t('auth.createAccount')}
             </button>
           </form>
