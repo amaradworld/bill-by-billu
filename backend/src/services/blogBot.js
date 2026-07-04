@@ -7,9 +7,16 @@ const logger = require('../logger');
 
 const parser = new RssParser();
 
-const RSS_URL = 'https://news.google.com/rss/search?q=GST+India+update&hl=en-IN&gl=IN';
+// Direct RSS feeds that provide actual article URLs (not encoded redirects)
+const RSS_FEEDS = [
+  'https://economictimes.indiatimes.com/rssfeedstopstories.cms',
+  'https://www.livemint.com/rss/news',
+  'https://feeds.feedburner.com/ndtvnews-top-stories',
+  'https://timesofindia.indiatimes.com/rssfeeds/1898055.cms',
+];
 const MAX_ARTICLES = 5;
 const MAX_SUMMARY_WORDS = 250;
+const GST_KEYWORDS = /gst|tax|revenue|compliance|filing|return|gstr|input tax credit|gstin|gst council|gst rate|duty|customs|excise/i;
 
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
@@ -17,16 +24,39 @@ if (process.env.OPENAI_API_KEY) {
 }
 
 async function fetchLatestArticles() {
-  const feed = await parser.parseURL(RSS_URL);
-  const items = (feed.items || []).slice(0, MAX_ARTICLES);
+  const allItems = [];
 
-  return items.map(item => ({
-    title: item.title?.trim(),
-    link: item.link?.split('?')[0],
-    snippet: item.contentSnippet?.trim(),
-    pubDate: item.pubDate ? new Date(item.pubDate) : new Date(),
-    source: item.source?.name || item.link,
-  }));
+  for (const feedUrl of RSS_FEEDS) {
+    try {
+      const feed = await parser.parseURL(feedUrl);
+      const source = feedUrl.split('/')[2];
+      for (const item of (feed.items || [])) {
+        const text = `${item.title || ''} ${item.contentSnippet || ''}`;
+        if (GST_KEYWORDS.test(text) && item.link && item.title) {
+          allItems.push({
+            title: item.title.trim(),
+            link: item.link.split('?')[0],
+            snippet: item.contentSnippet?.trim(),
+            pubDate: item.pubDate ? new Date(item.pubDate) : new Date(),
+            source,
+          });
+        }
+      }
+    } catch (err) {
+      logger.warn({ err: err.message, feed: feedUrl }, 'Failed to fetch RSS feed');
+    }
+  }
+
+  // Deduplicate by URL and sort by date
+  const seen = new Set();
+  const unique = allItems.filter(item => {
+    if (seen.has(item.link)) return false;
+    seen.add(item.link);
+    return true;
+  });
+  unique.sort((a, b) => b.pubDate - a.pubDate);
+
+  return unique.slice(0, MAX_ARTICLES);
 }
 
 async function extractArticleContent(url) {
