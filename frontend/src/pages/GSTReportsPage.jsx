@@ -98,8 +98,8 @@ export default function GSTReportsPage() {
   };
 
   const gstRateSummary = {};
-  if (gstr1) {
-    gstr1.b2b.concat(gstr1.b2c).forEach(inv => {
+  if (gstr1?.b2b && gstr1?.b2c) {
+    [...gstr1.b2b, ...gstr1.b2c].forEach(inv => {
       inv.items.forEach(item => {
         const rate = item.rate || 0;
         if (!gstRateSummary[rate]) gstRateSummary[rate] = { taxable: 0, cgst: 0, sgst: 0, igst: 0, count: 0 };

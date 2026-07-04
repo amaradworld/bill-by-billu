@@ -23,7 +23,7 @@ function generateReferralCode() {
 }
 
 function escapeHtml(str) {
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 const registerSchema = z.object({
@@ -126,7 +126,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role || 'OWNER' }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role || 'OWNER', email: user.email }, JWT_SECRET, { expiresIn: '30d' });
 
     res.status(201).json({ user, token });
   } catch (err) {
@@ -153,7 +153,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
 
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
@@ -245,7 +245,7 @@ router.post('/google', async (req, res) => {
       logger.info({ email, userId: user.id }, 'Google auth: new user created');
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({ userId: user.id, role: user.role, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     const { passwordHash, ...safeUser } = user;
     res.json({ user: safeUser, token });
   } catch (err) {

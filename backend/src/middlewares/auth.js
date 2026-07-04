@@ -30,6 +30,7 @@ function authenticate(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     req.userId = decoded.userId;
     req.userRole = decoded.role || ROLES.VIEWER;
+    req.userEmail = decoded.email || null;
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Invalid or expired token' });

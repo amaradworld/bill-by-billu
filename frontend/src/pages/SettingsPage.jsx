@@ -275,27 +275,27 @@ export default function SettingsPage() {
               { key: 'classic', name: 'Classic', desc: 'Clean & minimal blue theme', color: 'border-blue-500', preview: 'bg-gradient-to-br from-blue-50 to-white' },
               { key: 'modern', name: 'Modern', desc: 'Purple premium design', color: 'border-purple-500', preview: 'bg-gradient-to-br from-purple-50 to-white' },
               { key: 'compact', name: 'Compact', desc: 'Space-efficient layout', color: 'border-teal-500', preview: 'bg-gradient-to-br from-teal-50 to-white' },
-            ].map(t => (
+            ].map(tpl => (
               <button
-                key={t.key}
+                key={tpl.key}
                 type="button"
-                onClick={() => setForm(f => ({ ...f, invoiceTemplate: t.key }))}
+                onClick={() => setForm(f => ({ ...f, invoiceTemplate: tpl.key }))}
                 className={`relative p-4 rounded-xl border-2 transition-all text-left ${
-                  form.invoiceTemplate === t.key
-                    ? `${t.color} bg-brand-50 shadow-md`
+                  form.invoiceTemplate === tpl.key
+                    ? `${tpl.color} bg-brand-50 shadow-md`
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
               >
-                {form.invoiceTemplate === t.key && (
+                {form.invoiceTemplate === tpl.key && (
                   <div className="absolute top-2 right-2 w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center">
                     <Check size={12} className="text-white" />
                   </div>
                 )}
-                <div className={`w-full h-16 rounded-lg mb-3 ${t.preview} border border-gray-100 flex items-center justify-center`}>
-                  <FileText size={24} className={form.invoiceTemplate === t.key ? 'text-brand-600' : 'text-gray-300'} />
+                <div className={`w-full h-16 rounded-lg mb-3 ${tpl.preview} border border-gray-100 flex items-center justify-center`}>
+                  <FileText size={24} className={form.invoiceTemplate === tpl.key ? 'text-brand-600' : 'text-gray-300'} />
                 </div>
-                <p className="text-sm font-semibold text-gray-800">{t.name}</p>
-                <p className="text-xs text-gray-500">{t.desc}</p>
+                <p className="text-sm font-semibold text-gray-800">{tpl.name}</p>
+                <p className="text-xs text-gray-500">{tpl.desc}</p>
               </button>
             ))}
           </div>

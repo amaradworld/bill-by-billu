@@ -334,50 +334,52 @@ router.put('/:id', async (req, res) => {
       reverseCharge: data.reverseCharge,
     });
 
-    // Delete old items, create new ones
-    await prisma.invoiceItem.deleteMany({ where: { invoiceId: existing.id } });
+    // Delete old items, create new ones — wrapped in transaction for safety
+    const invoice = await prisma.$transaction(async (tx) => {
+      await tx.invoiceItem.deleteMany({ where: { invoiceId: existing.id } });
 
-    const invoice = await prisma.invoice.update({
-      where: { id: existing.id },
-      data: {
-        customerId: data.customerId || null,
-        invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : existing.invoiceDate,
-        dueDate: data.dueDate ? new Date(data.dueDate) : existing.dueDate,
-        customerName,
-        customerGst,
-        customerAddress,
-        customerState,
-        subtotal: totals.subtotal,
-        discountAmount: totals.discountAmount,
-        cgst: totals.cgst,
-        sgst: totals.sgst,
-        igst: totals.igst,
-        totalTax: totals.totalTax,
-        totalAmount: totals.totalAmount,
-        notes: data.notes || existing.notes,
-        terms: data.terms || existing.terms,
-        placeOfSupply: data.placeOfSupply || customerState,
-        reverseCharge: data.reverseCharge,
-        isDraft: existing.status === 'DRAFT',
-        items: {
-          create: data.items.map((item, idx) => ({
-            productId: item.productId || null,
-            name: item.name,
-            description: item.description || null,
-            hsnCode: item.hsnCode || null,
-            unit: item.unit,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            discount: item.discount,
-            gstRate: item.gstRate,
-            cgst: totals.items[idx]?.cgst || 0,
-            sgst: totals.items[idx]?.sgst || 0,
-            igst: totals.items[idx]?.igst || 0,
-            totalAmount: totals.items[idx]?.totalAmount || 0,
-          })),
+      return tx.invoice.update({
+        where: { id: existing.id },
+        data: {
+          customerId: data.customerId || null,
+          invoiceDate: data.invoiceDate ? new Date(data.invoiceDate) : existing.invoiceDate,
+          dueDate: data.dueDate ? new Date(data.dueDate) : existing.dueDate,
+          customerName,
+          customerGst,
+          customerAddress,
+          customerState,
+          subtotal: totals.subtotal,
+          discountAmount: totals.discountAmount,
+          cgst: totals.cgst,
+          sgst: totals.sgst,
+          igst: totals.igst,
+          totalTax: totals.totalTax,
+          totalAmount: totals.totalAmount,
+          notes: data.notes || existing.notes,
+          terms: data.terms || existing.terms,
+          placeOfSupply: data.placeOfSupply || customerState,
+          reverseCharge: data.reverseCharge,
+          isDraft: existing.status === 'DRAFT',
+          items: {
+            create: data.items.map((item, idx) => ({
+              productId: item.productId || null,
+              name: item.name,
+              description: item.description || null,
+              hsnCode: item.hsnCode || null,
+              unit: item.unit,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              discount: item.discount,
+              gstRate: item.gstRate,
+              cgst: totals.items[idx]?.cgst || 0,
+              sgst: totals.items[idx]?.sgst || 0,
+              igst: totals.items[idx]?.igst || 0,
+              totalAmount: totals.items[idx]?.totalAmount || 0,
+            })),
+          },
         },
-      },
-      include: { items: true, customer: true },
+        include: { items: true, customer: true },
+      });
     });
 
     res.json(invoice);

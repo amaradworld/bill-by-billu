@@ -162,6 +162,16 @@ router.post('/verify', async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, period } = req.body;
 
+    const VALID_PLANS = ['STARTER', 'GROWTH'];
+    const VALID_PERIODS = ['monthly', 'yearly'];
+
+    if (!VALID_PLANS.includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan. Must be STARTER or GROWTH.' });
+    }
+    if (period && !VALID_PERIODS.includes(period)) {
+      return res.status(400).json({ error: 'Invalid period. Must be monthly or yearly.' });
+    }
+
     logger.info({ userId: req.userId, orderId: razorpay_order_id, plan, period }, 'Verify payment attempt');
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {

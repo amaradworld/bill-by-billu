@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { api } from '../lib/api';
 import { Mail, Users, User, UserX, Search, Download, Trash2, LogOut, Shield, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
@@ -89,12 +89,12 @@ export default function AdminSubscribersPage() {
             <span className="text-xs text-gray-500">/ Subscribers</span>
           </div>
           <div className="flex items-center gap-2">
-            <a href="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
+            <Link to="/admin" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
               <CreditCard size={16} /> Payments
-            </a>
-            <a href="/admin/users" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
+            </Link>
+            <Link to="/admin/users" className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-amber-400 hover:bg-gray-800 rounded-lg transition-colors">
               <User size={16} /> Users
-            </a>
+            </Link>
             <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-gray-400 hover:text-red-400 transition-colors">
               <LogOut size={16} /> Logout
             </button>

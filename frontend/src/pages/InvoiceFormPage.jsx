@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 import UpgradePrompt from '../components/UpgradePrompt';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const GST_RATES = [0, 5, 12, 18, 28];

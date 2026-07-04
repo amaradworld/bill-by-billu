@@ -191,6 +191,8 @@ router.post('/upgrade', requireAdmin, async (req, res) => {
 router.get('/users', requireAdmin, async (req, res) => {
   try {
     const { search, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 50));
     const where = {};
     if (search) {
       where.OR = [
@@ -203,14 +205,14 @@ router.get('/users', requireAdmin, async (req, res) => {
       prisma.user.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip: (parseInt(page) - 1) * parseInt(limit),
-        take: parseInt(limit),
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
         select: { id: true, email: true, name: true, businessName: true, plan: true, planExpiry: true, trialEndsAt: true, createdAt: true },
       }),
       prisma.user.count({ where }),
     ]);
 
-    res.json({ users, pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) } });
+    res.json({ users, pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) } });
   } catch (err) {
     logger.error('Admin list users error:', err.message);
     res.status(500).json({ error: 'Internal server error' });

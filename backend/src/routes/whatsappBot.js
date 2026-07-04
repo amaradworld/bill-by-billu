@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const prisma = require('../prisma');
 const { authenticate } = require('../middlewares/auth');
 const { generateInvoicePDF } = require('./pdf');
@@ -382,6 +383,23 @@ async function processInboundMessage(userId, phoneNumber, messageText) {
 // ─── POST /webhook — receive inbound messages ───
 router.post('/webhook', async (req, res) => {
   try {
+    // Verify WhatsApp webhook signature if secret is configured
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
+    if (appSecret) {
+      const signature = req.headers['x-hub-signature-256'];
+      if (!signature) {
+        logger.warn('WhatsApp webhook missing signature');
+        return res.sendStatus(403);
+      }
+      const expectedSig = 'sha256=' + crypto.createHmac('sha256', appSecret).update(JSON.stringify(req.body)).digest('hex');
+      const sigBuf = Buffer.from(signature, 'hex');
+      const expectedBuf = Buffer.from(expectedSig, 'hex');
+      if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+        logger.warn('WhatsApp webhook signature mismatch');
+        return res.sendStatus(403);
+      }
+    }
+
     const body = req.body;
 
     // WhatsApp Cloud API webhook format

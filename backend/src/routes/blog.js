@@ -6,11 +6,20 @@ const { processArticles } = require('../services/blogBot');
 
 const router = express.Router();
 
+function isAdmin(req, res, next) {
+  if (req.userId !== process.env.PLATFORM_OWNER_USER_ID && req.userEmail !== 'amaradworld@gmail.com') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
 // ─── Public: list published posts ───
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 20, category, search } = req.query;
-    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+    const skip = (pageNum - 1) * limitNum;
 
     const where = { status: 'published' };
     if (category) where.category = category;
@@ -26,7 +35,7 @@ router.get('/', async (req, res) => {
         where,
         orderBy: { publishedAt: 'desc' },
         skip,
-        take: parseInt(limit),
+        take: limitNum,
         select: {
           id: true, title: true, slug: true, content: true, excerpt: true,
           category: true, sourceUrl: true, publishedAt: true,
@@ -38,10 +47,10 @@ router.get('/', async (req, res) => {
     res.json({
       posts,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageNum,
+        limit: limitNum,
         total,
-        pages: Math.ceil(total / parseInt(limit)),
+        pages: Math.ceil(total / limitNum),
       },
     });
   } catch (err) {
@@ -70,7 +79,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // ─── Admin: trigger bot manually ───
-router.post('/sync', authenticate, async (req, res) => {
+router.post('/sync', authenticate, isAdmin, async (req, res) => {
   try {
     const posted = await processArticles();
     res.json({ ok: true, posted });
@@ -81,7 +90,7 @@ router.post('/sync', authenticate, async (req, res) => {
 });
 
 // ─── Admin: list all posts (including drafts) ───
-router.get('/admin/all', authenticate, async (req, res) => {
+router.get('/admin/all', authenticate, isAdmin, async (req, res) => {
   try {
     const posts = await prisma.blogPost.findMany({
       orderBy: { publishedAt: 'desc' },
@@ -97,7 +106,7 @@ router.get('/admin/all', authenticate, async (req, res) => {
 });
 
 // ─── Admin: delete post ───
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, isAdmin, async (req, res) => {
   try {
     await prisma.blogPost.delete({ where: { id: req.params.id } });
     res.json({ ok: true });
