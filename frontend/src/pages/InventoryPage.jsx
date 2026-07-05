@@ -297,7 +297,7 @@ export default function InventoryPage() {
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-lg">
+          <div className="bg-white rounded-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="font-semibold">{editId ? 'Edit Item' : 'Add Item'}</h2>
               <button onClick={() => setShowForm(false)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
@@ -357,7 +357,7 @@ export default function InventoryPage() {
       {/* Stock Adjustment Modal */}
       {showAdjust && adjustItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAdjust(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-md">
+          <div className="bg-white rounded-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="font-semibold">Adjust Stock</h2>
               <button onClick={() => setShowAdjust(false)} className="p-1 hover:bg-gray-100 rounded"><X size={18} /></button>
