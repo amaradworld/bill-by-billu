@@ -21,10 +21,10 @@ jobs:
           java-version: 21
 
       - name: Install frontend deps
-        run: cd frontend && npm ci
+        run: cd frontend && npm install
 
       - name: Install Capacitor
-        run: cd frontend && npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/filesystem @capacitor/share @capacitor/local-notifications @capacitor/haptics @capacitor/status-bar @capacitor/splash-screen @capacitor/keyboard
+        run: cd frontend && npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/filesystem @capacitor/share @capacitor/local-notifications @capacitor/haptics @capacitor/status-bar @capacitor/splash-screen @capacitor/keyboard @capacitor/app
 
       - name: Build frontend
         run: cd frontend && npm run build

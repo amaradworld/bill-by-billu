@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 20
       - name: Install backend deps
-        run: cd backend && npm ci
+        run: cd backend && npm install
       - name: Prisma generate
         run: cd backend && npx prisma generate
       - name: Lint backend
@@ -47,7 +47,7 @@ jobs:
         with:
           node-version: 20
       - name: Install backend deps
-        run: cd backend && npm ci
+        run: cd backend && npm install
       - name: Prisma migrate
         run: cd backend && npx prisma migrate deploy
       - name: Run tests
@@ -61,7 +61,7 @@ jobs:
         with:
           node-version: 20
       - name: Install frontend deps
-        run: cd frontend && npm ci
+        run: cd frontend && npm install
       - name: Build frontend
         run: cd frontend && npm run build
 
