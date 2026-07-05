@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useAuth } from './context/AuthContext';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
@@ -52,23 +52,35 @@ function RouteErrorBoundary({ children }) {
 
 function AndroidBackHandler() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const locationRef = useRef(location.pathname);
+  locationRef.current = location.pathname;
+
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
-    let App;
+    let handle;
     const setup = async () => {
       try {
-        App = (await import('@capacitor/app')).App;
-      } catch { return; }
-      App.addListener('backButton', ({ canGoBack }) => {
-        if (location.pathname.startsWith('/app')) {
-          window.history.back();
-        } else if (canGoBack) {
-          window.history.back();
-        }
-      });
+        const { App } = await import('@capacitor/app');
+        handle = await App.addListener('backButton', ({ canGoBack }) => {
+          const path = locationRef.current;
+          if (path === '/app') {
+            return;
+          }
+          if (path.startsWith('/app')) {
+            navigate('/app', { replace: true });
+            return;
+          }
+          if (canGoBack) {
+            window.history.back();
+          }
+        });
+      } catch { /* not native */ }
     };
     setup();
-  }, [location.pathname]);
+    return () => { handle?.remove?.(); };
+  }, []);
+
   return null;
 }
 

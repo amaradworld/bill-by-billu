@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { Preferences } from '@capacitor/preferences';
@@ -23,8 +23,12 @@ async function exchangeGoogleCredential(credential) {
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const navigate = useNavigate();
+
+  if (!loading && user) {
+    return <Navigate to="/app" replace />;
+  }
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
