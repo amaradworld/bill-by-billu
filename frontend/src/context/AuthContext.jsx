@@ -1,85 +1,123 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import { api, setTokenGetter } from '../lib/api';
+import { setTokenGetter } from '../lib/api';
 import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 async function getToken() {
   const result = await Preferences.get({ key: 'bbToken' });
   return result.value;
 }
 
+async function fetchMe(token, timeout = 45000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+
+async function fetchMeWithRetry(token, retries = 3, delayMs = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fetchMe(token, i === 0 ? 15000 : 45000);
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delayMs * (i + 1)));
+    }
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
 
   const setTokenSync = useCallback((newToken) => {
     setToken(newToken);
     setTokenGetter(() => newToken);
   }, []);
 
-  const refreshUser = useCallback(async () => {
-    try {
-      const updated = await api.get('/api/auth/me');
-      setUser(updated);
-      return updated;
-    } catch (err) {
-      return null;
-    }
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
   }, []);
 
   useEffect(() => {
-    getToken().then((storedToken) => {
-      if (storedToken) {
-        setTokenSync(storedToken);
-        api.get('/api/auth/me', { headers: { Authorization: `Bearer ${storedToken}` } })
-          .then(setUser)
-          .catch(async () => {
-            await Preferences.remove({ key: 'bbToken' });
-            setTokenSync(null);
-            toast.error('Session expired. Please log in again.');
-          })
-          .finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    });
-  }, []);
-
-  // Re-verify session when app returns to foreground (Android/iOS)
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    let App;
-    const setup = async () => {
-      try {
-        App = (await import('@capacitor/app')).App;
-      } catch {
+    let cancelled = false;
+    (async () => {
+      const storedToken = await getToken();
+      if (!storedToken || !mountedRef.current) {
+        if (mountedRef.current) setLoading(false);
         return;
       }
-
-      App.addListener('appStateChange', async ({ isActive }) => {
-        if (!isActive) return;
-        const storedToken = await getToken();
-        if (storedToken) {
-          setTokenSync(storedToken);
-          const refreshed = await refreshUser();
-          if (!refreshed) {
-            await Preferences.remove({ key: 'bbToken' });
-            setTokenSync(null);
-            setUser(null);
+      setTokenSync(storedToken);
+      try {
+        const userData = await fetchMeWithRetry(storedToken);
+        if (!cancelled && mountedRef.current) {
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('Session restore failed after retries:', err);
+        if (!cancelled && mountedRef.current) {
+          const stillHasToken = await getToken();
+          if (stillHasToken) {
+            toast.error('Server slow to respond. Using cached session.');
           }
         }
-      });
+      } finally {
+        if (!cancelled && mountedRef.current) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let listenerHandle;
+    const setup = async () => {
+      try {
+        const { App } = await import('@capacitor/app');
+        listenerHandle = await App.addListener('appStateChange', async ({ isActive }) => {
+          if (!isActive) return;
+          const storedToken = await getToken();
+          if (storedToken) {
+            setTokenSync(storedToken);
+            try {
+              const userData = await fetchMeWithRetry(storedToken, 2, 1500);
+              if (userData) setUser(userData);
+            } catch {
+              console.error('Foreground refresh failed, keeping cached user');
+            }
+          }
+        });
+      } catch { /* not native */ }
     };
     setup();
+    return () => { listenerHandle?.remove?.(); };
   }, []);
 
   const login = async (email, password) => {
-    const data = await api.post('/api/auth/login', { email, password });
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
     await Preferences.set({ key: 'bbToken', value: data.token });
     setTokenSync(data.token);
     setUser(data.user);
@@ -87,7 +125,13 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (formData) => {
-    const data = await api.post('/api/auth/register', formData);
+    const res = await fetch(`${API_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Registration failed');
     await Preferences.set({ key: 'bbToken', value: data.token });
     setTokenSync(data.token);
     setUser(data.user);
@@ -95,10 +139,29 @@ export function AuthProvider({ children }) {
   };
 
   const updateProfile = async (formData) => {
-    const updated = await api.put('/api/auth/profile', formData);
+    const storedToken = token || await getToken();
+    const res = await fetch(`${API_URL}/api/auth/profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${storedToken}` },
+      body: JSON.stringify(formData),
+    });
+    const updated = await res.json();
+    if (!res.ok) throw new Error(updated.error || 'Update failed');
     setUser(prev => ({ ...prev, ...updated }));
     return updated;
   };
+
+  const refreshUser = useCallback(async () => {
+    const storedToken = token || await getToken();
+    if (!storedToken) return null;
+    try {
+      const userData = await fetchMe(storedToken, 15000);
+      setUser(userData);
+      return userData;
+    } catch {
+      return null;
+    }
+  }, [token]);
 
   const logout = async () => {
     await Preferences.remove({ key: 'bbToken' });
