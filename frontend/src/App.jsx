@@ -1,5 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { useAuth } from './context/AuthContext';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -48,10 +50,33 @@ function RouteErrorBoundary({ children }) {
   return <ErrorBoundary>{children}</ErrorBoundary>;
 }
 
+function AndroidBackHandler() {
+  const location = useLocation();
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let App;
+    const setup = async () => {
+      try {
+        App = (await import('@capacitor/app')).App;
+      } catch { return; }
+      App.addListener('backButton', ({ canGoBack }) => {
+        if (location.pathname.startsWith('/app')) {
+          window.history.back();
+        } else if (canGoBack) {
+          window.history.back();
+        }
+      });
+    };
+    setup();
+  }, [location.pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
+        <AndroidBackHandler />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />

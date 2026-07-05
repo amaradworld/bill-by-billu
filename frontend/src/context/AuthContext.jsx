@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Preferences } from '@capacitor/preferences';
 import { api, setTokenGetter } from '../lib/api';
+import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
@@ -15,10 +16,20 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const setTokenSync = (newToken) => {
+  const setTokenSync = useCallback((newToken) => {
     setToken(newToken);
     setTokenGetter(() => newToken);
-  };
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const updated = await api.get('/api/auth/me');
+      setUser(updated);
+      return updated;
+    } catch (err) {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     getToken().then((storedToken) => {
@@ -36,6 +47,35 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     });
+  }, []);
+
+  // Re-verify session when app returns to foreground (Android/iOS)
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let App;
+    const setup = async () => {
+      try {
+        App = (await import('@capacitor/app')).App;
+      } catch {
+        return;
+      }
+
+      App.addListener('appStateChange', async ({ isActive }) => {
+        if (!isActive) return;
+        const storedToken = await getToken();
+        if (storedToken) {
+          setTokenSync(storedToken);
+          const refreshed = await refreshUser();
+          if (!refreshed) {
+            await Preferences.remove({ key: 'bbToken' });
+            setTokenSync(null);
+            setUser(null);
+          }
+        }
+      });
+    };
+    setup();
   }, []);
 
   const login = async (email, password) => {
@@ -64,16 +104,6 @@ export function AuthProvider({ children }) {
     await Preferences.remove({ key: 'bbToken' });
     setTokenSync(null);
     setUser(null);
-  };
-
-  const refreshUser = async () => {
-    try {
-      const updated = await api.get('/api/auth/me');
-      setUser(updated);
-      return updated;
-    } catch (err) {
-      return null;
-    }
   };
 
   return (
