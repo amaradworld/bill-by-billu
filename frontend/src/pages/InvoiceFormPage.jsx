@@ -7,7 +7,7 @@ import { GST_RATES } from '../lib/constants';
 import UpgradePrompt from '../components/UpgradePrompt';
 import { Share } from '@capacitor/share';
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X, Send } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Save, Package, Download, Share2, Mail, MessageCircle, X, Send, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const UNITS = ['NOS', 'KG', 'MTR', 'LTR', 'BOX', 'PCS', 'SET', 'HRS', 'DAY', 'MON'];
@@ -37,6 +37,10 @@ export default function InvoiceFormPage() {
   const [whatsappSending, setWhatsappSending] = useState(false);
   const [planLimit, setPlanLimit] = useState(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [ewbData, setEwbData] = useState(null);
+  const [ewbModal, setEwbModal] = useState(false);
+  const [ewbForm, setEwbForm] = useState({ vehicleNumber: '', transporterId: '', transportMode: 'Road', distance: '' });
+  const [ewbLoading, setEwbLoading] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -68,6 +72,9 @@ export default function InvoiceFormPage() {
             reverseCharge: inv.reverseCharge || false,
             paymentMethod: inv.paymentMethod || '',
           });
+          if (inv.ewayBillNumber) {
+            setEwbData({ ewayBillNumber: inv.ewayBillNumber, ewayBillDate: inv.ewayBillDate });
+          }
         })
         .catch(() => toast.error('Failed to load invoice'));
     }
@@ -154,6 +161,22 @@ export default function InvoiceFormPage() {
       }
     } catch (err) {
       toast.error(err.message);
+    }
+  };
+
+  const handleGenerateEwb = async () => {
+    if (!ewbForm.vehicleNumber) return toast.error('Vehicle number is required');
+    setEwbLoading(true);
+    try {
+      const res = await api.post(`/api/ewaybill/generate/${id}`, ewbForm);
+      toast.success(`E-Way Bill generated: ${res.data.ewayBillNumber}`);
+      setEwbData({ ewayBillNumber: res.data.ewayBillNumber, ewayBillDate: res.data.ewayBillDate });
+      setEwbModal(false);
+      setEwbForm({ vehicleNumber: '', transporterId: '', transportMode: 'Road', distance: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to generate E-Way Bill');
+    } finally {
+      setEwbLoading(false);
     }
   };
 
@@ -284,6 +307,45 @@ export default function InvoiceFormPage() {
                 <button onClick={handleSendWhatsAppBusiness} disabled={!whatsappPhone || whatsappSending}
                   className="flex-1 py-2.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
                   {whatsappSending ? 'Sending...' : <><Send size={14} /> Send</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ewbModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2"><Truck size={18} /> Generate E-Way Bill</h3>
+              <button onClick={() => setEwbModal(false)} className="p-1 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Vehicle Number *</label>
+                <input value={ewbForm.vehicleNumber} onChange={e => setEwbForm(p => ({ ...p, vehicleNumber: e.target.value.toUpperCase() }))} placeholder="MH12AB1234" className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Transporter ID (GSTIN / URP)</label>
+                <input value={ewbForm.transporterId} onChange={e => setEwbForm(p => ({ ...p, transporterId: e.target.value }))} placeholder="27AABCU9603R1ZM" className="w-full px-3 py-2 border rounded-lg text-sm" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Transport Mode</label>
+                  <select value={ewbForm.transportMode} onChange={e => setEwbForm(p => ({ ...p, transportMode: e.target.value }))} className="w-full px-3 py-2 border rounded-lg text-sm">
+                    <option>Road</option><option>Rail</option><option>Air</option><option>Ship</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Distance (km)</label>
+                  <input type="number" value={ewbForm.distance} onChange={e => setEwbForm(p => ({ ...p, distance: e.target.value }))} placeholder="0" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-4">
+                <button onClick={() => setEwbModal(false)} className="flex-1 py-2.5 border rounded-lg text-sm font-medium hover:bg-gray-50">Cancel</button>
+                <button onClick={handleGenerateEwb} disabled={ewbLoading} className="flex-1 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
+                  {ewbLoading ? 'Generating...' : 'Generate'}
                 </button>
               </div>
             </div>
@@ -453,6 +515,15 @@ export default function InvoiceFormPage() {
               <button type="button" onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
                 <Download size={16} /> PDF
               </button>
+              {ewbData ? (
+                <span className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
+                  <Truck size={16} /> EWB: {ewbData.ewayBillNumber}
+                </span>
+              ) : grandTotal >= 50000 ? (
+                <button type="button" onClick={() => setEwbModal(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                  <Truck size={16} /> Generate E-Way Bill
+                </button>
+              ) : null}
               <div className="relative">
                 <button type="button" onClick={() => setShareOpen(!shareOpen)} className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-gray-50">
                   <Share2 size={16} /> Share

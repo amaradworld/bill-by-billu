@@ -25,16 +25,16 @@ export default function LoginPage() {
   const { t } = useTranslation();
   const { login, user, loading } = useAuth();
   const navigate = useNavigate();
-
-  if (!loading && user) {
-    return <Navigate to="/app" replace />;
-  }
   const [form, setForm] = useState({ email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [useNativeAuth, setUseNativeAuth] = useState(isNative);
   const googleBtnRef = useRef(null);
   const googleInitRef = useRef(false);
+
+  if (!loading && user) {
+    return <Navigate to="/app" replace />;
+  }
 
   const handleGoogleLogin = useCallback(async () => {
     setGoogleLoading(true);
@@ -73,14 +73,14 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     try {
       await login(form.email, form.password);
       navigate('/app');
     } catch (err) {
       toast.error(err.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -175,9 +175,9 @@ export default function LoginPage() {
                 <Link to="/forgot-password" className="text-xs text-brand-600 hover:text-brand-700 transition-colors">{t('auth.forgotPassword')}</Link>
               </div>
             </div>
-            <button type="submit" disabled={loading}
+            <button type="submit" disabled={submitting}
               className="btn-press w-full py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow-glow mt-2">
-              {loading ? t('common.loading') : t('auth.login')}
+              {submitting ? t('common.loading') : t('auth.login')}
             </button>
           </form>
           <p className="text-center text-sm text-gray-500 mt-6">

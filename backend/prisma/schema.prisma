@@ -55,6 +55,9 @@ model User {
   // Notification preferences (JSON: { paymentReminders: true, gstDeadlines: true })
   notificationPrefs String?
 
+  // E-Way Bill credentials (encrypted JSON: { username, password, apiUrl })
+  ewayBillConfig    String?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -223,6 +226,10 @@ model Invoice {
   isDraft         Boolean     @default(true)
   isCancelled     Boolean     @default(false)
   pdfUrl          String?
+
+  // E-Way Bill
+  ewayBillNumber  String?
+  ewayBillDate    DateTime?
 
   // Currency
   currency        String      @default("INR")

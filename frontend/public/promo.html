@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bill By Billu — Social Media Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0a0a0a; padding: 40px; }
+h1 { text-align: center; font-size: 28px; color: white; margin-bottom: 8px; }
+.sub { text-align: center; color: #666; font-size: 14px; margin-bottom: 40px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1300px; margin: 0 auto; }
+.card {
+  width: 640px; height: 640px; border-radius: 28px; overflow: hidden;
+  position: relative; display: flex; flex-direction: column;
+  padding: 48px; color: white;
+}
+.card-full { grid-column: 1 / -1; width: 100%; max-width: 1300px; height: 420px; margin: 0 auto; }
+
+/* Glow effects */
+.glow {
+  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; pointer-events: none;
+}
+
+/* ===== CARD 1: HERO ===== */
+.hero { background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.05); }
+.hero .glow-1 { width: 400px; height: 400px; background: #2563eb; top: -100px; right: -100px; }
+.hero .glow-2 { width: 300px; height: 300px; background: #7c3aed; bottom: -80px; left: -80px; }
+.hero .content { z-index: 2; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.hero .badge {
+  position: absolute; top: 36px; left: 48px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; color: #60a5fa;
+}
+.hero .badge::before { content: ''; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+.hero .stars {
+  position: absolute; top: 40px; right: 48px; z-index: 2;
+  display: flex; gap: 4px; font-size: 20px;
+}
+.hero h2 {
+  font-size: 56px; font-weight: 900; line-height: 1.05; margin-bottom: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p { font-size: 20px; color: #94a3b8; max-width: 440px; line-height: 1.5; }
+.hero .phone-mockup {
+  position: absolute; right: 48px; top: 50%; transform: translateY(-50%);
+  width: 200px; height: 380px; z-index: 2;
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  border-radius: 28px; border: 3px solid rgba(255,255,255,0.15);
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(37, 99, 235, 0.4);
+}
+.phone-mockup .phone-top { padding: 16px; background: rgba(0,0,0,0.2); }
+.phone-mockup .phone-greeting { font-size: 8px; color: rgba(255,255,255,0.7); }
+.phone-mockup .phone-name { font-size: 12px; font-weight: 800; color: white; margin-top: 2px; }
+.phone-mockup .phone-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 12px 10px; }
+.phone-mockup .ps { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 4px; text-align: center; }
+.phone-mockup .ps-num { font-size: 12px; font-weight: 800; color: white; }
+.phone-mockup .ps-lbl { font-size: 6px; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+.phone-mockup .phone-items { padding: 6px 10px; flex: 1; }
+.phone-mockup .pi {
+  background: rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 8px;
+  margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;
+}
+.phone-mockup .pi-name { font-size: 7px; font-weight: 600; color: white; }
+.phone-mockup .pi-amt { font-size: 7px; font-weight: 700; color: white; }
+.phone-mockup .pi-badge { font-size: 5px; padding: 1px 4px; border-radius: 4px; font-weight: 700; }
+.phone-mockup .pi-paid { background: rgba(34,197,94,0.3); color: #4ade80; }
+.phone-mockup .pi-pending { background: rgba(250,204,21,0.3); color: #facc15; }
+
+/* ===== CARD 2: AI INVOICE ===== */
+.ai-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #1a1a2e 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.ai-card .glow-1 { width: 350px; height: 350px; background: #f59e0b; top: -80px; right: -80px; }
+.ai-card .glow-2 { width: 250px; height: 250px; background: #f97316; bottom: -60px; left: 100px; }
+.ai-card .top { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; z-index: 2; position: relative; }
+.ai-card .ai-icon {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+}
+.ai-card h2 { font-size: 40px; font-weight: 900; line-height: 1.1; z-index: 2; position: relative; }
+.ai-card .chat-area {
+  flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center;
+  z-index: 2; position: relative;
+}
+.ai-card .bubble {
+  padding: 16px 20px; border-radius: 20px; font-size: 14px; line-height: 1.5;
+  max-width: 85%; position: relative;
+}
+.ai-card .bubble-user {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  align-self: flex-end; border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+.ai-card .bubble-ai {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  align-self: flex-start; border-bottom-left-radius: 4px;
+}
+.ai-card .bubble-ai .success { color: #22c55e; font-weight: 700; font-size: 15px; }
+.ai-card .features-row {
+  display: flex; gap: 10px; margin-top: 16px; z-index: 2; position: relative;
+}
+.ai-card .feat-pill {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; color: #fbbf24;
+}
+
+/* ===== CARD 3: GST ===== */
+.gst-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #0a2e1a 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.gst-card .glow-1 { width: 350px; height: 350px; background: #059669; top: -80px; right: -80px; }
+.gst-card .glow-2 { width: 250px; height: 250px; background: #10b981; bottom: -60px; left: 100px; }
+.gst-card .top { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; z-index: 2; position: relative; }
+.gst-card .gst-icon {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: linear-gradient(135deg, #059669, #047857);
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  box-shadow: 0 8px 32px rgba(5, 150, 105, 0.3);
+}
+.gst-card h2 { font-size: 40px; font-weight: 900; line-height: 1.1; z-index: 2; position: relative; }
+.gst-card .report-area {
+  flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center;
+  z-index: 2; position: relative;
+}
+.gst-card .report-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+.gst-card .report-label { font-size: 14px; color: #94a3b8; }
+.gst-card .report-value { font-size: 18px; font-weight: 800; color: #34d399; }
+.gst-card .report-badge {
+  font-size: 11px; padding: 4px 12px; border-radius: 8px; font-weight: 700;
+  background: rgba(5, 150, 105, 0.2); color: #34d399; border: 1px solid rgba(5, 150, 105, 0.3);
+}
+.gst-card .export-row { display: flex; gap: 12px; margin-top: 8px; }
+.gst-card .export-btn {
+  flex: 1; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 700;
+  text-align: center; background: rgba(5, 150, 105, 0.15); border: 1px solid rgba(5, 150, 105, 0.3);
+  color: #34d399;
+}
+
+/* ===== CARD 4: PRICING ===== */
+.price-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #1a102e 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.price-card .glow-1 { width: 350px; height: 350px; background: #7c3aed; top: -80px; right: -80px; }
+.price-card .glow-2 { width: 250px; height: 250px; background: #a855f7; bottom: -60px; left: 100px; }
+.price-card h2 {
+  font-size: 40px; font-weight: 900; margin-bottom: 28px;
+  z-index: 2; position: relative;
+  background: linear-gradient(135deg, #ffffff, #c084fc);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.price-card .plans { display: flex; gap: 16px; flex: 1; align-items: center; z-index: 2; position: relative; }
+.price-card .plan {
+  flex: 1; border-radius: 20px; padding: 28px 20px; text-align: center;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.3s;
+}
+.price-card .plan.popular {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(168, 85, 247, 0.2));
+  border: 2px solid rgba(168, 85, 247, 0.4);
+  transform: scale(1.05);
+}
+.price-card .plan-tag {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+  color: #a78bfa; margin-bottom: 12px;
+}
+.price-card .plan-name { font-size: 16px; font-weight: 700; color: white; margin-bottom: 8px; }
+.price-card .plan-price { font-size: 40px; font-weight: 900; color: white; }
+.price-card .plan-period { font-size: 13px; color: #64748b; }
+.price-card .plan-features { margin-top: 16px; text-align: left; }
+.price-card .pf { font-size: 12px; color: #94a3b8; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+.price-card .pf::before { content: '✓'; color: #22c55e; font-weight: 700; }
+.price-card .save-badge {
+  position: absolute; top: -12px; right: 20px; background: linear-gradient(135deg, #f59e0b, #d97706);
+  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* ===== CARD 5: WHATSAPP ===== */
+.wa-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #0a2e1a 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.wa-card .glow-1 { width: 350px; height: 350px; background: #25d366; top: -80px; right: -80px; }
+.wa-card .glow-2 { width: 250px; height: 250px; background: #128c7e; bottom: -60px; left: 100px; }
+.wa-card .top { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; z-index: 2; position: relative; }
+.wa-card .wa-icon {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: linear-gradient(135deg, #25d366, #128c7e);
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  box-shadow: 0 8px 32px rgba(37, 211, 102, 0.3);
+}
+.wa-card h2 { font-size: 40px; font-weight: 900; line-height: 1.1; z-index: 2; position: relative; }
+.wa-card .wa-area { flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center; z-index: 2; position: relative; }
+.wa-card .wa-msg {
+  padding: 14px 18px; border-radius: 16px; font-size: 13px; line-height: 1.5;
+  max-width: 80%; background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.25);
+  color: #86efac;
+}
+.wa-card .wa-msg.user { align-self: flex-end; background: rgba(37, 99, 235, 0.2); border-color: rgba(37, 99, 235, 0.3); color: #93c5fd; }
+.wa-card .wa-invoice {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 16px; max-width: 80%; align-self: flex-end;
+}
+.wa-card .wi-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.wa-card .wi-title { font-size: 11px; font-weight: 700; color: white; }
+.wa-card .wi-badge { font-size: 9px; padding: 2px 8px; border-radius: 8px; background: rgba(34,197,94,0.2); color: #4ade80; font-weight: 700; }
+.wa-card .wi-line { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; padding: 3px 0; }
+.wa-card .wi-total { font-size: 14px; font-weight: 800; color: white; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+/* ===== CARD 6: LANGUAGES ===== */
+.lang-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #2e0a1a 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.lang-card .glow-1 { width: 350px; height: 350px; background: #ec4899; top: -80px; right: -80px; }
+.lang-card .glow-2 { width: 250px; height: 250px; background: #f472b6; bottom: -60px; left: 100px; }
+.lang-card h2 {
+  font-size: 40px; font-weight: 900; margin-bottom: 12px; z-index: 2; position: relative;
+  background: linear-gradient(135deg, #ffffff, #f9a8d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.lang-card .subtitle { font-size: 16px; color: #94a3b8; margin-bottom: 28px; z-index: 2; position: relative; }
+.lang-card .lang-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; z-index: 2; position: relative; }
+.lang-card .lang-item {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px 16px; text-align: center;
+  transition: all 0.3s;
+}
+.lang-card .lang-item:hover { transform: translateY(-4px); background: rgba(255,255,255,0.08); }
+.lang-card .lang-native { font-size: 24px; font-weight: 800; color: white; }
+.lang-card .lang-name { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+/* ===== CARD 7: UPI ===== */
+.upi-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #0c0a2e 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.upi-card .glow-1 { width: 350px; height: 350px; background: #6366f1; top: -80px; right: -80px; }
+.upi-card .glow-2 { width: 250px; height: 250px; background: #818cf8; bottom: -60px; left: 100px; }
+.upi-card .top { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; z-index: 2; position: relative; }
+.upi-card .upi-icon {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  display: flex; align-items: center; justify-content: center; font-size: 32px;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+}
+.upi-card h2 { font-size: 40px; font-weight: 900; line-height: 1.1; z-index: 2; position: relative; }
+.upi-card .qr-area {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  z-index: 2; position: relative;
+}
+.upi-card .qr-mockup {
+  width: 200px; height: 200px; background: white; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+}
+.upi-card .qr-placeholder {
+  width: 120px; height: 120px; background: #1e293b; border-radius: 12px;
+  display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(8, 1fr); gap: 1px;
+  padding: 8px;
+}
+.upi-card .qr-dot { background: #1e293b; border-radius: 1px; }
+.upi-card .qr-dot.w { background: white; }
+.upi-card .qr-text { font-size: 11px; color: #64748b; margin-top: 10px; font-weight: 600; }
+.upi-card .upi-id { font-size: 14px; font-weight: 800; color: #6366f1; margin-top: 4px; }
+
+/* ===== CARD 8: FEATURES GRID ===== */
+.features-card {
+  background: linear-gradient(160deg, #0c0c0c 0%, #0a1628 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.features-card .glow-1 { width: 350px; height: 350px; background: #3b82f6; top: -80px; right: -80px; }
+.features-card .glow-2 { width: 250px; height: 250px; background: #60a5fa; bottom: -60px; left: 100px; }
+.features-card h2 {
+  font-size: 40px; font-weight: 900; margin-bottom: 28px; z-index: 2; position: relative;
+  background: linear-gradient(135deg, #ffffff, #93c5fd);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.features-card .feat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  z-index: 2; position: relative; flex: 1; align-content: start;
+}
+.features-card .feat-item {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px; display: flex; align-items: flex-start; gap: 14px;
+}
+.features-card .feat-emoji { font-size: 28px; flex-shrink: 0; }
+.features-card .feat-title { font-size: 15px; font-weight: 700; color: white; }
+.features-card .feat-desc { font-size: 12px; color: #64748b; margin-top: 4px; line-height: 1.4; }
+
+/* ===== CARD 9: INVOICE PREVIEW ===== */
+.invoice-card {
+  background: white; color: #1e293b;
+}
+.invoice-card .top-bar {
+  background: linear-gradient(135deg, #2563eb, #1e40af); padding: 28px 40px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.invoice-card .inv-label { font-size: 24px; font-weight: 800; color: white; }
+.invoice-card .inv-badge {
+  background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; color: white;
+}
+.invoice-card .inv-body { padding: 32px 40px; flex: 1; display: flex; flex-direction: column; }
+.invoice-card .inv-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+.invoice-card .inv-from-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+.invoice-card .inv-from-name { font-size: 16px; font-weight: 800; color: #1e293b; margin-top: 4px; }
+.invoice-card .inv-from-addr { font-size: 12px; color: #64748b; margin-top: 2px; }
+.invoice-card .inv-to-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; text-align: right; }
+.invoice-card .inv-to-name { font-size: 16px; font-weight: 800; color: #1e293b; margin-top: 4px; text-align: right; }
+.invoice-card .inv-table { width: 100%; margin-bottom: 16px; }
+.invoice-card .inv-table th {
+  font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 8px 0; border-bottom: 2px solid #e2e8f0; text-align: left;
+}
+.invoice-card .inv-table th:last-child { text-align: right; }
+.invoice-card .inv-table td { font-size: 13px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.invoice-card .inv-table td:last-child { text-align: right; font-weight: 600; }
+.invoice-card .inv-summary { margin-top: auto; display: flex; justify-content: flex-end; }
+.invoice-card .inv-summary-box { width: 280px; }
+.invoice-card .inv-sum-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #64748b; }
+.invoice-card .inv-sum-total {
+  display: flex; justify-content: space-between; padding: 12px 0; margin-top: 8px;
+  font-size: 22px; font-weight: 900; color: #2563eb;
+  border-top: 3px solid #2563eb;
+}
+.invoice-card .inv-footer { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px 24px; }
+.invoice-card .inv-qr {
+  width: 80px; height: 80px; background: #1e293b; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.invoice-card .inv-qr-inner { width: 50px; height: 50px; display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; }
+.invoice-card .inv-qr-cell { background: white; border-radius: 1px; }
+.invoice-card .inv-qr-cell.b { background: #1e293b; }
+.invoice-card .inv-terms { font-size: 10px; color: #94a3b8; }
+.invoice-card .inv-terms strong { color: #64748b; }
+</style>
+</head>
+<body>
+<h1>Bill By Billu — Social Media Cards</h1>
+<p class="sub">Screenshot each 640×640 card for Instagram, Twitter, LinkedIn posts</p>
+<div class="grid">
+
+  <!-- Card 1: Hero -->
+  <div class="card hero">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="badge">Live on Play Store</div>
+    <div class="stars">⭐⭐⭐⭐⭐</div>
+    <div class="phone-mockup">
+      <div class="phone-top">
+        <div class="phone-greeting">Good Morning</div>
+        <div class="phone-name">Alok's Store</div>
+      </div>
+      <div class="phone-stats">
+        <div class="ps"><div class="ps-num">47</div><div class="ps-lbl">Invoices</div></div>
+        <div class="ps"><div class="ps-num">₹2.4L</div><div class="ps-lbl">Revenue</div></div>
+        <div class="ps"><div class="ps-num">12</div><div class="ps-lbl">Pending</div></div>
+      </div>
+      <div class="phone-items">
+        <div class="pi"><div class="pi-name">Rajesh Kumar</div><div class="pi-amt">₹8,500</div><div class="pi-badge pi-paid">PAID</div></div>
+        <div class="pi"><div class="pi-name">Priya Enterprises</div><div class="pi-amt">₹15,200</div><div class="pi-badge pi-pending">PENDING</div></div>
+        <div class="pi"><div class="pi-name">Meena Traders</div><div class="pi-amt">₹3,750</div><div class="pi-badge pi-paid">PAID</div></div>
+      </div>
+    </div>
+    <div class="content">
+      <h2>Bill By Billu</h2>
+      <p>AI-powered GST invoicing for Indian businesses. Create, share & track invoices in seconds.</p>
+    </div>
+  </div>
+
+  <!-- Card 2: AI Invoice -->
+  <div class="card ai-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="top">
+      <div class="ai-icon">🤖</div>
+      <h2>AI Invoice<br>Creator</h2>
+    </div>
+    <div class="chat-area">
+      <div class="bubble bubble-user">Sold 10 t-shirts at ₹450 each and 5 jeans at ₹1200 to Rajesh Kumar, GST 5%</div>
+      <div class="bubble bubble-ai">
+        <div class="success">✅ Invoice #INV-0047 created</div>
+        <br>
+        <strong>Bill To:</strong> Rajesh Kumar<br>
+        <strong>Items:</strong> T-Shirts × 10, Jeans × 5<br>
+        <strong>Total:</strong> ₹11,550 (incl. GST)
+      </div>
+      <div class="bubble bubble-user">Send it on WhatsApp</div>
+      <div class="bubble bubble-ai">
+        <div class="success">✅ Sent to Rajesh Kumar!</div>
+        <br>💳 Payment link attached.
+      </div>
+    </div>
+    <div class="features-row">
+      <div class="feat-pill">🎤 Voice</div>
+      <div class="feat-pill">📸 Photo OCR</div>
+      <div class="feat-pill">💬 Chat</div>
+      <div class="feat-pill">🧠 Smart</div>
+    </div>
+  </div>
+
+  <!-- Card 3: GST -->
+  <div class="card gst-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="top">
+      <div class="gst-icon">📊</div>
+      <h2>GST Reports<br>Ready to File</h2>
+    </div>
+    <div class="report-area">
+      <div class="report-row"><div class="report-label">Period</div><div class="report-value">Jun 2026</div></div>
+      <div class="report-row"><div class="report-label">B2B Invoices</div><div class="report-value">34</div></div>
+      <div class="report-row"><div class="report-label">Taxable Value</div><div class="report-value">₹2,45,800</div></div>
+      <div class="report-row"><div class="report-label">Total Tax</div><div class="report-value">₹33,030</div></div>
+      <div class="report-row">
+        <div class="report-label">Status</div>
+        <div class="report-badge">GSTR-1 READY</div>
+      </div>
+      <div class="export-row">
+        <div class="export-btn">📄 CSV</div>
+        <div class="export-btn">📋 JSON</div>
+        <div class="export-btn">📤 gst.gov.in</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: Pricing -->
+  <div class="card price-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <h2>Simple, Transparent<br>Pricing</h2>
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-tag">Free</div>
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">₹0</div>
+        <div class="plan-period">forever</div>
+        <div class="plan-features">
+          <div class="pf">5 invoices/month</div>
+          <div class="pf">3 templates</div>
+          <div class="pf">PDF export</div>
+        </div>
+      </div>
+      <div class="plan popular">
+        <div class="save-badge">SAVE 21%</div>
+        <div class="plan-tag">Popular</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price">₹399</div>
+        <div class="plan-period">/month</div>
+        <div class="plan-features">
+          <div class="pf">500 invoices/month</div>
+          <div class="pf">AI Invoice Creator</div>
+          <div class="pf">GST Reports</div>
+          <div class="pf">WhatsApp Share</div>
+          <div class="pf">Custom Logo</div>
+        </div>
+      </div>
+      <div class="plan">
+        <div class="plan-tag">Enterprise</div>
+        <div class="plan-name">Unlimited</div>
+        <div class="plan-price">Custom</div>
+        <div class="plan-period">contact us</div>
+        <div class="plan-features">
+          <div class="pf">Unlimited invoices</div>
+          <div class="pf">Multi-user</div>
+          <div class="pf">API Access</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: WhatsApp -->
+  <div class="card wa-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="top">
+      <div class="wa-icon">💬</div>
+      <h2>Share Invoices<br>on WhatsApp</h2>
+    </div>
+    <div class="wa-area">
+      <div class="wa-msg">Here's your invoice from Alok's Fashion Store 👇</div>
+      <div class="wa-invoice">
+        <div class="wi-header">
+          <div class="wi-title">TAX INVOICE #INV-0047</div>
+          <div class="wi-badge">PAID</div>
+        </div>
+        <div class="wi-line"><span>T-Shirts × 10</span><span>₹4,500</span></div>
+        <div class="wi-line"><span>Jeans × 5</span><span>₹6,000</span></div>
+        <div class="wi-line"><span>GST 10%</span><span>₹1,050</span></div>
+        <div class="wi-total">Total: ₹11,550</div>
+      </div>
+      <div class="wa-msg">Payment link: pay.billbybillu.in/INV-0047</div>
+      <div class="wa-msg user">Thanks! Paid ✅</div>
+    </div>
+  </div>
+
+  <!-- Card 6: Languages -->
+  <div class="card lang-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <h2>Your Language,<br>Your Bill</h2>
+    <div class="subtitle">Invoice in 9 Indian languages</div>
+    <div class="lang-grid">
+      <div class="lang-item"><div class="lang-native">English</div><div class="lang-name">English</div></div>
+      <div class="lang-item"><div class="lang-native">हिन्दी</div><div class="lang-name">Hindi</div></div>
+      <div class="lang-item"><div class="lang-native">বাংলা</div><div class="lang-name">Bengali</div></div>
+      <div class="lang-item"><div class="lang-native">ગુજરાતી</div><div class="lang-name">Gujarati</div></div>
+      <div class="lang-item"><div class="lang-native">ಕನ್ನಡ</div><div class="lang-name">Kannada</div></div>
+      <div class="lang-item"><div class="lang-native">മലയാളം</div><div class="lang-name">Malayalam</div></div>
+      <div class="lang-item"><div class="lang-native">मराठी</div><div class="lang-name">Marathi</div></div>
+      <div class="lang-item"><div class="lang-native">தமிழ்</div><div class="lang-name">Tamil</div></div>
+      <div class="lang-item"><div class="lang-native">తెలుగు</div><div class="lang-name">Telugu</div></div>
+    </div>
+  </div>
+
+  <!-- Card 7: UPI -->
+  <div class="card upi-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="top">
+      <div class="upi-icon">💳</div>
+      <h2>Accept UPI<br>Payments</h2>
+    </div>
+    <div class="qr-area">
+      <div class="qr-mockup">
+        <div class="qr-placeholder">
+          <div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div>
+          <div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div>
+          <div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div>
+          <div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div>
+          <div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div>
+          <div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div>
+          <div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div>
+          <div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div><div class="qr-dot b"></div><div class="qr-dot w"></div><div class="qr-dot b"></div>
+        </div>
+        <div class="qr-text">Scan to Pay</div>
+        <div class="upi-id">alok@paytm</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 8: Features Grid -->
+  <div class="card features-card">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <h2>Everything You Need</h2>
+    <div class="feat-grid">
+      <div class="feat-item">
+        <div class="feat-emoji">🤖</div>
+        <div><div class="feat-title">AI Invoice Creator</div><div class="feat-desc">Voice, photo, or chat — AI creates your GST invoice in seconds</div></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-emoji">📊</div>
+        <div><div class="feat-title">GSTR-1 & GSTR-3B</div><div class="feat-desc">Auto-generated reports, ready to file on gst.gov.in</div></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-emoji">💬</div>
+        <div><div class="feat-title">WhatsApp Sharing</div><div class="feat-desc">Send invoices to customers in one tap with payment links</div></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-emoji">💳</div>
+        <div><div class="feat-title">UPI Payments</div><div class="feat-desc">Auto-generated QR code with exact amount on every invoice</div></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-emoji">📄</div>
+        <div><div class="feat-title">3 Premium Templates</div><div class="feat-desc">Classic, Modern & Compact designs with your logo</div></div>
+      </div>
+      <div class="feat-item">
+        <div class="feat-emoji">🌐</div>
+        <div><div class="feat-title">9 Indian Languages</div><div class="feat-desc">Invoice in your customer's language</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 9: Invoice Preview (Full Width) -->
+  <div class="card card-full invoice-card">
+    <div class="top-bar">
+      <div class="inv-label">TAX INVOICE #INV-0047</div>
+      <div class="inv-badge">PAID</div>
+    </div>
+    <div class="inv-body">
+      <div class="inv-header">
+        <div>
+          <div class="inv-from-title">From</div>
+          <div class="inv-from-name">Alok's Fashion Store</div>
+          <div class="inv-from-addr">Gurgaon, Haryana • GSTIN: 06AABCM1234F1Z5</div>
+        </div>
+        <div>
+          <div class="inv-to-title">Bill To</div>
+          <div class="inv-to-name">Rajesh Kumar</div>
+          <div class="inv-from-addr" style="text-align:right">New Delhi, Delhi</div>
+        </div>
+      </div>
+      <table class="inv-table">
+        <tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amount</th></tr>
+        <tr><td>Premium Cotton T-Shirt</td><td>10</td><td>₹450</td><td>₹4,500.00</td></tr>
+        <tr><td>Designer Slim Fit Jeans</td><td>5</td><td>₹1,200</td><td>₹6,000.00</td></tr>
+      </table>
+      <div class="inv-summary">
+        <div class="inv-summary-box">
+          <div class="inv-sum-row"><span>Subtotal</span><span>₹10,500.00</span></div>
+          <div class="inv-sum-row"><span>CGST 2.5%</span><span>₹262.50</span></div>
+          <div class="inv-sum-row"><span>SGST 2.5%</span><span>₹262.50</span></div>
+          <div class="inv-sum-row"><span>IGST 5%</span><span>₹525.00</span></div>
+          <div class="inv-sum-total"><span>Grand Total</span><span>₹11,550.00</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="inv-footer">
+      <div class="inv-qr">
+        <div class="inv-qr-inner">
+          <div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+          <div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div>
+          <div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div>
+          <div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+          <div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+        </div>
+      </div>
+      <div class="inv-terms">
+        <strong>Payment Terms:</strong> Due within 30 days<br>
+        <strong>UPI:</strong> alok@paytm<br>
+        <strong>Thank you for your business!</strong>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

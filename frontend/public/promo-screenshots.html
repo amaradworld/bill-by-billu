@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bill By Billu — Play Store Screenshots</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0a0a0a; padding: 40px; }
+h1 { text-align: center; color: white; font-size: 24px; margin-bottom: 8px; }
+p.sub { text-align: center; color: #666; font-size: 14px; margin-bottom: 40px; }
+.screens { display: flex; flex-direction: column; gap: 60px; align-items: center; }
+
+/* Feature Graphic: 1024x500 */
+.feature-graphic {
+  width: 1024px; height: 500px; border-radius: 20px; overflow: hidden; position: relative;
+  background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.feature-graphic .glow-1 {
+  position: absolute; width: 500px; height: 500px; background: #2563eb;
+  top: -200px; right: -100px; border-radius: 50%; filter: blur(120px); opacity: 0.3;
+}
+.feature-graphic .glow-2 {
+  position: absolute; width: 400px; height: 400px; background: #7c3aed;
+  bottom: -150px; left: 200px; border-radius: 50%; filter: blur(100px); opacity: 0.25;
+}
+.fg-content { position: relative; z-index: 2; display: flex; height: 100%; align-items: center; padding: 0 80px; }
+.fg-left { flex: 1; }
+.fg-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.3);
+  padding: 6px 16px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #60a5fa; margin-bottom: 20px;
+}
+.fg-badge::before { content: ''; width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
+.fg-left h2 {
+  font-size: 58px; font-weight: 900; line-height: 1.05; margin-bottom: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.fg-left p { font-size: 20px; color: #94a3b8; max-width: 440px; line-height: 1.5; }
+.fg-right { display: flex; gap: 16px; align-items: center; }
+.fg-card {
+  width: 180px; padding: 24px 16px; text-align: center;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; backdrop-filter: blur(10px);
+}
+.fg-card-icon {
+  width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+.fg-card-icon.blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3); }
+.fg-card-icon.amber { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3); }
+.fg-card-icon.green { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3); }
+.fg-card-icon.purple { background: linear-gradient(135deg, #7c3aed, #6d28d9); box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3); }
+.fg-card h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px; }
+.fg-card p { font-size: 11px; color: #64748b; }
+
+/* Phone Screenshots: 390x844 (iPhone 14 size) */
+.phone-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; }
+.phone-col { display: flex; flex-direction: column; align-items: center; }
+.phone-screenshot {
+  width: 390px; height: 844px; border-radius: 44px; overflow: hidden; position: relative;
+  box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+}
+.ss-label { color: #64748b; font-size: 13px; font-weight: 600; margin-top: 16px; text-align: center; }
+
+/* Status bar */
+.status-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 54px; z-index: 10;
+  display: flex; justify-content: space-between; align-items: flex-end; padding: 0 28px 8px;
+  background: transparent;
+}
+.status-bar .time { font-size: 15px; font-weight: 700; color: white; }
+.status-bar .icons { display: flex; gap: 6px; font-size: 13px; color: white; }
+
+/* ===== SCREEN 1: DASHBOARD ===== */
+.ss1 { background: #0f172a; }
+.ss1 .header {
+  padding: 64px 24px 24px; background: linear-gradient(180deg, rgba(37,99,235,0.3) 0%, transparent 100%);
+}
+.ss1 .greeting { font-size: 14px; color: #60a5fa; font-weight: 600; }
+.ss1 .name { font-size: 26px; font-weight: 900; color: white; margin-top: 4px; }
+.ss1 .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 20px 24px; }
+.ss1 .stat {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 16px 12px; text-align: center;
+}
+.ss1 .stat-num { font-size: 24px; font-weight: 900; }
+.ss1 .stat-num.blue { color: #60a5fa; }
+.ss1 .stat-num.green { color: #4ade80; }
+.ss1 .stat-num.amber { color: #fbbf24; }
+.ss1 .stat-label { font-size: 10px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ss1 .section { padding: 0 24px; }
+.ss1 .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.ss1 .section-title { font-size: 16px; font-weight: 700; color: white; }
+.ss1 .see-all { font-size: 12px; color: #60a5fa; font-weight: 600; }
+.ss1 .inv-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 16px; margin-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ss1 .inv-left { display: flex; align-items: center; gap: 12px; }
+.ss1 .inv-avatar {
+  width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center;
+  justify-content: center; font-size: 16px; font-weight: 800; color: white;
+}
+.ss1 .inv-avatar.a1 { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.ss1 .inv-avatar.a2 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ss1 .inv-avatar.a3 { background: linear-gradient(135deg, #059669, #047857); }
+.ss1 .inv-name { font-size: 14px; font-weight: 600; color: white; }
+.ss1 .inv-date { font-size: 11px; color: #64748b; margin-top: 2px; }
+.ss1 .inv-right { text-align: right; }
+.ss1 .inv-amt { font-size: 15px; font-weight: 700; color: white; }
+.ss1 .inv-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 4px; display: inline-block; }
+.ss1 .paid { background: rgba(34,197,94,0.15); color: #4ade80; }
+.ss1 .pending { background: rgba(250,204,21,0.15); color: #facc15; }
+.ss1 .bottom-nav {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 88px; z-index: 10;
+  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; justify-content: space-around; align-items: flex-start; padding-top: 12px;
+}
+.ss1 .nav-item { text-align: center; }
+.ss1 .nav-icon { font-size: 22px; margin-bottom: 4px; }
+.ss1 .nav-text { font-size: 10px; color: #64748b; }
+.ss1 .nav-active .nav-text { color: #60a5fa; font-weight: 700; }
+.ss1 .nav-add {
+  width: 48px; height: 48px; border-radius: 16px; background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4); margin-top: -12px;
+}
+
+/* ===== SCREEN 2: AI INVOICE ===== */
+.ss2 { background: #0f172a; }
+.ss2 .header {
+  padding: 64px 24px 20px; background: linear-gradient(180deg, rgba(245,158,11,0.2) 0%, transparent 100%);
+}
+.ss2 .header-top { display: flex; justify-content: space-between; align-items: center; }
+.ss2 .back { font-size: 20px; color: white; }
+.ss2 .title { font-size: 20px; font-weight: 800; color: white; margin-top: 8px; }
+.ss2 .subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+.ss2 .chat { flex: 1; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+.ss2 .bubble {
+  padding: 14px 18px; border-radius: 20px; font-size: 13px; line-height: 1.5; max-width: 82%;
+}
+.ss2 .bubble-user {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white;
+  align-self: flex-end; border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+}
+.ss2 .bubble-ai {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  color: white; align-self: flex-start; border-bottom-left-radius: 4px;
+}
+.ss2 .bubble-ai .success { color: #4ade80; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+.ss2 .bubble-ai .detail { color: #94a3b8; font-size: 12px; line-height: 1.6; }
+.ss2 .bubble-ai .total { color: white; font-weight: 800; font-size: 16px; margin-top: 8px; }
+.ss2 .input-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 20px 32px;
+  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 10px; align-items: center;
+}
+.ss2 .input-field {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px; padding: 12px 18px; font-size: 13px; color: #64748b;
+}
+.ss2 .send-btn {
+  width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+}
+.ss2 .quick-actions { display: flex; gap: 8px; padding: 0 20px 12px; }
+.ss2 .quick-btn {
+  padding: 8px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;
+}
+
+/* ===== SCREEN 3: GST ===== */
+.ss3 { background: #0f172a; }
+.ss3 .header {
+  padding: 64px 24px 20px; background: linear-gradient(180deg, rgba(5,150,105,0.2) 0%, transparent 100%);
+}
+.ss3 .title { font-size: 20px; font-weight: 800; color: white; margin-top: 8px; }
+.ss3 .tabs { display: flex; gap: 8px; padding: 20px 24px 0; }
+.ss3 .tab {
+  padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 700;
+}
+.ss3 .tab.active { background: linear-gradient(135deg, #059669, #047857); color: white; box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3); }
+.ss3 .tab.inactive { background: rgba(255,255,255,0.06); color: #64748b; }
+.ss3 .report { padding: 20px 24px; }
+.ss3 .report-card {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 20px; margin-bottom: 12px;
+}
+.ss3 .rc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ss3 .rc-title { font-size: 14px; font-weight: 700; color: white; }
+.ss3 .rc-badge { font-size: 10px; padding: 4px 10px; border-radius: 8px; background: rgba(5,150,105,0.2); color: #34d399; font-weight: 700; }
+.ss3 .rc-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.ss3 .rc-label { font-size: 13px; color: #64748b; }
+.ss3 .rc-value { font-size: 14px; font-weight: 700; color: white; }
+.ss3 .export-section { display: flex; gap: 10px; padding: 0 24px; margin-top: 8px; }
+.ss3 .export-btn {
+  flex: 1; padding: 14px; border-radius: 14px; font-size: 13px; font-weight: 700;
+  text-align: center; color: white;
+}
+.ss3 .export-csv { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
+.ss3 .export-json { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); }
+.ss3 .filing-card {
+  margin: 16px 24px; padding: 16px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(5,150,105,0.1), rgba(16,185,129,0.05));
+  border: 1px solid rgba(5,150,105,0.2);
+  display: flex; align-items: center; gap: 12px;
+}
+.ss3 .filing-icon { font-size: 28px; }
+.ss3 .filing-text { font-size: 12px; color: #34d399; font-weight: 600; line-height: 1.4; }
+
+/* ===== SCREEN 4: INVOICE PREVIEW ===== */
+.ss4 { background: #0f172a; }
+.ss4 .header {
+  padding: 64px 24px 20px; background: linear-gradient(180deg, rgba(99,102,241,0.2) 0%, transparent 100%);
+}
+.ss4 .title { font-size: 20px; font-weight: 800; color: white; margin-top: 8px; }
+.ss4 .invoice-paper {
+  margin: 20px; background: white; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.ss4 .inv-top { background: linear-gradient(135deg, #2563eb, #1e40af); padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+.ss4 .inv-badge { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 700; color: white; }
+.ss4 .inv-num { font-size: 18px; font-weight: 800; color: white; }
+.ss4 .inv-body { padding: 20px; }
+.ss4 .inv-parties { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.ss4 .inv-party-label { font-size: 9px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+.ss4 .inv-party-name { font-size: 13px; font-weight: 800; color: #1e293b; margin-top: 2px; }
+.ss4 .inv-party-addr { font-size: 10px; color: #64748b; margin-top: 1px; }
+.ss4 .inv-table { width: 100%; margin-bottom: 12px; }
+.ss4 .inv-table th { font-size: 8px; font-weight: 700; color: #94a3b8; text-transform: uppercase; padding: 6px 0; border-bottom: 1px solid #e2e8f0; text-align: left; }
+.ss4 .inv-table th:last-child { text-align: right; }
+.ss4 .inv-table td { font-size: 11px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+.ss4 .inv-table td:last-child { text-align: right; font-weight: 600; }
+.ss4 .inv-summary { display: flex; justify-content: flex-end; }
+.ss4 .inv-summary-box { width: 180px; }
+.ss4 .inv-sum-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; color: #64748b; }
+.ss4 .inv-sum-total { display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; font-weight: 900; color: #2563eb; border-top: 2px solid #2563eb; margin-top: 4px; }
+.ss4 .inv-footer { padding: 16px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+.ss4 .inv-qr-box { display: flex; align-items: center; gap: 10px; }
+.ss4 .inv-qr { width: 48px; height: 48px; background: #1e293b; border-radius: 8px; display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; padding: 4px; }
+.ss4 .inv-qr-cell { background: white; border-radius: 1px; }
+.ss4 .inv-qr-cell.b { background: #1e293b; }
+.ss4 .inv-upi-text { font-size: 10px; color: #64748b; }
+.ss4 .inv-upi-id { font-size: 12px; font-weight: 800; color: #2563eb; }
+.ss4 .share-section { display: flex; gap: 8px; padding: 16px 20px 32px; }
+.ss4 .share-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 12px; font-weight: 700; text-align: center; color: white; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.ss4 .share-wa { background: linear-gradient(135deg, #25d366, #128c7e); }
+.ss4 .share-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.ss4 .share-email { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+
+/* ===== SCREEN 5: SETTINGS ===== */
+.ss5 { background: #0f172a; }
+.ss5 .header {
+  padding: 64px 24px 20px; background: linear-gradient(180deg, rgba(236,72,153,0.15) 0%, transparent 100%);
+}
+.ss5 .title { font-size: 20px; font-weight: 800; color: white; margin-top: 8px; }
+.ss5 .profile { padding: 20px 24px; display: flex; align-items: center; gap: 16px; }
+.ss5 .avatar {
+  width: 64px; height: 64px; border-radius: 20px; background: linear-gradient(135deg, #ec4899, #db2777);
+  display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; color: white;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+}
+.ss5 .profile-info { flex: 1; }
+.ss5 .profile-name { font-size: 18px; font-weight: 800; color: white; }
+.ss5 .profile-email { font-size: 12px; color: #64748b; margin-top: 2px; }
+.ss5 .profile-plan { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; background: rgba(250,204,21,0.15); color: #fbbf24; margin-top: 6px; display: inline-block; }
+.ss5 .settings-list { padding: 0 24px; }
+.ss5 .settings-group { margin-bottom: 20px; }
+.ss5 .sg-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.ss5 .sg-item {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.ss5 .sg-icon { font-size: 20px; }
+.ss5 .sg-text { flex: 1; font-size: 14px; font-weight: 600; color: white; }
+.ss5 .sg-arrow { color: #64748b; font-size: 14px; }
+.ss5 .sg-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+.ss5 .sg-badge.new { background: rgba(34,197,94,0.15); color: #4ade80; }
+.ss5 .sg-badge.pro { background: rgba(245,158,11,0.15); color: #fbbf24; }
+</style>
+</head>
+<body>
+<h1>Bill By Billu — Play Store Assets</h1>
+<p class="sub">Feature Graphic (1024×500) + 5 Phone Screenshots — Screenshot each section</p>
+
+<div class="screens">
+
+  <!-- Feature Graphic -->
+  <div>
+    <div class="feature-graphic">
+      <div class="glow-1"></div>
+      <div class="glow-2"></div>
+      <div class="fg-content">
+        <div class="fg-left">
+          <div class="fg-badge">Live on Play Store</div>
+          <h2>Bill By Billu</h2>
+          <p>AI-powered GST invoicing for Indian businesses. Create, share & track invoices in seconds.</p>
+        </div>
+        <div class="fg-right">
+          <div class="fg-card">
+            <div class="fg-card-icon blue">🤖</div>
+            <h3>AI Invoice</h3>
+            <p>Voice, photo or chat</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-card-icon amber">📊</div>
+            <h3>GST Reports</h3>
+            <p>GSTR-1 & 3B ready</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-card-icon green">💬</div>
+            <h3>WhatsApp</h3>
+            <p>Share in one tap</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-card-icon purple">💳</div>
+            <h3>UPI Pay</h3>
+            <p>QR on every bill</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ss-label">Play Store Feature Graphic — 1024 × 500</div>
+  </div>
+
+  <!-- Phone Screenshots -->
+  <div class="phone-col">
+
+    <!-- Screen 1: Dashboard -->
+    <div class="phone-screenshot ss1">
+      <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+      <div class="header">
+        <div class="greeting">Good Morning 👋</div>
+        <div class="name">Alok's Fashion Store</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-num blue">47</div><div class="stat-label">Invoices</div></div>
+        <div class="stat"><div class="stat-num green">₹2.4L</div><div class="stat-label">Revenue</div></div>
+        <div class="stat"><div class="stat-num amber">12</div><div class="stat-label">Pending</div></div>
+      </div>
+      <div class="section">
+        <div class="section-header"><div class="section-title">Recent Invoices</div><div class="see-all">See All →</div></div>
+        <div class="inv-card">
+          <div class="inv-left"><div class="inv-avatar a1">RK</div><div><div class="inv-name">Rajesh Kumar</div><div class="inv-date">Jun 28, 2026</div></div></div>
+          <div class="inv-right"><div class="inv-amt">₹8,500</div><div class="inv-badge paid">PAID</div></div>
+        </div>
+        <div class="inv-card">
+          <div class="inv-left"><div class="inv-avatar a2">PE</div><div><div class="inv-name">Priya Enterprises</div><div class="inv-date">Jun 27, 2026</div></div></div>
+          <div class="inv-right"><div class="inv-amt">₹15,200</div><div class="inv-badge pending">PENDING</div></div>
+        </div>
+        <div class="inv-card">
+          <div class="inv-left"><div class="inv-avatar a3">MT</div><div><div class="inv-name">Meena Traders</div><div class="inv-date">Jun 25, 2026</div></div></div>
+          <div class="inv-right"><div class="inv-amt">₹3,750</div><div class="inv-badge paid">PAID</div></div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item nav-active"><div class="nav-icon">🏠</div><div class="nav-text">Home</div></div>
+        <div class="nav-item"><div class="nav-icon">📄</div><div class="nav-text">Invoices</div></div>
+        <div class="nav-item"><div class="nav-add">+</div></div>
+        <div class="nav-item"><div class="nav-icon">👥</div><div class="nav-text">Customers</div></div>
+        <div class="nav-item"><div class="nav-icon">⚙️</div><div class="nav-text">Settings</div></div>
+      </div>
+    </div>
+    <div class="ss-label">Dashboard</div>
+
+    <!-- Screen 2: AI Invoice Creator -->
+    <div class="phone-screenshot ss2">
+      <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+      <div class="header">
+        <div class="header-top"><span class="back">← </span></div>
+        <div class="title">AI Invoice Creator</div>
+        <div class="subtitle">Describe your bill in plain language</div>
+      </div>
+      <div class="chat">
+        <div class="bubble bubble-user">Sold 10 t-shirts at ₹450 each and 5 jeans at ₹1200 to Rajesh Kumar, GST 5%</div>
+        <div class="bubble bubble-ai">
+          <div class="success">✅ Invoice #INV-0047 created</div>
+          <div class="detail">
+            <strong>Bill To:</strong> Rajesh Kumar<br>
+            <strong>Items:</strong><br>
+            • T-Shirts — 10 × ₹450 = ₹4,500<br>
+            • Jeans — 5 × ₹1,200 = ₹6,000<br>
+            <strong>Subtotal:</strong> ₹10,500<br>
+            <strong>GST (10%):</strong> ₹1,050
+          </div>
+          <div class="total">Total: ₹11,550</div>
+        </div>
+        <div class="bubble bubble-user">Send it on WhatsApp</div>
+        <div class="bubble bubble-ai">
+          <div class="success">✅ Sent to Rajesh Kumar!</div>
+          <div class="detail">💳 Payment link attached. You'll get notified when paid.</div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-btn">🎤 Voice</div>
+        <div class="quick-btn">📸 Photo</div>
+        <div class="quick-btn">📋 From Template</div>
+      </div>
+      <div class="input-bar">
+        <div class="input-field">Describe your invoice...</div>
+        <div class="send-btn">→</div>
+      </div>
+    </div>
+    <div class="ss-label">AI Invoice Creator</div>
+
+    <!-- Screen 3: GST Reports -->
+    <div class="phone-screenshot ss3">
+      <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+      <div class="header">
+        <div class="title">GST Reports</div>
+      </div>
+      <div class="tabs">
+        <div class="tab active">GSTR-1</div>
+        <div class="tab inactive">GSTR-3B</div>
+      </div>
+      <div class="report">
+        <div class="report-card">
+          <div class="rc-header"><div class="rc-title">June 2026 Summary</div><div class="rc-badge">READY TO FILE</div></div>
+          <div class="rc-row"><div class="rc-label">B2B Invoices</div><div class="rc-value">34</div></div>
+          <div class="rc-row"><div class="rc-label">Taxable Value</div><div class="rc-value">₹2,45,800</div></div>
+          <div class="rc-row"><div class="rc-label">CGST (2.5%)</div><div class="rc-value">₹6,145</div></div>
+          <div class="rc-row"><div class="rc-label">SGST (2.5%)</div><div class="rc-value">₹6,145</div></div>
+          <div class="rc-row"><div class="rc-label">IGST (5%)</div><div class="rc-value">₹12,290</div></div>
+          <div class="rc-row" style="border:none"><div class="rc-label" style="font-weight:700;color:white">Total Tax</div><div class="rc-value" style="color:#34d399">₹24,580</div></div>
+        </div>
+      </div>
+      <div class="export-section">
+        <div class="export-btn export-csv">📄 Export CSV</div>
+        <div class="export-btn export-json">📋 Export JSON</div>
+      </div>
+      <div class="filing-card">
+        <div class="filing-icon">📤</div>
+        <div class="filing-text">Ready to file on gst.gov.in?<br>Download CSV and upload directly.</div>
+      </div>
+    </div>
+    <div class="ss-label">GST Reports</div>
+
+    <!-- Screen 4: Invoice Preview -->
+    <div class="phone-screenshot ss4">
+      <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+      <div class="header">
+        <div class="title">Invoice Preview</div>
+      </div>
+      <div class="invoice-paper">
+        <div class="inv-top">
+          <div class="inv-num">INV-0047</div>
+          <div class="inv-badge">PAID</div>
+        </div>
+        <div class="inv-body">
+          <div class="inv-parties">
+            <div>
+              <div class="inv-party-label">From</div>
+              <div class="inv-party-name">Alok's Fashion Store</div>
+              <div class="inv-party-addr">Gurgaon, Haryana</div>
+            </div>
+            <div style="text-align:right">
+              <div class="inv-party-label">Bill To</div>
+              <div class="inv-party-name">Rajesh Kumar</div>
+              <div class="inv-party-addr">New Delhi, Delhi</div>
+            </div>
+          </div>
+          <table class="inv-table">
+            <tr><th>Item</th><th>Qty</th><th>Rate</th><th>Amt</th></tr>
+            <tr><td>Cotton T-Shirt</td><td>10</td><td>₹450</td><td>₹4,500</td></tr>
+            <tr><td>Slim Fit Jeans</td><td>5</td><td>₹1,200</td><td>₹6,000</td></tr>
+          </table>
+          <div class="inv-summary">
+            <div class="inv-summary-box">
+              <div class="inv-sum-row"><span>Subtotal</span><span>₹10,500</span></div>
+              <div class="inv-sum-row"><span>CGST 2.5%</span><span>₹262</span></div>
+              <div class="inv-sum-row"><span>SGST 2.5%</span><span>₹262</span></div>
+              <div class="inv-sum-row"><span>IGST 5%</span><span>₹525</span></div>
+              <div class="inv-sum-total"><span>Total</span><span>₹11,550</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="inv-footer">
+          <div class="inv-qr-box">
+            <div class="inv-qr">
+              <div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+              <div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div>
+              <div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div>
+              <div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+              <div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell b"></div><div class="inv-qr-cell"></div><div class="inv-qr-cell b"></div>
+            </div>
+            <div>
+              <div class="inv-upi-text">Scan to Pay</div>
+              <div class="inv-upi-id">alok@paytm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="share-section">
+        <div class="share-btn share-wa">💬 WhatsApp</div>
+        <div class="share-btn share-pdf">📄 PDF</div>
+        <div class="share-btn share-email">✉️ Email</div>
+      </div>
+    </div>
+    <div class="ss-label">Invoice Preview & Share</div>
+
+    <!-- Screen 5: Settings -->
+    <div class="phone-screenshot ss5">
+      <div class="status-bar"><span class="time">9:41</span><span class="icons">📶 🔋</span></div>
+      <div class="header">
+        <div class="title">Settings</div>
+      </div>
+      <div class="profile">
+        <div class="avatar">AG</div>
+        <div class="profile-info">
+          <div class="profile-name">Alok Garg</div>
+          <div class="profile-email">alok@gmail.com</div>
+          <div class="profile-plan">GROWTH PLAN</div>
+        </div>
+      </div>
+      <div class="settings-list">
+        <div class="settings-group">
+          <div class="sg-title">Business</div>
+          <div class="sg-item"><span class="sg-icon">🏪</span><span class="sg-text">Business Details</span><span class="sg-arrow">›</span></div>
+          <div class="sg-item"><span class="sg-icon">🧾</span><span class="sg-text">GSTIN Settings</span><span class="sg-arrow">›</span></div>
+          <div class="sg-item"><span class="sg-icon">💳</span><span class="sg-text">UPI Payment</span><span class="sg-badge new">SET UP</span></div>
+        </div>
+        <div class="settings-group">
+          <div class="sg-title">Invoice</div>
+          <div class="sg-item"><span class="sg-icon">🎨</span><span class="sg-text">Invoice Template</span><span class="sg-badge pro">3 DESIGNS</span></div>
+          <div class="sg-item"><span class="sg-icon">🏷️</span><span class="sg-text">Invoice Numbering</span><span class="sg-arrow">›</span></div>
+          <div class="sg-item"><span class="sg-icon">🏦</span><span class="sg-text">Bank Details</span><span class="sg-arrow">›</span></div>
+        </div>
+        <div class="settings-group">
+          <div class="sg-title">Account</div>
+          <div class="sg-item"><span class="sg-icon">👤</span><span class="sg-text">Profile</span><span class="sg-arrow">›</span></div>
+          <div class="sg-item"><span class="sg-icon">🔔</span><span class="sg-text">Notifications</span><span class="sg-arrow">›</span></div>
+          <div class="sg-item"><span class="sg-icon">🌍</span><span class="sg-text">Language</span><span class="sg-badge new">9 LANGS</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ss-label">Settings</div>
+
+  </div>
+
+</div>
+</body>
+</html>

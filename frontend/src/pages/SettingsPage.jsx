@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import LanguageSelector from '../components/LanguageSelector';
 import UpgradeModal from '../components/UpgradeModal';
 import { api } from '../lib/api';
-import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock, FileText, Building2, Bell, BellOff } from 'lucide-react';
+import { Copy, Check, Users, ArrowUpRight, Clock, Upload, X, Image, Lock, FileText, Building2, Bell, BellOff, Truck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { isPushSupported, subscribeToPush, unsubscribeFromPush, isSubscribed, sendTestNotification, getNotificationPrefs, updateNotificationPrefs } from '../lib/notifications';
 
@@ -37,6 +37,10 @@ export default function SettingsPage() {
   const [logoLoading, setLogoLoading] = useState(false);
   const [qrPreview, setQrPreview] = useState(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [ewbConfig, setEwbConfig] = useState({ gstin: '', username: '', password: '', apiUrl: 'production', clientId: '', clientSecret: '' });
+  const [ewbStatus, setEwbStatus] = useState(null);
+  const [ewbTesting, setEwbTesting] = useState(false);
+  const [ewbSaving, setEwbSaving] = useState(false);
   const fileInputRef = useRef(null);
   const qrInputRef = useRef(null);
 
@@ -55,6 +59,12 @@ export default function SettingsPage() {
       });
       setLogoPreview(user.logoUrl || null);
       setQrPreview(user.qrUrl || null);
+      api.get('/api/ewaybill/config').then(res => {
+        setEwbStatus(res.data);
+        if (res.data.configured) {
+          setEwbConfig(prev => ({ ...prev, gstin: res.data.gstin || prev.gstin, username: res.data.username || prev.username, apiUrl: res.data.apiUrl || prev.apiUrl }));
+        }
+      }).catch(() => {});
     }
   }, [user]);
 
@@ -159,6 +169,34 @@ export default function SettingsPage() {
       toast.success('Copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
     }).catch(() => toast.error('Failed to copy'));
+  };
+
+  const handleEwbSave = async () => {
+    if (!ewbConfig.gstin || !ewbConfig.username || !ewbConfig.password) {
+      return toast.error('GSTIN, username, and password are required');
+    }
+    setEwbSaving(true);
+    try {
+      await api.post('/api/ewaybill/config', ewbConfig);
+      toast.success('E-Way Bill credentials saved');
+      setEwbStatus(prev => ({ ...prev, configured: true }));
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to save credentials');
+    } finally {
+      setEwbSaving(false);
+    }
+  };
+
+  const handleEwbTest = async () => {
+    setEwbTesting(true);
+    try {
+      const res = await api.post('/api/ewaybill/test');
+      toast.success(`Connected! Token valid until ${new Date(res.data.expiry).toLocaleString()}`);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Connection failed');
+    } finally {
+      setEwbTesting(false);
+    }
   };
 
   const input = "w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500";
@@ -433,6 +471,59 @@ export default function SettingsPage() {
           >
             <ArrowUpRight size={16} /> Upgrade
           </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Truck size={20} className="text-brand-600" />
+          <h2 className="font-semibold text-gray-700">E-Way Bill (GST)</h2>
+          {ewbStatus?.configured && (
+            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">Configured</span>
+          )}
+        </div>
+        <p className="text-xs text-gray-500">
+          Configure your E-Way Bill portal credentials to auto-generate waybills for invoices above ₹50,000.
+          Register at <a href="https://ewaybillgst.gov.in" target="_blank" rel="noreferrer" className="text-brand-600 underline">ewaybillgst.gov.in</a>.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">GSTIN *</label>
+            <input className={input} value={ewbConfig.gstin} onChange={e => setEwbConfig(prev => ({ ...prev, gstin: e.target.value }))} placeholder="27AABCU9603R1ZM" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">EWB Portal Username *</label>
+            <input className={input} value={ewbConfig.username} onChange={e => setEwbConfig(prev => ({ ...prev, username: e.target.value }))} placeholder="Your EWB login ID" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">EWB Portal Password *</label>
+            <input className={input} type="password" value={ewbConfig.password} onChange={e => setEwbConfig(prev => ({ ...prev, password: e.target.value }))} placeholder="Your EWB password" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">API Mode</label>
+            <select className={input} value={ewbConfig.apiUrl} onChange={e => setEwbConfig(prev => ({ ...prev, apiUrl: e.target.value }))}>
+              <option value="production">Production</option>
+              <option value="sandbox">Sandbox (Testing)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Client ID (optional)</label>
+            <input className={input} value={ewbConfig.clientId} onChange={e => setEwbConfig(prev => ({ ...prev, clientId: e.target.value }))} placeholder="GSP Client ID" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Client Secret (optional)</label>
+            <input className={input} type="password" value={ewbConfig.clientSecret} onChange={e => setEwbConfig(prev => ({ ...prev, clientSecret: e.target.value }))} placeholder="GSP Client Secret" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={handleEwbSave} disabled={ewbSaving} className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50">
+            {ewbSaving ? 'Saving...' : 'Save Credentials'}
+          </button>
+          {ewbStatus?.configured && (
+            <button onClick={handleEwbTest} disabled={ewbTesting} className="px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50">
+              {ewbTesting ? 'Testing...' : 'Test Connection'}
+            </button>
+          )}
         </div>
       </div>
 

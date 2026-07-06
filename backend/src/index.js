@@ -23,6 +23,7 @@ const notificationRoutes = require('./routes/notifications');
 const blogRoutes = require('./routes/blog');
 const whatsappBotRoutes = require('./routes/whatsappBot');
 const importRoutes = require('./routes/import');
+const ewaybillRoutes = require('./routes/ewaybill');
 const swaggerSpec = require('./swagger');
 
 const app = express();
@@ -119,6 +120,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/whatsapp-bot', whatsappBotRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/ewaybill', ewaybillRoutes);
 
 // Swagger docs
 app.get('/api/docs.json', (req, res) => {
