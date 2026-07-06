@@ -160,25 +160,13 @@ router.post('/create-order', async (req, res) => {
 // POST /api/subscription/verify — Verify Razorpay payment and activate plan
 router.post('/verify', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, period } = req.body;
-
-    const VALID_PLANS = ['STARTER', 'GROWTH'];
-    const VALID_PERIODS = ['monthly', 'yearly'];
-
-    if (!VALID_PLANS.includes(plan)) {
-      return res.status(400).json({ error: 'Invalid plan. Must be STARTER or GROWTH.' });
-    }
-    if (period && !VALID_PERIODS.includes(period)) {
-      return res.status(400).json({ error: 'Invalid period. Must be monthly or yearly.' });
-    }
-
-    logger.info({ userId: req.userId, orderId: razorpay_order_id, plan, period }, 'Verify payment attempt');
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ error: 'Missing payment verification data' });
     }
 
-    // Verify signature
+    // Get Razorpay secret
     let razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
     if (!razorpayKeySecret && user.razorpayKeySecret) {
@@ -190,12 +178,12 @@ router.post('/verify', async (req, res) => {
       return res.status(500).json({ error: 'Payment verification not configured. Contact support.' });
     }
 
+    // Verify signature
     const expectedSig = crypto
       .createHmac('sha256', razorpayKeySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
-    // Timing-safe comparison
     const sigBuf = Buffer.from(razorpay_signature, 'hex');
     const expectedBuf = Buffer.from(expectedSig, 'hex');
     const sigValid = sigBuf.length === expectedBuf.length && crypto.timingSafeEqual(sigBuf, expectedBuf);
@@ -203,6 +191,51 @@ router.post('/verify', async (req, res) => {
     if (!sigValid) {
       logger.error({ userId: req.userId, orderId: razorpay_order_id }, 'Payment signature mismatch');
       return res.status(401).json({ error: 'Invalid payment signature' });
+    }
+
+    // Fetch order from Razorpay to validate amount + plan (never trust client input)
+    let razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+    if (!razorpayKeyId && user.razorpayKeyId) {
+      razorpayKeyId = user.razorpayKeyId;
+    }
+
+    if (!razorpayKeyId) {
+      return res.status(500).json({ error: 'Payment gateway not configured.' });
+    }
+
+    const auth = Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
+    const orderRes = await fetch(`https://api.razorpay.com/v1/orders/${razorpay_order_id}`, {
+      headers: { 'Authorization': `Basic ${auth}` },
+    });
+
+    if (!orderRes.ok) {
+      logger.error({ userId: req.userId, orderId: razorpay_order_id }, 'Failed to fetch order from Razorpay');
+      return res.status(400).json({ error: 'Could not verify payment order' });
+    }
+
+    const order = await orderRes.json();
+
+    // Validate order belongs to this user
+    const orderUserId = order.notes?.userId;
+    if (orderUserId !== req.userId) {
+      logger.error({ userId: req.userId, orderUserId, orderId: razorpay_order_id }, 'Order belongs to different user');
+      return res.status(403).json({ error: 'Payment order does not belong to this account' });
+    }
+
+    // Validate plan and period from order notes (never from client)
+    const plan = order.notes?.plan;
+    const period = order.notes?.period || 'monthly';
+    const VALID_PLANS = ['STARTER', 'GROWTH'];
+    if (!VALID_PLANS.includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan in payment order' });
+    }
+
+    // Validate order amount matches plan price
+    const planInfo = PLANS[plan];
+    const expectedAmount = (period === 'yearly' ? planInfo.yearlyPrice : planInfo.monthlyPrice) * 100;
+    if (order.amount !== expectedAmount) {
+      logger.error({ userId: req.userId, orderId: razorpay_order_id, orderAmount: order.amount, expectedAmount }, 'Order amount mismatch');
+      return res.status(400).json({ error: 'Payment amount does not match plan price' });
     }
 
     // Calculate expiry

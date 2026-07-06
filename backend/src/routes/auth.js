@@ -215,7 +215,7 @@ router.post('/google', async (req, res) => {
       });
     } catch (dbErr) {
       logger.error({ error: dbErr.message, stack: dbErr.stack }, 'Google auth: DB find failed');
-      return res.status(500).json({ error: 'Database error', detail: dbErr.message });
+      return res.status(500).json({ error: 'Authentication service temporarily unavailable' });
     }
 
     if (user) {

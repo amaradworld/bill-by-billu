@@ -50,17 +50,22 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Middleware: require admin JWT
-function requireAdmin(req, res, next) {
+// Middleware: require admin JWT + verify owner email
+async function requireAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' });
   }
   const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     if (!decoded.admin) {
       return res.status(403).json({ error: 'Admin access required' });
+    }
+    // Verify the user still exists and is the platform owner
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user || user.email !== PLATFORM_OWNER) {
+      return res.status(403).json({ error: 'Admin access revoked' });
     }
     req.userId = decoded.userId;
     next();

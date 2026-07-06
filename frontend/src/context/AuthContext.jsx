@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Preferences } from '@capacitor/preferences';
-import { setTokenGetter } from '../lib/api';
+import { setTokenGetter, setOnAuthError } from '../lib/api';
 import { Capacitor } from '@capacitor/core';
 import toast from 'react-hot-toast';
 
@@ -51,6 +51,15 @@ export function AuthProvider({ children }) {
     setTokenGetter(() => newToken);
   }, []);
 
+  // Auto-logout on 401
+  useEffect(() => {
+    setOnAuthError(async () => {
+      await Preferences.remove({ key: 'bbToken' });
+      setToken(null);
+      setUser(null);
+    });
+  }, []);
+
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
@@ -64,19 +73,17 @@ export function AuthProvider({ children }) {
         if (mountedRef.current) setLoading(false);
         return;
       }
-      setTokenSync(storedToken);
       try {
         const userData = await fetchMeWithRetry(storedToken);
         if (!cancelled && mountedRef.current) {
+          setTokenSync(storedToken);
           setUser(userData);
         }
       } catch (err) {
         console.error('Session restore failed after retries:', err);
         if (!cancelled && mountedRef.current) {
-          const stillHasToken = await getToken();
-          if (stillHasToken) {
-            toast.error('Server slow to respond. Using cached session.');
-          }
+          // Keep token — don't delete on failure, show degraded state
+          setTokenSync(storedToken);
         }
       } finally {
         if (!cancelled && mountedRef.current) setLoading(false);

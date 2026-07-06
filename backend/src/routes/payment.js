@@ -149,11 +149,43 @@ webhookRouter.post('/webhook/razorpay', express.raw({ type: 'application/json' }
 
       // Check if this is a subscription payment
       if (payment.notes?.type === 'subscription') {
-        const userId = payment.notes?.userId;
-        const plan = payment.notes?.plan;
+        // Validate from Razorpay order, not from payment notes alone
+        const orderId = payment.order_id;
+        let plan = payment.notes?.plan;
+        let userId = payment.notes?.userId;
         const period = payment.notes?.period;
-        if (userId && plan) {
+
+        if (orderId && userId && plan) {
           try {
+            // Fetch order to validate amount
+            const user = await prisma.user.findUnique({ where: { id: userId } });
+            let razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+            let razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+            if (!razorpayKeyId && user?.razorpayKeyId) {
+              razorpayKeyId = user.razorpayKeyId;
+              const { decrypt } = require('../services/crypto');
+              razorpayKeySecret = decrypt(user.razorpayKeySecret);
+            }
+
+            if (razorpayKeyId && razorpayKeySecret) {
+              const auth = Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
+              const orderRes = await fetch(`https://api.razorpay.com/v1/orders/${orderId}`, {
+                headers: { 'Authorization': `Basic ${auth}` },
+              });
+              if (orderRes.ok) {
+                const order = await orderRes.json();
+                // Verify plan from order notes, not payment notes
+                plan = order.notes?.plan || plan;
+                userId = order.notes?.userId || userId;
+              }
+            }
+
+            const VALID_PLANS = ['STARTER', 'GROWTH'];
+            if (!VALID_PLANS.includes(plan) || !userId) {
+              logger.error({ userId, plan, orderId }, 'Invalid subscription webhook data');
+              return res.json({ received: true });
+            }
+
             const now = new Date();
             let expiry;
             if (period === 'yearly') {

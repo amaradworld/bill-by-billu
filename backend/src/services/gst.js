@@ -83,14 +83,25 @@ function calculateInvoiceTotals({ items, supplierState, customerState, discount 
   let totalIgst = 0;
   let totalCess = 0;
 
-  const calculatedItems = items.map((item) => {
+  // First pass: calculate raw line amounts (before invoice-level discount)
+  const rawLines = items.map((item) => {
     const lineAmount = item.quantity * item.unitPrice;
     const lineDiscount = lineAmount * (item.discount || 0) / 100;
-    const taxableAmount = lineAmount - lineDiscount;
+    return { ...item, lineAmount, lineDiscount, taxableBeforeInvoiceDiscount: lineAmount - lineDiscount };
+  });
+
+  const rawSubtotal = rawLines.reduce((sum, l) => sum + l.taxableBeforeInvoiceDiscount, 0);
+
+  // Second pass: distribute invoice-level discount proportionally, then apply tax
+  const calculatedItems = rawLines.map((line) => {
+    const proportionalDiscount = rawSubtotal > 0
+      ? discount * (line.taxableBeforeInvoiceDiscount / rawSubtotal)
+      : 0;
+    const taxableAmount = Math.max(0, line.taxableBeforeInvoiceDiscount - proportionalDiscount);
 
     const tax = calculateGST({
       amount: taxableAmount,
-      gstRate: item.gstRate,
+      gstRate: line.gstRate,
       supplierState,
       customerState,
       reverseCharge,
@@ -102,18 +113,18 @@ function calculateInvoiceTotals({ items, supplierState, customerState, discount 
     totalIgst += tax.igst;
 
     return {
-      ...item,
-      taxableAmount,
-      discountAmount: round(lineDiscount),
+      ...line,
+      taxableAmount: round(taxableAmount),
+      discountAmount: round(line.lineDiscount + proportionalDiscount),
       cgst: tax.cgst,
       sgst: tax.sgst,
       igst: tax.igst,
-      totalAmount: taxableAmount + tax.totalTax,
+      totalAmount: round(taxableAmount + tax.totalTax),
     };
   });
 
   const totalTax = totalCgst + totalSgst + totalIgst + totalCess;
-  const totalAmount = subtotal - discount + totalTax;
+  const totalAmount = subtotal + totalTax;
 
   return {
     items: calculatedItems,

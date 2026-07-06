@@ -162,12 +162,21 @@ router.post('/', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const isTrialActive = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
+    const isPaidActive = ['STARTER', 'GROWTH'].includes(user.plan) && user.planExpiry && new Date(user.planExpiry) > new Date();
     if (user.plan === 'FREE' && !isTrialActive) {
       const thisMonthCount = await prisma.invoice.count({
-        where: { userId: req.userId, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
+        where: { userId: req.userId, isCancelled: false, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
       });
       if (thisMonthCount >= 5) {
         return res.status(403).json({ error: 'Free plan limit reached (5 invoices/month).', code: 'PLAN_LIMIT', limit: 5, used: thisMonthCount });
+      }
+    } else if (!isTrialActive && !isPaidActive) {
+      // Paid plan expired — treat as free
+      const thisMonthCount = await prisma.invoice.count({
+        where: { userId: req.userId, isCancelled: false, invoiceDate: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
+      });
+      if (thisMonthCount >= 5) {
+        return res.status(403).json({ error: 'Subscription expired. Please renew your plan.', code: 'PLAN_LIMIT', limit: 5, used: thisMonthCount });
       }
     }
 

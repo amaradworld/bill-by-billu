@@ -154,6 +154,11 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// ─── Unhandled rejection handler ───
+process.on('unhandledRejection', (err) => {
+  logger.fatal({ err }, 'Unhandled promise rejection');
+});
+
 // ─── Start ───
 const { sendPaymentReminder, sendGSTDeadline } = require('./routes/notifications');
 

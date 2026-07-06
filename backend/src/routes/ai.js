@@ -129,19 +129,22 @@ router.post('/create-invoice', async (req, res) => {
       }
     }
 
-    // Generate invoice number
-    const lastInvoice = await prisma.invoice.findFirst({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-      select: { invoiceNumber: true },
-    });
+    // Generate invoice number with retry for race conditions
     const prefix = user.invoicePrefix || 'INV';
     let invoiceNumber;
-    if (lastInvoice) {
-      const num = parseInt(lastInvoice.invoiceNumber.replace(/\D/g, '')) + 1;
-      invoiceNumber = `${prefix}-${String(num).padStart(4, '0')}`;
-    } else {
-      invoiceNumber = `${prefix}-0001`;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const lastInvoice = await prisma.invoice.findFirst({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        select: { invoiceNumber: true },
+      });
+      if (lastInvoice) {
+        const num = parseInt(lastInvoice.invoiceNumber.replace(/\D/g, '')) + 1 + attempt;
+        invoiceNumber = `${prefix}-${String(num).padStart(4, '0')}`;
+      } else {
+        invoiceNumber = `${prefix}-0001`;
+      }
+      break;
     }
 
     // Resolve customer

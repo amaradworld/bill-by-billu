@@ -2,9 +2,14 @@ const API = import.meta.env.VITE_API_URL || '';
 const REQUEST_TIMEOUT = 30000;
 
 let tokenGetter = () => null;
+let onAuthError = null;
 
 export function setTokenGetter(fn) {
   tokenGetter = fn;
+}
+
+export function setOnAuthError(fn) {
+  onAuthError = fn;
 }
 
 async function request(path, options = {}) {
@@ -26,6 +31,11 @@ async function request(path, options = {}) {
     });
     clearTimeout(timeoutId);
     const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401 && onAuthError) {
+      onAuthError();
+      throw new Error('Session expired. Please log in again.');
+    }
 
     if (!res.ok) {
       const msg = data.details
