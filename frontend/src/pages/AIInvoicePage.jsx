@@ -101,7 +101,7 @@ export default function AIInvoicePage() {
     setOcrProgress(0);
 
     try {
-      const worker = await createWorker('eng', 1, {
+      const worker = await createWorker('eng', undefined, {
         logger: (m) => {
           if (m.status === 'recognizing text') {
             setOcrProgress(Math.round(m.progress * 100));
@@ -114,12 +114,23 @@ export default function AIInvoicePage() {
 
       if (text && text.trim().length > 5) {
         setInput(text.trim());
-        toast.success('OCR complete! Review the parsed text below.');
+        toast.success('OCR complete! Parsing...');
+        // Auto-parse after OCR
+        try {
+          const data = await api.post('/api/ai/parse-invoice', {
+            text: text.trim(),
+            source: 'ocr',
+          });
+          setParsed(data);
+        } catch {
+          toast.error('Auto-parse failed. Click Parse Invoice to retry.');
+        }
       } else {
         setInput('');
         toast.error('Could not read text from image. Try a clearer photo.');
       }
     } catch (err) {
+      console.error('OCR error:', err);
       toast.error('OCR failed. Please type the text manually.');
     } finally {
       setOcrRunning(false);
